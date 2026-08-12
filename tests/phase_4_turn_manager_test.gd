@@ -93,18 +93,42 @@ func _ready() -> void:
 		test_passed = false
 		push_error("FASE 4 ERROR: player_2 no recibio 2 acciones nuevas.")
 
-	# El jugador puede terminar antes de gastar sus 2 acciones.
+	# v0.74 exige exactamente 2 acciones salvo efecto explicito.
 	if not manager.spend_action():
 		test_passed = false
-		push_error("FASE 4 ERROR: player_2 no pudo gastar una accion.")
+		push_error("FASE 4 ERROR: player_2 no pudo gastar su primera accion.")
+
+	if manager.end_turn():
+		test_passed = false
+		push_error("FASE 4 ERROR: Se permitio finalizar turno con 1 accion pendiente.")
+
+	if manager.get_active_player() != player_2:
+		test_passed = false
+		push_error("FASE 4 ERROR: Un fin de turno invalido cambio al jugador activo.")
+
+	if manager.actions_remaining != 1:
+		test_passed = false
+		push_error("FASE 4 ERROR: El intento invalido altero las acciones restantes.")
+
+	if not manager.spend_action():
+		test_passed = false
+		push_error("FASE 4 ERROR: player_2 no pudo gastar su segunda accion.")
 
 	if not manager.end_turn():
 		test_passed = false
-		push_error("FASE 4 ERROR: No se pudo terminar anticipadamente el turno.")
+		push_error("FASE 4 ERROR: No se pudo finalizar el turno completo de player_2.")
 
 	if manager.get_active_player() != player_3:
 		test_passed = false
 		push_error("FASE 4 ERROR: El turno deberia avanzar a player_3.")
+
+	if not manager.spend_action():
+		test_passed = false
+		push_error("FASE 4 ERROR: player_3 no pudo gastar su primera accion.")
+
+	if not manager.spend_action():
+		test_passed = false
+		push_error("FASE 4 ERROR: player_3 no pudo gastar su segunda accion.")
 
 	if not manager.end_turn():
 		test_passed = false
@@ -163,7 +187,7 @@ func _ready() -> void:
 			% _turn_ended_events
 		)
 
-	if _action_events != [1, 0, 1]:
+	if _action_events != [1, 0, 1, 0, 1, 0]:
 		test_passed = false
 		push_error(
 			"FASE 4 ERROR: Presupuesto de acciones inesperado: %s."
@@ -184,7 +208,7 @@ func _ready() -> void:
 	print("Jugador activo: ", manager.get_active_player().player_id)
 	print("Acciones disponibles: ", manager.actions_remaining)
 	print("Secuencia de turnos: ", _turn_started_events)
-	print("Presupuesto de 2 acciones: OK")
+	print("Exactamente 2 acciones por turno: OK")
 	print("")
 	print("================================")
 

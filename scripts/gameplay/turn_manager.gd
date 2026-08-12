@@ -149,8 +149,18 @@ func spend_action(cost: int = 1) -> bool:
 	return true
 
 
-func end_turn() -> bool:
+func can_end_turn() -> bool:
 	if not is_running:
+		return false
+
+	if get_active_player() == null:
+		return false
+
+	return actions_remaining == 0
+
+
+func end_turn() -> bool:
+	if not can_end_turn():
 		return false
 
 	var ending_player := get_active_player()
