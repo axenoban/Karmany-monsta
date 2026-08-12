@@ -60,16 +60,25 @@ static func craft_from_market(
 		)
 
 	var replacing: bool = inventory.is_full()
+	var discard_candidate: KarmanyEquipmentData = null
 	if replacing:
 		if discard_equipment_id == &"":
 			return _result(
 				KarmanyEquipmentCraftResult.Status.REQUIRES_DISCARD,
 				"Al obtener un cuarto Equipo debes descartar uno inmediatamente."
 			)
-		if not inventory.has_equipment_id(discard_equipment_id):
+		discard_candidate = inventory.get_equipment_by_id(
+			discard_equipment_id
+		)
+		if discard_candidate == null:
 			return _result(
 				KarmanyEquipmentCraftResult.Status.INVALID_DISCARD,
 				"El Equipo elegido para descartar no pertenece al jugador."
+			)
+		if not market.can_accept_discard(discard_candidate):
+			return _result(
+				KarmanyEquipmentCraftResult.Status.MARKET_ERROR,
+				"El Equipo a descartar ya existe en el circuito del mercado."
 			)
 
 	var paid_cost: Dictionary = context.get_discounted_cost(
@@ -123,6 +132,13 @@ static func craft_from_market(
 				"No se pudo consumir la accion de crear Equipo."
 			)
 		action_consumed = true
+
+	if discarded != null:
+		if not market.add_to_discard(discarded):
+			return _result(
+				KarmanyEquipmentCraftResult.Status.MARKET_ERROR,
+				"No se pudo registrar el Equipo descartado en el mercado."
+			)
 
 	var taken := market.take_visible(visible_index)
 	if taken != equipment:
