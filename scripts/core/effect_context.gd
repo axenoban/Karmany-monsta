@@ -3,6 +3,7 @@ extends RefCounted
 
 
 var draw_cards_handler: Callable = Callable()
+var discard_cards_handler: Callable = Callable()
 var modify_state_handler: Callable = Callable()
 var activate_condition_handler: Callable = Callable()
 var trigger_encounter_handler: Callable = Callable()
@@ -10,6 +11,10 @@ var trigger_encounter_handler: Callable = Callable()
 
 func has_draw_cards_handler() -> bool:
 	return draw_cards_handler.is_valid()
+
+
+func has_discard_cards_handler() -> bool:
+	return discard_cards_handler.is_valid()
 
 
 func has_modify_state_handler() -> bool:
