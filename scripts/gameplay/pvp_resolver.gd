@@ -20,11 +20,7 @@ static func resolve(
 ) -> KarmanyPvpCombatResult:
 	var result := KarmanyPvpCombatResult.new()
 
-	var validation := _validate_request(
-		attacker,
-		defender,
-		context
-	)
+	var validation := _validate_request(attacker, defender, context)
 	if validation.status != KarmanyPvpCombatResult.Status.RESOLVED:
 		result.status = validation.status
 		result.message = validation.message
@@ -79,24 +75,16 @@ static func resolve(
 
 	result.reward_legacy_points_pending = context.reward_legacy_points
 	result.loser_retreat_required = true
-
-	_append_risk_consequences(
-		result.attacker_pending_consequences,
+	result.attacker_pending_consequences = _build_risk_consequences(
 		context.attacker_risk_roll,
 		result.winner_player_id == attacker.player_id
 	)
-	_append_risk_consequences(
-		result.defender_pending_consequences,
+	result.defender_pending_consequences = _build_risk_consequences(
 		context.defender_risk_roll,
 		result.winner_player_id == defender.player_id
 	)
 
-	_resolve_post_combat_resonance(
-		result,
-		attacker,
-		defender,
-		context
-	)
+	_resolve_post_combat_resonance(result, attacker, defender, context)
 
 	result.combat_resonances_discarded = KarmanyResonanceResolver.finish_combat(
 		context.combat_id,
@@ -176,7 +164,6 @@ static func _validate_request(
 			KarmanyPvpCombatResult.Status.ACTION_NOT_AVAILABLE,
 			"No quedan acciones suficientes para Combatir."
 		)
-
 	if context.authorization == null or not context.authorization.is_valid():
 		return _validation_error(
 			KarmanyPvpCombatResult.Status.PVP_NOT_AUTHORIZED,
@@ -204,7 +191,6 @@ static func _validate_request(
 			KarmanyPvpCombatResult.Status.NO_ACTIVE_KARMANY,
 			"No puedes iniciar PvP contra un jugador sin Karmany activo disponible."
 		)
-
 	if not context.truce_tracker.can_attack(
 		attacker.player_id,
 		defender.player_id,
@@ -225,7 +211,6 @@ static func _validate_request(
 			KarmanyPvpCombatResult.Status.INVALID_REQUEST,
 			attacker_risk_error
 		)
-
 	var defender_risk_error := _validate_risk(
 		context.defender_risk_authorized,
 		context.defender_risk_roll,
@@ -283,7 +268,6 @@ static func _resolve_post_combat_resonance(
 		defender.player_id,
 		context.combat_id
 	)
-
 	if attacker_card != null:
 		result.attacker_post_effects = KarmanyResonanceResolver.resolve_effects(
 			attacker_card,
@@ -292,7 +276,6 @@ static func _resolve_post_combat_resonance(
 			_build_post_tags(result.winner_player_id == attacker.player_id),
 			context.effect_context
 		)
-
 	if defender_card != null:
 		result.defender_post_effects = KarmanyResonanceResolver.resolve_effects(
 			defender_card,
@@ -304,10 +287,7 @@ static func _resolve_post_combat_resonance(
 
 
 static func _build_post_tags(won: bool) -> PackedStringArray:
-	var tags := PackedStringArray([
-		TAG_COMBAT,
-		TAG_PVP
-	])
+	var tags := PackedStringArray([TAG_COMBAT, TAG_PVP])
 	if won:
 		tags.append(TAG_COMBAT_WON)
 	else:
@@ -315,19 +295,20 @@ static func _build_post_tags(won: bool) -> PackedStringArray:
 	return tags
 
 
-static func _append_risk_consequences(
-	target: PackedStringArray,
+static func _build_risk_consequences(
 	roll: int,
 	won: bool
-) -> void:
+) -> PackedStringArray:
+	var result := PackedStringArray()
 	match roll:
 		2:
-			target.append(CONSEQUENCE_RISK_DISCARD_CARD)
+			result.append(CONSEQUENCE_RISK_DISCARD_CARD)
 		4:
-			target.append(CONSEQUENCE_RISK_FILTER_RESONANCE)
+			result.append(CONSEQUENCE_RISK_FILTER_RESONANCE)
 		6:
 			if won:
-				target.append(CONSEQUENCE_RISK_WIN_REWARD)
+				result.append(CONSEQUENCE_RISK_WIN_REWARD)
+	return result
 
 
 static func _validation_error(
