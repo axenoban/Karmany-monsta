@@ -11,7 +11,6 @@ enum ExplorationValidation {
 	INVALID_PLAYER,
 	NOT_ACTIVE_PLAYER,
 	NO_ACTION_AVAILABLE,
-	ALREADY_EXPLORED_THIS_TURN,
 	INVALID_ORIGIN,
 	INVALID_TARGET,
 	SAME_TILE,
@@ -42,9 +41,6 @@ static func validate_exploration(
 
 	if not turn_manager.can_spend_action(1):
 		return ExplorationValidation.NO_ACTION_AVAILABLE
-
-	if turn_manager.get_action_usage(ACTION_ID_EXPLORE) >= 1:
-		return ExplorationValidation.ALREADY_EXPLORED_THIS_TURN
 
 	var origin_coord := player.current_coord
 
@@ -123,8 +119,6 @@ static func get_validation_message(validation: int) -> String:
 			return "No es el turno de este jugador."
 		ExplorationValidation.NO_ACTION_AVAILABLE:
 			return "No quedan acciones disponibles."
-		ExplorationValidation.ALREADY_EXPLORED_THIS_TURN:
-			return "Explorar solo puede usarse una vez por turno."
 		ExplorationValidation.INVALID_ORIGIN:
 			return "La posicion actual no existe en el tablero."
 		ExplorationValidation.INVALID_TARGET:
