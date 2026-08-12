@@ -18,11 +18,14 @@ const VISUAL_HEX_SIZE: float = 0.94
 @onready var board: Node3D = $Board
 @onready var camera: Camera3D = $Camera3D
 
+
+var board_state: KarmanyBoardState = KarmanyBoardState.new()
 var selected_tile: KarmanyHexTile3D = null
 
-func _ready() -> void:
 
-	_generate_board()
+func _ready() -> void:
+	_build_board_state()
+	_generate_board_from_state()
 
 	camera.look_at(
 		Vector3.ZERO,
@@ -33,42 +36,45 @@ func _ready() -> void:
 	print("================================")
 	print("KARMANY MONSTA - 3D BOARD")
 	print("================================")
-	print("7 hexagonos generados.")
+	print(board_state.get_cell_count(), " hexagonos logicos generados.")
 	print("Centro: I-01 Refugio del Valle Jade")
-	print("FASE 1E OK")
+	print("FASE 2 - BoardState conectado a representacion 3D")
 	print("================================")
 
 
-func _generate_board() -> void:
+func _build_board_state() -> void:
+	board_state.clear()
 
-	var coordinates: Array[Vector2i] = []
+	var center := Vector2i.ZERO
 
-	coordinates.append(
-		Vector2i.ZERO
+	board_state.add_cell(
+		center,
+		CENTER_TILE_DATA,
+		CENTER_TILE_DATA.starts_revealed
 	)
 
-
-	var neighbors := (
-		KarmanyHexGridMath.get_neighbors(
-			Vector2i.ZERO
+	for neighbor in KarmanyHexGridMath.get_neighbors(center):
+		board_state.add_cell(
+			neighbor,
+			null,
+			false
 		)
-	)
 
 
-	for neighbor in neighbors:
-		coordinates.append(neighbor)
+func _generate_board_from_state() -> void:
+	for current_coord in board_state.get_coords():
+		var cell := board_state.get_cell(current_coord)
 
-
-	for current_coord in coordinates:
+		if cell == null:
+			continue
 
 		var tile := (
 			HEX_TILE_SCENE.instantiate()
 			as KarmanyHexTile3D
 		)
 
-
 		tile.coord = current_coord
-
+		tile.tile_data = cell.tile_data
 		tile.hex_size = VISUAL_HEX_SIZE
 
 		tile.position = (
@@ -78,27 +84,20 @@ func _generate_board() -> void:
 			)
 		)
 
-
-		if current_coord == Vector2i.ZERO:
-
-			tile.tile_data = CENTER_TILE_DATA
-
+		if cell.revealed and cell.tile_data != null:
 			tile.base_color = Color(
 				0.30,
 				0.48,
 				0.27,
 				1.0
 			)
-
 		else:
-
 			tile.base_color = Color(
 				0.17,
 				0.21,
 				0.27,
 				1.0
 			)
-
 
 		tile.name = (
 			"Hex_%s_%s"
@@ -114,56 +113,47 @@ func _generate_board() -> void:
 
 		board.add_child(tile)
 
+
 func _on_tile_clicked(
 	tile: KarmanyHexTile3D
 ) -> void:
-
 	if selected_tile != null:
-
 		if selected_tile != tile:
 			selected_tile.set_selected(false)
 
-
 	selected_tile = tile
-
 	selected_tile.set_selected(true)
 
+	var cell := board_state.get_cell(tile.coord)
 
 	print("")
 	print("--------------------------------")
 	print("LOSETA SELECCIONADA")
 	print("--------------------------------")
+	print("Coordenada: ", tile.coord)
 
-	print(
-		"Coordenada: ",
-		tile.coord
-	)
+	if cell == null:
+		print("Estado logico: coordenada no registrada")
+		print("--------------------------------")
+		return
 
+	print("Revelada: ", cell.revealed)
 
-	if tile.tile_data != null:
-
-		print(
-			"ID: ",
-			tile.tile_data.tile_id
-		)
-
-		print(
-			"Nombre: ",
-			tile.tile_data.display_name
-		)
-
+	if cell.tile_data != null:
+		print("ID: ", cell.tile_data.tile_id)
+		print("Nombre: ", cell.tile_data.display_name)
 		print(
 			"Nivel: ",
 			KarmanyTileData.TileLevel.keys()[
-				tile.tile_data.level
+				cell.tile_data.level
 			]
 		)
-
 	else:
+		print("Datos: Sin KarmanyTileData asignado")
 
-		print(
-			"Datos: Sin KarmanyTileData asignado"
-		)
-
+	if cell.is_occupied():
+		print("Ocupante: ", cell.occupying_unit_id)
+	else:
+		print("Ocupante: ninguno")
 
 	print("--------------------------------")
