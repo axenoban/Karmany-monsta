@@ -221,20 +221,22 @@ func end_turn() -> bool:
 		current_round
 	)
 
-	var was_last_player := (
+	var starts_new_round := (
 		active_player_index == players.size() - 1
 	)
 
-	if was_last_player:
+	if starts_new_round:
 		round_ended.emit(current_round)
 		current_round += 1
 		active_player_index = 0
-		round_started.emit(current_round)
 	else:
 		active_player_index += 1
 
 	actions_remaining = ACTIONS_PER_TURN
 	_action_usage_this_turn.clear()
+
+	if starts_new_round:
+		round_started.emit(current_round)
 
 	turn_started.emit(
 		get_active_player(),
