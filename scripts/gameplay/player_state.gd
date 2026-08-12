@@ -151,6 +151,18 @@ func get_linked_karmanys() -> Array[KarmanyRuntimeState]:
 	return karmany_roster.get_all()
 
 
+func set_active_karmany(instance_id: StringName) -> bool:
+	return karmany_roster.set_active(instance_id)
+
+
+func get_active_karmany() -> KarmanyRuntimeState:
+	return karmany_roster.get_active()
+
+
+func has_active_karmany() -> bool:
+	return karmany_roster.has_active()
+
+
 func add_equipment(equipment: KarmanyEquipmentData) -> bool:
 	return equipment_inventory.add_equipment(equipment)
 
