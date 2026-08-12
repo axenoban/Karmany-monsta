@@ -12,7 +12,6 @@ var _visible: Array[KarmanyEquipmentData] = []
 var _draw_pile: Array[KarmanyEquipmentData] = []
 var _discard_pile: Array[KarmanyEquipmentData] = []
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var _shuffle_on_recycle: bool = true
 
 
 func setup(
@@ -43,7 +42,6 @@ func setup(
 	else:
 		_rng.randomize()
 
-	_shuffle_on_recycle = shuffle_deck
 	if shuffle_deck:
 		_shuffle_array(_draw_pile)
 
@@ -125,8 +123,8 @@ func _recycle_discard() -> void:
 		_draw_pile.append(equipment)
 	_discard_pile.clear()
 
-	if _shuffle_on_recycle:
-		_shuffle_array(_draw_pile)
+	# v0.74: cuando se agota el mazo, el descarte se baraja.
+	_shuffle_array(_draw_pile)
 
 
 func _shuffle_array(items: Array[KarmanyEquipmentData]) -> void:
