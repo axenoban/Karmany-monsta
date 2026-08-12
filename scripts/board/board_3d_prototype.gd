@@ -25,7 +25,9 @@ const PROTOTYPE_SECOND_PLAYER_ID: StringName = &"player_2"
 const PROTOTYPE_TRAINER_UNIT_ID: StringName = &"trainer_player_1"
 const PROTOTYPE_MOVE_TARGET_A: Vector2i = Vector2i(1, 0)
 const PROTOTYPE_MOVE_TARGET_B: Vector2i = Vector2i(1, -1)
-const PROTOTYPE_EXPLORE_TARGET: Vector2i = Vector2i(0, -1)
+const PROTOTYPE_EXPLORE_TARGET_A: Vector2i = Vector2i(0, -1)
+const PROTOTYPE_EXPLORE_TARGET_B: Vector2i = Vector2i(-1, 0)
+const PROTOTYPE_EXPLORE_TARGET_C: Vector2i = Vector2i(0, 1)
 
 
 @onready var board: Node3D = $Board
@@ -63,9 +65,10 @@ func _ready() -> void:
 	print("Entrenador: ", PROTOTYPE_TRAINER_UNIT_ID, " en ", player_state.current_coord)
 	print("Jugador activo: ", turn_manager.get_active_player().player_id)
 	print("Acciones disponibles: ", turn_manager.actions_remaining)
-	print("M = Mover a la loseta seleccionada.")
-	print("E = Explorar la loseta oculta seleccionada.")
-	print("FASE 6 - Mover y Explorar permanecen separados")
+	print("M = Mover a una loseta revelada; desplaza y resuelve Entrada.")
+	print("E = Explorar una loseta oculta; revela, desplaza y resuelve Al explorar.")
+	print("Ambas acciones pueden repetirse mientras queden acciones disponibles.")
+	print("FASE 6 AJUSTADA - Mover y Explorar desplazan con efectos distintos")
 	print("================================")
 
 
@@ -102,10 +105,19 @@ func _build_board_state() -> void:
 			or neighbor == PROTOTYPE_MOVE_TARGET_B
 		)
 
-		var tile_data: KarmanyTileData = null
+		var has_prototype_tile_data := (
+			neighbor == PROTOTYPE_MOVE_TARGET_A
+			or neighbor == PROTOTYPE_MOVE_TARGET_B
+			or neighbor == PROTOTYPE_EXPLORE_TARGET_A
+			or neighbor == PROTOTYPE_EXPLORE_TARGET_B
+			or neighbor == PROTOTYPE_EXPLORE_TARGET_C
+		)
 
-		if neighbor == PROTOTYPE_EXPLORE_TARGET:
-			tile_data = N1_01_TILE_DATA
+		var tile_data: KarmanyTileData = (
+			N1_01_TILE_DATA
+			if has_prototype_tile_data
+			else null
+		)
 
 		board_state.add_cell(
 			neighbor,
@@ -327,15 +339,32 @@ func try_move_trainer_to(target_coord: Vector2i) -> bool:
 		return false
 
 	var previous_coord := player_state.current_coord
+	var target_cell := board_state.get_cell(target_coord)
+
+	if target_cell == null:
+		return false
 
 	if not place_trainer_at(target_coord):
 		push_error("FASE 6 ERROR: La colocacion tecnica del movimiento fallo.")
 		return false
 
-	if not turn_manager.spend_action(1):
+	if not turn_manager.spend_action_for(
+		KarmanyMovementRules.ACTION_ID_MOVE,
+		1
+	):
 		place_trainer_at(previous_coord)
 		push_error("FASE 6 ERROR: No se pudo consumir la accion de Mover.")
 		return false
+
+	var applied_entry_effect_count: int = 0
+
+	if target_cell.tile_data != null:
+		for effect in target_cell.tile_data.entry_effects:
+			KarmanyEffectResolver.apply_effect(
+				effect,
+				player_state
+			)
+			applied_entry_effect_count += 1
 
 	print("")
 	print("--------------------------------")
@@ -344,6 +373,15 @@ func try_move_trainer_to(target_coord: Vector2i) -> bool:
 	print("Jugador: ", player_state.player_id)
 	print("Origen: ", previous_coord)
 	print("Destino: ", target_coord)
+
+	if target_cell.tile_data != null:
+		print("ID: ", target_cell.tile_data.tile_id)
+		print("Nombre: ", target_cell.tile_data.display_name)
+		print("Bonificacion de entrada: ", target_cell.tile_data.entry_bonus_text)
+
+	print("Efectos de entrada ejecutados: ", applied_entry_effect_count)
+	print("Al explorar ejecutado: NO")
+	print("Acciones Mover usadas este turno: ", turn_manager.get_action_usage(KarmanyMovementRules.ACTION_ID_MOVE))
 	print("Acciones restantes: ", turn_manager.actions_remaining)
 	print("--------------------------------")
 
@@ -427,6 +465,7 @@ func try_explore_trainer_to(target_coord: Vector2i) -> bool:
 
 	print("Efectos on_explore ejecutados: ", applied_effect_count)
 	print("Bonificacion de entrada ejecutada: NO")
+	print("Acciones Explorar usadas este turno: ", turn_manager.get_action_usage(KarmanyExplorationRules.ACTION_ID_EXPLORE))
 	print("Acciones restantes: ", turn_manager.actions_remaining)
 	print("--------------------------------")
 
