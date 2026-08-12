@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="R13PreventRetreat"]
+script = ExtResource("3_effect")
+effect_type = 5
+condition_id = &"prevent_retreat_on_combat_loss"
+description = "Si pierdes, no retrocedes."
+
+[sub_resource type="Resource" id="R13AfterCombat"]
+script = ExtResource("2_block")
+timing_id = &"after_combat"
+required_context_tags = PackedStringArray("combat_lost")
+effects = Array[ExtResource("3_effect")]([SubResource("R13PreventRetreat")])
+description = "Activa la prevencion de retroceso si el combate se pierde."
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-13"
+display_name = "Defensa Instintiva"
+resonance_type = 1
+printed_power = 3
+use_windows = PackedStringArray("combat")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("R13AfterCombat")])
+rules_text = "Combate: +3 Poder. Si pierdes, no retrocedes."
+tags = PackedStringArray("defensa", "combate", "retroceso")
