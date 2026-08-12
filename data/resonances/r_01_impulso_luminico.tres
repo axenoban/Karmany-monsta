@@ -25,7 +25,6 @@ display_name = "Impulso Luminico"
 resonance_type = 0
 printed_power = 4
 use_windows = PackedStringArray("combat")
-modifiers = Array[ExtResource("1_data")]([])
 effect_blocks = Array[ExtResource("2_block")]([SubResource("R01AfterCombat")])
 rules_text = "Combate: +4 Poder. Si ganas, recupera 2 EK."
 tags = PackedStringArray("ataque", "combate", "recurso")
