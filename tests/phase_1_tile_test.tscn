@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dud36ggxlvljs"]
+
+[ext_resource type="Script" uid="uid://8o140pppvw3x" path="res://tests/phase_1_tile_test.gd" id="1_fqtb4"]
+[ext_resource type="Resource" uid="uid://croe6vatdav51" path="res://data/tiles/i_01_refugio_valle_jade.tres" id="2_fqtb4"]
+
+[node name="Phase1TileTest" type="Node" unique_id=1863650061]
+script = ExtResource("1_fqtb4")
+tile = ExtResource("2_fqtb4")

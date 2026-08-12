@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cc64y8eyafgre"]
+
+[ext_resource type="Script" uid="uid://dqnvrxkxqw2py" path="res://scripts/board/board_3d_prototype.gd" id="1_uua31"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uua31"]
+albedo_color = Color(0.25657645, 0.28323996, 0.326286, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_uua31"]
+material = SubResource("StandardMaterial3D_uua31")
+size = Vector2(16, 16)
+center_offset = Vector3(0, -0.13, 0)
+
+[node name="Board3DPrototype" type="Node3D" unique_id=1984960276]
+script = ExtResource("1_uua31")
+
+[node name="Board" type="Node3D" parent="." unique_id=159833441]
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=821158661]
+mesh = SubResource("PlaneMesh_uua31")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2107340912]
+transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=446606581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, 7.5)
+current = true
+fov = 45.0

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://b05ouvb6k3d8h"]
+
+[ext_resource type="Script" uid="uid://dpn1jvtwnc63e" path="res://scripts/board/hex_tile_3d.gd" id="1_vkb6v"]
+
+[node name="HexTile3d" type="StaticBody3D" unique_id=1416756125]
+script = ExtResource("1_vkb6v")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1969334945]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=993694316]
+
+[node name="UnitAnchor" type="Marker3D" parent="." unique_id=2018222800]

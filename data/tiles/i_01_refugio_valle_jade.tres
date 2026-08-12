@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3 uid="uid://croe6vatdav51"]
+
+[ext_resource type="Script" uid="uid://blidw0bgnkn2r" path="res://scripts/data/tile_data.gd" id="1_dt4eh"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="1_tbdy6"]
+
+[sub_resource type="Resource" id="Resource_fqtb4"]
+script = ExtResource("1_tbdy6")
+effect_type = 1
+amount = 1
+description = "Obtén 1 MN."
+metadata/_custom_type_script = "uid://di4wfememaqxn"
+
+[sub_resource type="Resource" id="Resource_ob6gp"]
+script = ExtResource("1_tbdy6")
+effect_type = 1
+amount = 2
+description = "Recolectar 2 Material Natural."
+metadata/_custom_type_script = "uid://di4wfememaqxn"
+
+[resource]
+script = ExtResource("1_dt4eh")
+tile_id = "I-01"
+display_name = "Refugio del Valle Jade"
+function_tags = PackedStringArray("Inicio", "Equilibrado", "Recurso")
+icon_tags = PackedStringArray("MN")
+on_explore_text = "No otorga recurso automático al comenzar. El jugador inicia aquí solo con recursos comunes."
+entry_bonus_text = "Obtén 1 MN."
+later_use_text = "Recolectar 2 Material Natural."
+limit_text = "Sin límite especial."
+entry_effects = Array[ExtResource("1_tbdy6")]([SubResource("Resource_fqtb4")])
+later_use_effects = Array[ExtResource("1_tbdy6")]([SubResource("Resource_ob6gp")])
+starts_revealed = true
+metadata/_custom_type_script = "uid://blidw0bgnkn2r"

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://fxgl3duacwqa"]
+
+[ext_resource type="Script" uid="uid://dj1ydmsnuwfue" path="res://tests/phase_1_hex_test.gd" id="1_xapj5"]
+
+[node name="Phase1HexTest" type="Node" unique_id=290986969]
+script = ExtResource("1_xapj5")
