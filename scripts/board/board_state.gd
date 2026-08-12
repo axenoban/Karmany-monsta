@@ -138,6 +138,52 @@ func is_occupied(coord: Vector2i) -> bool:
 	return cell.is_occupied()
 
 
+func set_beast(
+	coord: Vector2i,
+	beast_state: KarmanyBeastRuntimeState
+) -> bool:
+	if beast_state == null or not beast_state.is_blocking():
+		return false
+
+	var cell := get_cell(coord)
+	if cell == null or cell.has_beast():
+		return false
+	if beast_state.coord != coord:
+		return false
+
+	cell.beast_state = beast_state
+	return true
+
+
+func get_beast(coord: Vector2i) -> KarmanyBeastRuntimeState:
+	var cell := get_cell(coord)
+	if cell == null:
+		return null
+	if not cell.has_beast():
+		return null
+	return cell.beast_state
+
+
+func clear_beast(coord: Vector2i) -> KarmanyBeastRuntimeState:
+	var cell := get_cell(coord)
+	if cell == null:
+		return null
+
+	var previous := cell.beast_state
+	cell.beast_state = null
+	return previous
+
+
+func has_beast(coord: Vector2i) -> bool:
+	var cell := get_cell(coord)
+	return cell != null and cell.has_beast()
+
+
+func is_blocked_by_beast(coord: Vector2i) -> bool:
+	var cell := get_cell(coord)
+	return cell != null and cell.is_blocked_by_beast()
+
+
 func get_existing_neighbors(
 	coord: Vector2i
 ) -> Array[Vector2i]:
