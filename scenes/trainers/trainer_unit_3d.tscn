@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/trainer_unit_3d.gd" id="1_trainer"]
+
+[sub_resource type="StandardMaterial3D" id="TrainerMaterial"]
+albedo_color = Color(0.18, 0.42, 0.68, 1)
+roughness = 0.72
+
+[sub_resource type="CapsuleMesh" id="TrainerBodyMesh"]
+material = SubResource("TrainerMaterial")
+radius = 0.28
+height = 1.1
+
+[sub_resource type="SphereMesh" id="TrainerHeadMesh"]
+material = SubResource("TrainerMaterial")
+radius = 0.23
+height = 0.46
+
+[node name="TrainerUnit3D" type="Node3D"]
+script = ExtResource("1_trainer")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.58, 0)
+mesh = SubResource("TrainerBodyMesh")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.33, 0)
+mesh = SubResource("TrainerHeadMesh")

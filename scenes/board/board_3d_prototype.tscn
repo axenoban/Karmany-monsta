@@ -15,6 +15,8 @@ script = ExtResource("1_uua31")
 
 [node name="Board" type="Node3D" parent="." unique_id=159833441]
 
+[node name="Units" type="Node3D" parent="."]
+
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=821158661]
 mesh = SubResource("PlaneMesh_uua31")
 
