@@ -20,7 +20,7 @@ enum Status {
 }
 
 
-var status: Status = Status.INVALID_REQUEST
+var status: int = Status.INVALID_REQUEST
 var message: String = ""
 var encounter: KarmanyEncounterState = null
 var returned_candidate: KarmanyData = null
