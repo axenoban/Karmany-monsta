@@ -74,6 +74,32 @@ func get_discard_count() -> int:
 	return _discard_pile.size()
 
 
+func contains_equipment_id(equipment_id: StringName) -> bool:
+	for equipment in _visible:
+		if equipment.equipment_id == equipment_id:
+			return true
+	for equipment in _draw_pile:
+		if equipment.equipment_id == equipment_id:
+			return true
+	for equipment in _discard_pile:
+		if equipment.equipment_id == equipment_id:
+			return true
+	return false
+
+
+func can_accept_discard(equipment: KarmanyEquipmentData) -> bool:
+	if equipment == null or not equipment.is_valid_definition():
+		return false
+	return not contains_equipment_id(equipment.equipment_id)
+
+
+func add_to_discard(equipment: KarmanyEquipmentData) -> bool:
+	if not can_accept_discard(equipment):
+		return false
+	_discard_pile.append(equipment)
+	return true
+
+
 func take_visible(index: int) -> KarmanyEquipmentData:
 	if index < 0 or index >= _visible.size():
 		return null
