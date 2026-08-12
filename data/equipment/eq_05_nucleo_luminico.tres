@@ -14,4 +14,3 @@ cost = {
 }
 rules_text = "Una vez por ronda, antes de combatir, roba 2 Resonancias y conserva 1; descarta la otra."
 trigger_tags = PackedStringArray("before_combat", "resonance", "once_per_round")
-modifiers = Array[ExtResource("1_data")]([])
