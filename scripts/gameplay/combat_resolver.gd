@@ -42,10 +42,8 @@ static func resolve(
 
 	result.base_defense = request.base_defense
 	result.instinct_roll = request.instinct_roll
-	result.instinct_adjustment = (
-		get_instinct_adjustment(request.instinct_roll)
-		if request.uses_instinct
-		else 0
+	result.instinct_adjustment = get_instinct_adjustment(
+		request.instinct_roll
 	)
 	result.effective_defense = max(
 		0,
@@ -120,11 +118,11 @@ static func _validate_request(
 	if request.modifiers == null:
 		return "Falta el desglose de modificadores de Poder."
 
-	if request.uses_instinct:
-		if request.instinct_roll < 1 or request.instinct_roll > 6:
-			return "El Dado de Instinto debe estar entre 1 y 6."
-	elif request.instinct_roll != 0:
-		return "Un objetivo sin Instinto no debe recibir tirada de Instinto."
+	# Fase 11 solo soporta objetivos PvE. Todos usan Instinto en v0.74.
+	if not request.uses_instinct:
+		return "Los combates PvE de Fase 11 requieren Dado de Instinto."
+	if request.instinct_roll < 1 or request.instinct_roll > 6:
+		return "El Dado de Instinto debe estar entre 1 y 6."
 
 	if request.risk_roll != 0:
 		if not request.risk_authorized:
