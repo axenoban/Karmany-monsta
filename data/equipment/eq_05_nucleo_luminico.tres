@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-05"
+display_name = "Nucleo Luminico"
+rarity = 1
+tags = PackedStringArray("Resonancia", "Filtrado")
+cost = {
+1: 2,
+2: 2
+}
+rules_text = "Una vez por ronda, antes de combatir, roba 2 Resonancias y conserva 1; descarta la otra."
+trigger_tags = PackedStringArray("before_combat", "resonance", "once_per_round")
+modifiers = Array[ExtResource("1_data")]([])
