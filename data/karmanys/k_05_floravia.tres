@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="FloraviaGainEffect"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 2
+resource_type = 0
+description = "Obtén 2 MN adicionales."
+
+[sub_resource type="Resource" id="AbilityFloravia"]
+script = ExtResource("2_ability")
+ability_id = &"floravia_gather_mn_bonus"
+display_name = "Cosecha Verde"
+trigger_id = &"collect_mn"
+usage_limit = 2
+rules_text = "Una vez por ronda, cuando recolectes MN, obten +2 MN adicionales."
+effect_tags = PackedStringArray("resource", "mn", "collect")
+effects = Array[ExtResource("3_effect")]([SubResource("FloraviaGainEffect")])
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-05"
+display_name = "Floravia"
+subtitle = "Custodia Verde"
+rank = 1
+compatible_ranks = PackedInt32Array(1)
+primary_type = 4
+type_tags = PackedStringArray("Recolector")
+power = 5
+encounter_defense = 8
+legacy_points = 0
+acquisition_text = "Paga 2 MN + 1 EK o derrota Defensa 8"
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityFloravia")])
+resonance_affinity_id = &""
+resonance_affinity_tags = PackedStringArray()

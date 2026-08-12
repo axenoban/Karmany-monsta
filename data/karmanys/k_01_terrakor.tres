@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="AbilityTerrakor"]
+script = ExtResource("2_ability")
+ability_id = &"terrakor_beast_power"
+display_name = "Fuerza de Raices"
+trigger_id = &"combat_vs_beast"
+usage_limit = 2
+rules_text = "Una vez por ronda, cuando combate contra una Bestia, gana +2 Poder. Este bono no puede aplicarse mas de una vez por ronda, aunque combata varias Bestias."
+effect_tags = PackedStringArray("combat", "beast", "power")
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-01"
+display_name = "Terrakor"
+subtitle = "Coloso de Raices"
+rank = 0
+compatible_ranks = PackedInt32Array(0, 1)
+primary_type = 0
+type_tags = PackedStringArray("Estable")
+power = 6
+encounter_defense = -1
+legacy_points = 0
+acquisition_text = "Karmany inicial"
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityTerrakor")])
+resonance_affinity_id = &""
+resonance_affinity_tags = PackedStringArray()
