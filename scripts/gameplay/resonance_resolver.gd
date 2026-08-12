@@ -46,13 +46,15 @@ static func play_from_hand(
 				"Maximo 1 Resonancia por jugador por combate."
 			)
 
-	if card.matching_effects_require_context(
+	if not _can_resolve_matching_effects(
+		card,
 		TIMING_ON_PLAY,
-		context.context_tags
-	) and context.effect_context == null:
+		context.context_tags,
+		context.effect_context
+	):
 		return _result(
 			KarmanyResonancePlayResult.Status.EFFECT_CONTEXT_REQUIRED,
-			"La Resonancia requiere EffectContext para resolver su efecto."
+			"Faltan adaptadores para resolver el efecto inmediato de la Resonancia."
 		)
 
 	var power_bonus: int = card.get_power_bonus(
@@ -156,6 +158,47 @@ static func finish_combat(
 		combat_id,
 		deck
 	)
+
+
+static func _can_resolve_matching_effects(
+	card: KarmanyResonanceData,
+	timing_id: StringName,
+	context_tags: PackedStringArray,
+	effect_context: KarmanyEffectContext
+) -> bool:
+	for block in card.get_matching_effect_blocks(
+		timing_id,
+		context_tags
+	):
+		for effect in block.effects:
+			if not _has_required_handler(
+				effect,
+				effect_context
+			):
+				return false
+	return true
+
+
+static func _has_required_handler(
+	effect: KarmanyEffectData,
+	context: KarmanyEffectContext
+) -> bool:
+	if effect == null:
+		return false
+
+	match effect.effect_type:
+		KarmanyEffectData.EffectType.DRAW_CARDS:
+			return context != null and context.has_draw_cards_handler()
+		KarmanyEffectData.EffectType.DISCARD_CARDS:
+			return context != null and context.has_discard_cards_handler()
+		KarmanyEffectData.EffectType.MODIFY_STATE:
+			return context != null and context.has_modify_state_handler()
+		KarmanyEffectData.EffectType.ACTIVATE_CONDITION:
+			return context != null and context.has_activate_condition_handler()
+		KarmanyEffectData.EffectType.TRIGGER_ENCOUNTER:
+			return context != null and context.has_trigger_encounter_handler()
+
+	return true
 
 
 static func _result(
