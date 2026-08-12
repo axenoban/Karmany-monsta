@@ -34,7 +34,7 @@ func register_combat_play(
 		combat_id,
 		{}
 	)
-	users[player_id] = true
+	users[player_id] = card
 	_combat_users[combat_id] = users
 
 	var cards: Array = _in_play.get(
@@ -44,6 +44,23 @@ func register_combat_play(
 	cards.append(card)
 	_in_play[combat_id] = cards
 	return true
+
+
+func get_card_played_by(
+	player_id: StringName,
+	combat_id: StringName
+) -> KarmanyResonanceData:
+	if player_id == &"" or combat_id == &"":
+		return null
+
+	var users: Dictionary = _combat_users.get(
+		combat_id,
+		{}
+	)
+	var value: Variant = users.get(player_id, null)
+	if value is KarmanyResonanceData:
+		return value as KarmanyResonanceData
+	return null
 
 
 func get_in_play(
