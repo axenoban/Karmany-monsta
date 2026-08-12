@@ -34,6 +34,15 @@ power = 5
 encounter_defense = 8
 legacy_points = 0
 acquisition_text = "Paga 2 MN + 1 EK o derrota Defensa 8"
+is_starting_karmany = false
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+can_acquire_by_condition = false
+acquisition_condition_id = &""
+bond_cost = {
+0: 2,
+2: 1
+}
 abilities = Array[ExtResource("2_ability")]([SubResource("AbilityFloravia")])
 resonance_affinity_id = &""
 resonance_affinity_tags = PackedStringArray()
