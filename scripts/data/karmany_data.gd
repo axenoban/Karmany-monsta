@@ -39,6 +39,12 @@ enum StrategicType {
 
 @export_group("Acquisition")
 @export_multiline var acquisition_text: String = ""
+@export var is_starting_karmany: bool = false
+@export var can_acquire_by_payment: bool = false
+@export var can_acquire_by_defeat: bool = false
+@export var can_acquire_by_condition: bool = false
+@export var acquisition_condition_id: StringName = &""
+@export var bond_cost: Dictionary = {}
 
 @export_group("Abilities")
 @export var abilities: Array[KarmanyAbilityData] = []
@@ -47,6 +53,7 @@ enum StrategicType {
 @export var resonance_affinity_id: StringName = &""
 @export var resonance_affinity_tags: PackedStringArray = PackedStringArray()
 
+
 func is_valid_definition() -> bool:
 	if karmany_id == &"" or display_name.is_empty():
 		return false
@@ -54,16 +61,67 @@ func is_valid_definition() -> bool:
 		return false
 	if compatible_ranks.is_empty():
 		return false
+	if not is_valid_acquisition_definition():
+		return false
 	for ability in abilities:
 		if ability == null or not ability.is_valid_definition():
 			return false
 	return true
+
+
+func is_valid_acquisition_definition() -> bool:
+	if is_starting_karmany:
+		return true
+
+	if (
+		not can_acquire_by_payment
+		and not can_acquire_by_defeat
+		and not can_acquire_by_condition
+	):
+		return false
+
+	if can_acquire_by_payment:
+		if bond_cost.is_empty():
+			return false
+		for resource_key in bond_cost.keys():
+			var resource_type: int = int(resource_key)
+			var amount: int = int(bond_cost[resource_key])
+			if resource_type < 0 or resource_type > KarmanyEffectData.ResourceType.FA:
+				return false
+			if amount <= 0:
+				return false
+
+	if can_acquire_by_defeat and encounter_defense <= 0:
+		return false
+
+	if can_acquire_by_condition and acquisition_condition_id == &"":
+		return false
+
+	return true
+
+
+func has_payment_method() -> bool:
+	return can_acquire_by_payment and not bond_cost.is_empty()
+
+
+func has_defeat_method() -> bool:
+	return can_acquire_by_defeat and encounter_defense > 0
+
+
+func has_condition_method() -> bool:
+	return can_acquire_by_condition and acquisition_condition_id != &""
+
+
+func get_bond_cost() -> Dictionary:
+	return bond_cost.duplicate()
+
 
 func supports_rank(candidate_rank: int) -> bool:
 	for compatible_rank in compatible_ranks:
 		if compatible_rank == candidate_rank:
 			return true
 	return false
+
 
 func get_rank_label() -> String:
 	match rank:
@@ -78,6 +136,7 @@ func get_rank_label() -> String:
 		Rank.LEGENDARY:
 			return "Legendaria"
 	return "Desconocido"
+
 
 func get_primary_type_label() -> String:
 	match primary_type:
