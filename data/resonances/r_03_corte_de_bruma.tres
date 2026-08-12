@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="R03Draw"]
+script = ExtResource("3_effect")
+effect_type = 3
+amount = 2
+card_source_id = &"resonance"
+description = "Roba 2 Resonancias."
+
+[sub_resource type="Resource" id="R03Discard"]
+script = ExtResource("3_effect")
+effect_type = 7
+amount = 1
+card_source_id = &"resonance"
+description = "Descarta 1 Resonancia de tu eleccion."
+
+[sub_resource type="Resource" id="R03OnPlay"]
+script = ExtResource("2_block")
+timing_id = &"on_play"
+required_context_tags = PackedStringArray("tile_revealed_or_explored_this_turn")
+effects = Array[ExtResource("3_effect")]([SubResource("R03Draw"), SubResource("R03Discard")])
+description = "Si la condicion de loseta se cumple, roba 2 y descarta 1."
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-03"
+display_name = "Corte de Bruma"
+resonance_type = 0
+printed_power = 4
+use_windows = PackedStringArray("combat")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("R03OnPlay")])
+rules_text = "Combate: +4 Poder. Si estas en una loseta revelada o explorada este turno, roba 2 Resonancias y descarta 1."
+tags = PackedStringArray("ataque", "combate", "robo", "descarte")
