@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="R01WinEK"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 2
+resource_type = 2
+description = "Si ganas, recupera 2 EK."
+
+[sub_resource type="Resource" id="R01AfterCombat"]
+script = ExtResource("2_block")
+timing_id = &"after_combat"
+required_context_tags = PackedStringArray("combat_won")
+effects = Array[ExtResource("3_effect")]([SubResource("R01WinEK")])
+description = "Recompensa posterior a una victoria."
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-01"
+display_name = "Impulso Luminico"
+resonance_type = 0
+printed_power = 4
+use_windows = PackedStringArray("combat")
+modifiers = Array[ExtResource("1_data")]([])
+effect_blocks = Array[ExtResource("2_block")]([SubResource("R01AfterCombat")])
+rules_text = "Combate: +4 Poder. Si ganas, recupera 2 EK."
+tags = PackedStringArray("ataque", "combate", "recurso")
