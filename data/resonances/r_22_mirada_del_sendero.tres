@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="R22Peek"]
+script = ExtResource("3_effect")
+effect_type = 5
+condition_id = &"peek_hidden_adjacent_tile"
+description = "Mira 1 loseta oculta adyacente antes de explorar."
+
+[sub_resource type="Resource" id="R22Draw"]
+script = ExtResource("3_effect")
+effect_type = 3
+amount = 1
+card_source_id = &"resonance"
+description = "Roba 1 Resonancia."
+
+[sub_resource type="Resource" id="R22Discard"]
+script = ExtResource("3_effect")
+effect_type = 7
+amount = 1
+card_source_id = &"resonance"
+description = "Descarta 1 Resonancia de tu eleccion."
+
+[sub_resource type="Resource" id="R22OnPlay"]
+script = ExtResource("2_block")
+timing_id = &"on_play"
+effects = Array[ExtResource("3_effect")]([SubResource("R22Peek"), SubResource("R22Draw"), SubResource("R22Discard")])
+description = "Mirar loseta y luego robar 1 / descartar 1."
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-22"
+display_name = "Mirada del Sendero"
+resonance_type = 2
+printed_power = 0
+use_windows = PackedStringArray("exploration")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("R22OnPlay")])
+rules_text = "Exploracion: mira 1 loseta oculta adyacente antes de explorar. Si es Nivel 1, puedes mirar otra Nivel 1 adyacente. Despues roba 1 Resonancia y descarta 1."
+tags = PackedStringArray("exploracion", "mirar", "robo", "descarte")
