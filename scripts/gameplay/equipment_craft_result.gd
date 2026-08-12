@@ -17,7 +17,7 @@ enum Status {
 }
 
 
-var status: Status = Status.INVALID_REQUEST
+var status: int = Status.INVALID_REQUEST
 var message: String = ""
 var equipment: KarmanyEquipmentData = null
 var discarded_equipment: KarmanyEquipmentData = null
