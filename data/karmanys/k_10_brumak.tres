@@ -25,6 +25,14 @@ power = 8
 encounter_defense = 12
 legacy_points = 0
 acquisition_text = "Paga 3 EK o derrota Defensa 12"
+is_starting_karmany = false
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+can_acquire_by_condition = false
+acquisition_condition_id = &""
+bond_cost = {
+2: 3
+}
 abilities = Array[ExtResource("2_ability")]([SubResource("AbilityBrumak")])
 resonance_affinity_id = &""
 resonance_affinity_tags = PackedStringArray()
