@@ -225,6 +225,7 @@ func _test_fourth_equipment_requires_discard() -> bool:
 	ok = _expect(p1.equipment_inventory.has_equipment_id(&"EQ-08"), "EQ-08 debe quedar equipado.") and ok
 	ok = _expect(p1.fa == 9 and p1.ek == 8, "EQ-08 debe cobrar 1 FA + 2 EK.") and ok
 	ok = _expect(manager.actions_remaining == 1, "Crafteo ancestral debe consumir 1 accion.") and ok
+	ok = _expect(market.get_discard_count() == 1, "El Equipo reemplazado debe ir al descarte comun de Equipo.") and ok
 
 	print("Cuarto Equipo -> descarte inmediato sin reserva: ", "OK" if ok else "ERROR")
 	return ok
@@ -320,10 +321,25 @@ func _ancestral_first_deck() -> Array[KarmanyEquipmentData]:
 	var result: Array[KarmanyEquipmentData] = []
 	result.append(EQ08)
 	result.append(EQ09)
-	result.append(EQ01)
-	result.append(EQ02)
-	result.append(EQ05)
+	result.append(_make_test_equipment(&"EQ-TEST-A", "Equipo Test A"))
+	result.append(_make_test_equipment(&"EQ-TEST-B", "Equipo Test B"))
+	result.append(_make_test_equipment(&"EQ-TEST-C", "Equipo Test C"))
 	return result
+
+
+func _make_test_equipment(
+	equipment_id: StringName,
+	display_name: String
+) -> KarmanyEquipmentData:
+	var equipment := KarmanyEquipmentData.new()
+	equipment.equipment_id = equipment_id
+	equipment.display_name = display_name
+	equipment.rarity = KarmanyEquipmentData.Rarity.BASIC
+	equipment.cost = {
+		KarmanyEffectData.ResourceType.MN: 1
+	}
+	equipment.rules_text = "Equipo tecnico para validar el mercado de Fase 12."
+	return equipment
 
 
 func _find_market_index(
