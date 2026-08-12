@@ -8,6 +8,7 @@ var current_coord: Vector2i = Vector2i.ZERO
 var resource_inventory: KarmanyResourceInventory = KarmanyResourceInventory.new()
 var karmany_roster: KarmanyRoster = KarmanyRoster.new()
 var equipment_inventory: KarmanyEquipmentInventory = KarmanyEquipmentInventory.new()
+var resonance_hand: KarmanyResonanceHand = KarmanyResonanceHand.new()
 
 
 var mn: int:
@@ -67,6 +68,7 @@ func setup_new_game(
 	resource_inventory.reset_to_starting_resources()
 	karmany_roster.clear()
 	equipment_inventory.clear()
+	resonance_hand.clear()
 
 
 func set_board_position(coord: Vector2i) -> void:
@@ -169,3 +171,15 @@ func get_equipped_equipment() -> Array[KarmanyEquipmentData]:
 
 func get_equipment_count() -> int:
 	return equipment_inventory.get_count()
+
+
+func get_resonance_hand() -> Array[KarmanyResonanceData]:
+	return resonance_hand.get_all()
+
+
+func get_resonance_count() -> int:
+	return resonance_hand.get_count()
+
+
+func request_end_turn_resonance_discard() -> int:
+	return resonance_hand.request_end_turn_limit_discard()
