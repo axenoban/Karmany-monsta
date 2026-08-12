@@ -17,7 +17,10 @@ const CENTER_TILE_DATA: KarmanyTileData = preload(
 const GRID_HEX_SIZE: float = 1.0
 const VISUAL_HEX_SIZE: float = 0.94
 const PROTOTYPE_PLAYER_ID: StringName = &"player_1"
+const PROTOTYPE_SECOND_PLAYER_ID: StringName = &"player_2"
 const PROTOTYPE_TRAINER_UNIT_ID: StringName = &"trainer_player_1"
+const PROTOTYPE_MOVE_TARGET_A: Vector2i = Vector2i(1, 0)
+const PROTOTYPE_MOVE_TARGET_B: Vector2i = Vector2i(1, -1)
 
 
 @onready var board: Node3D = $Board
@@ -27,6 +30,8 @@ const PROTOTYPE_TRAINER_UNIT_ID: StringName = &"trainer_player_1"
 
 var board_state: KarmanyBoardState = KarmanyBoardState.new()
 var player_state: KarmanyPlayerState = KarmanyPlayerState.new()
+var prototype_second_player_state: KarmanyPlayerState = KarmanyPlayerState.new()
+var turn_manager: KarmanyTurnManager = KarmanyTurnManager.new()
 var trainer_unit: KarmanyTrainerUnit3D = null
 var selected_tile: KarmanyHexTile3D = null
 
@@ -37,6 +42,7 @@ func _ready() -> void:
 	_build_board_state()
 	_generate_board_from_state()
 	_spawn_prototype_trainer()
+	_setup_prototype_turns()
 
 	camera.look_at(
 		Vector3.ZERO,
@@ -50,8 +56,25 @@ func _ready() -> void:
 	print(board_state.get_cell_count(), " hexagonos logicos generados.")
 	print("Centro: I-01 Refugio del Valle Jade")
 	print("Entrenador: ", PROTOTYPE_TRAINER_UNIT_ID, " en ", player_state.current_coord)
-	print("FASE 3 - Unidad 3D conectada a BoardState y UnitAnchor")
+	print("Jugador activo: ", turn_manager.get_active_player().player_id)
+	print("Acciones disponibles: ", turn_manager.actions_remaining)
+	print("Selecciona una loseta revelada adyacente y presiona M para Mover.")
+	print("FASE 5 - Movimiento conectado a TurnManager, BoardState y unidad 3D")
 	print("================================")
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is not InputEventKey:
+		return
+
+	var key_event := event as InputEventKey
+
+	if (
+		key_event.pressed
+		and not key_event.echo
+		and key_event.keycode == KEY_M
+	):
+		try_move_selected_trainer()
 
 
 func _build_board_state() -> void:
@@ -66,10 +89,15 @@ func _build_board_state() -> void:
 	)
 
 	for neighbor in KarmanyHexGridMath.get_neighbors(center):
+		var revealed_for_movement_test := (
+			neighbor == PROTOTYPE_MOVE_TARGET_A
+			or neighbor == PROTOTYPE_MOVE_TARGET_B
+		)
+
 		board_state.add_cell(
 			neighbor,
 			null,
-			false
+			revealed_for_movement_test
 		)
 
 
@@ -103,6 +131,13 @@ func _generate_board_from_state() -> void:
 				0.30,
 				0.48,
 				0.27,
+				1.0
+			)
+		elif cell.revealed:
+			tile.base_color = Color(
+				0.30,
+				0.36,
+				0.43,
 				1.0
 			)
 		else:
@@ -141,7 +176,7 @@ func _spawn_prototype_trainer() -> void:
 	)
 
 	if trainer_unit == null:
-		push_error("FASE 3 ERROR: No se pudo instanciar TrainerUnit3D.")
+		push_error("FASE 5 ERROR: No se pudo instanciar TrainerUnit3D.")
 		return
 
 	trainer_unit.configure(
@@ -152,7 +187,26 @@ func _spawn_prototype_trainer() -> void:
 	units.add_child(trainer_unit)
 
 	if not place_trainer_at(Vector2i.ZERO):
-		push_error("FASE 3 ERROR: No se pudo colocar el Entrenador en el centro.")
+		push_error("FASE 5 ERROR: No se pudo colocar el Entrenador en el centro.")
+
+
+func _setup_prototype_turns() -> void:
+	prototype_second_player_state.setup_new_game(
+		PROTOTYPE_SECOND_PLAYER_ID,
+		Vector2i(-1, 0)
+	)
+
+	var players: Array[KarmanyPlayerState] = [
+		player_state,
+		prototype_second_player_state
+	]
+
+	if not turn_manager.setup_players(players):
+		push_error("FASE 5 ERROR: No se pudieron configurar los jugadores de prueba.")
+		return
+
+	if not turn_manager.start_match():
+		push_error("FASE 5 ERROR: No se pudo iniciar el TurnManager.")
 
 
 func get_tile_view(coord: Vector2i) -> KarmanyHexTile3D:
@@ -206,6 +260,57 @@ func place_trainer_at(coord: Vector2i) -> bool:
 	return true
 
 
+func try_move_selected_trainer() -> bool:
+	if selected_tile == null:
+		print("MOVER INVALIDO: primero selecciona una loseta destino.")
+		return false
+
+	return try_move_trainer_to(selected_tile.coord)
+
+
+func try_move_trainer_to(target_coord: Vector2i) -> bool:
+	if trainer_unit == null:
+		return false
+
+	var validation := KarmanyMovementRules.validate_move(
+		board_state,
+		turn_manager,
+		player_state,
+		target_coord
+	)
+
+	if validation != KarmanyMovementRules.MoveValidation.OK:
+		print(
+			"MOVER INVALIDO: ",
+			KarmanyMovementRules.get_validation_message(validation)
+		)
+		return false
+
+	var previous_coord := player_state.current_coord
+
+	if not place_trainer_at(target_coord):
+		push_error("FASE 5 ERROR: La colocacion tecnica del movimiento fallo.")
+		return false
+
+	if not turn_manager.spend_action(1):
+		place_trainer_at(previous_coord)
+		push_error("FASE 5 ERROR: No se pudo consumir la accion de Mover.")
+		return false
+
+	print("")
+	print("--------------------------------")
+	print("MOVER RESUELTO")
+	print("--------------------------------")
+	print("Jugador: ", player_state.player_id)
+	print("Origen: ", previous_coord)
+	print("Destino: ", target_coord)
+	print("Acciones restantes: ", turn_manager.actions_remaining)
+	print("Nota: Bonificacion de entrada se integrara con el motor de efectos en su fase.")
+	print("--------------------------------")
+
+	return true
+
+
 func _on_tile_clicked(
 	tile: KarmanyHexTile3D
 ) -> void:
@@ -247,5 +352,20 @@ func _on_tile_clicked(
 		print("Ocupante: ", cell.occupying_unit_id)
 	else:
 		print("Ocupante: ninguno")
+
+	var movement_validation := KarmanyMovementRules.validate_move(
+		board_state,
+		turn_manager,
+		player_state,
+		tile.coord
+	)
+
+	if movement_validation == KarmanyMovementRules.MoveValidation.OK:
+		print("Mover: DISPONIBLE - presiona M para confirmar.")
+	else:
+		print(
+			"Mover: no disponible - ",
+			KarmanyMovementRules.get_validation_message(movement_validation)
+		)
 
 	print("--------------------------------")
