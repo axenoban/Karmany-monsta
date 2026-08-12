@@ -165,7 +165,18 @@ func _test_invalid_requests() -> bool:
 	var invalid_instinct := KarmanyCombatResolver.resolve(missing_instinct)
 	ok = _expect(
 		invalid_instinct.status == KarmanyCombatResult.Status.INVALID_REQUEST,
-		"Un objetivo con Instinto requiere D6 1-6."
+		"Un objetivo PvE requiere D6 de Instinto 1-6."
+	) and ok
+
+	var disabled_instinct := _base_request()
+	disabled_instinct.target_id = &"disabled_instinct"
+	disabled_instinct.base_defense = 8
+	disabled_instinct.uses_instinct = false
+	disabled_instinct.instinct_roll = 0
+	var invalid_disabled_instinct := KarmanyCombatResolver.resolve(disabled_instinct)
+	ok = _expect(
+		invalid_disabled_instinct.status == KarmanyCombatResult.Status.INVALID_REQUEST,
+		"Fase 11 no debe permitir PvE sin Instinto."
 	) and ok
 
 	var unauthorized_risk := _base_request()
@@ -180,16 +191,7 @@ func _test_invalid_requests() -> bool:
 		"Riesgo sin permiso debe rechazarse."
 	) and ok
 
-	var no_instinct := _base_request()
-	no_instinct.target_id = &"no_instinct_target"
-	no_instinct.base_defense = 6
-	no_instinct.uses_instinct = false
-	no_instinct.instinct_roll = 0
-	var no_instinct_result := KarmanyCombatResolver.resolve(no_instinct)
-	ok = _expect(no_instinct_result.is_victory(), "Combate sin Instinto debe poder resolverse.") and ok
-	ok = _expect(no_instinct_result.effective_defense == 6, "Sin Instinto, Defensa efectiva = base.") and ok
-
-	print("Validaciones de entrada del combate: ", "OK" if ok else "ERROR")
+	print("Validaciones PvE e Instinto obligatorias: ", "OK" if ok else "ERROR")
 	return ok
 
 
