@@ -31,6 +31,8 @@ var active_player_index: int = -1
 var actions_remaining: int = 0
 var is_running: bool = false
 
+var _action_usage_this_turn: Dictionary = {}
+
 
 func setup_players(
 	p_players: Array[KarmanyPlayerState]
@@ -63,6 +65,7 @@ func setup_players(
 	current_round = 0
 	active_player_index = -1
 	actions_remaining = 0
+	_action_usage_this_turn.clear()
 
 	return true
 
@@ -81,6 +84,7 @@ func start_match() -> bool:
 	current_round = 1
 	active_player_index = 0
 	actions_remaining = ACTIONS_PER_TURN
+	_action_usage_this_turn.clear()
 
 	round_started.emit(current_round)
 	turn_started.emit(
@@ -130,6 +134,45 @@ func can_spend_action(cost: int = 1) -> bool:
 
 
 func spend_action(cost: int = 1) -> bool:
+	return _spend_action_internal(
+		cost,
+		&""
+	)
+
+
+func spend_action_for(
+	action_id: StringName,
+	cost: int = 1
+) -> bool:
+	if action_id == &"":
+		return false
+
+	return _spend_action_internal(
+		cost,
+		action_id
+	)
+
+
+func get_action_usage(action_id: StringName) -> int:
+	if action_id == &"":
+		return 0
+
+	return int(
+		_action_usage_this_turn.get(
+			action_id,
+			0
+		)
+	)
+
+
+func has_used_action(action_id: StringName) -> bool:
+	return get_action_usage(action_id) > 0
+
+
+func _spend_action_internal(
+	cost: int,
+	action_id: StringName
+) -> bool:
 	if not can_spend_action(cost):
 		return false
 
@@ -139,6 +182,11 @@ func spend_action(cost: int = 1) -> bool:
 		return false
 
 	actions_remaining -= cost
+
+	if action_id != &"":
+		_action_usage_this_turn[action_id] = (
+			get_action_usage(action_id) + 1
+		)
 
 	action_spent.emit(
 		player,
@@ -186,6 +234,7 @@ func end_turn() -> bool:
 		active_player_index += 1
 
 	actions_remaining = ACTIONS_PER_TURN
+	_action_usage_this_turn.clear()
 
 	turn_started.emit(
 		get_active_player(),

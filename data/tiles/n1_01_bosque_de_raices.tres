@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EntryEffect"]
+script = ExtResource("2_effect")
+effect_type = 1
+resource_type = 0
+amount = 1
+description = "Obtén 1 MN."
+
+[sub_resource type="Resource" id="LaterUseEffect"]
+script = ExtResource("2_effect")
+effect_type = 1
+resource_type = 0
+amount = 2
+description = "Recolectar 2 MN."
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-01"
+display_name = "Bosque de Raíces"
+level = 1
+function_tags = PackedStringArray("Recolección de MN", "Recurso")
+icon_tags = PackedStringArray("MN")
+on_explore_text = "Elige: recolecta 2 MN; o roba 2 Resonancias y descarta 1."
+entry_bonus_text = "Obtén 1 MN."
+later_use_text = "Recolectar 2 MN."
+limit_text = "Sin límite especial."
+entry_effects = Array[ExtResource("2_effect")]([SubResource("EntryEffect")])
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("LaterUseEffect")])
+starts_revealed = false
+can_rotate_visual = true

@@ -172,6 +172,11 @@ func is_selected() -> bool:
 	return _is_selected
 
 
+func set_base_color(value: Color) -> void:
+	base_color = value
+	_refresh_visual()
+
+
 func _refresh_visual() -> void:
 
 	if _material == null:
