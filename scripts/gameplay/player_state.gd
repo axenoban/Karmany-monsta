@@ -6,6 +6,7 @@ var player_id: StringName = &""
 var current_coord: Vector2i = Vector2i.ZERO
 
 var resource_inventory: KarmanyResourceInventory = KarmanyResourceInventory.new()
+var karmany_roster: KarmanyRoster = KarmanyRoster.new()
 
 
 var mn: int:
@@ -63,6 +64,7 @@ func setup_new_game(
 	player_id = p_player_id
 	current_coord = starting_coord
 	resource_inventory.reset_to_starting_resources()
+	karmany_roster.clear()
 
 
 func set_board_position(coord: Vector2i) -> void:
@@ -127,3 +129,19 @@ func spend_resources(costs: Dictionary) -> bool:
 
 func get_resource_snapshot() -> Dictionary:
 	return resource_inventory.get_snapshot()
+
+
+func add_linked_karmany(karmany: KarmanyRuntimeState) -> bool:
+	if karmany == null:
+		return false
+	if karmany.owner_player_id != player_id:
+		return false
+	return karmany_roster.add_linked_karmany(karmany)
+
+
+func has_karmany_instance(instance_id: StringName) -> bool:
+	return karmany_roster.has_instance(instance_id)
+
+
+func get_linked_karmanys() -> Array[KarmanyRuntimeState]:
+	return karmany_roster.get_all()
