@@ -12,6 +12,8 @@ var resource_discounts: Dictionary = {}
 
 
 func is_valid() -> bool:
+	if source_id == &"":
+		return false
 	if not allow_basic and not allow_advanced and not allow_ancestral:
 		return false
 	if action_cost < 0:
