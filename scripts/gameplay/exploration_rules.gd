@@ -17,7 +17,8 @@ enum ExplorationValidation {
 	TARGET_ALREADY_REVEALED,
 	TARGET_HAS_NO_TILE_DATA,
 	TARGET_OCCUPIED,
-	NOT_ADJACENT
+	NOT_ADJACENT,
+	ORIGIN_BLOCKED_BY_BEAST
 }
 
 
@@ -46,6 +47,9 @@ static func validate_exploration(
 
 	if not board_state.has_coord(origin_coord):
 		return ExplorationValidation.INVALID_ORIGIN
+
+	if board_state.is_blocked_by_beast(origin_coord):
+		return ExplorationValidation.ORIGIN_BLOCKED_BY_BEAST
 
 	if not board_state.has_coord(target_coord):
 		return ExplorationValidation.INVALID_TARGET
@@ -133,5 +137,7 @@ static func get_validation_message(validation: int) -> String:
 			return "La loseta destino esta ocupada."
 		ExplorationValidation.NOT_ADJACENT:
 			return "La loseta oculta no es adyacente."
+		ExplorationValidation.ORIGIN_BLOCKED_BY_BEAST:
+			return "Hay una Bestia sin resolver en tu loseta; debes resolver ese combate antes de explorar."
 
 	return "Exploracion invalida."
