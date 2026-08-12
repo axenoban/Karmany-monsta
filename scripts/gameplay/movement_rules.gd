@@ -2,6 +2,9 @@ class_name KarmanyMovementRules
 extends RefCounted
 
 
+const ACTION_ID_MOVE: StringName = &"move"
+
+
 enum MoveValidation {
 	OK,
 	MATCH_NOT_RUNNING,
