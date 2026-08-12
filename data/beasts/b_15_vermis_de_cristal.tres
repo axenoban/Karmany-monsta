@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_beast"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Recompensa: +1 FA."
+
+[resource]
+script = ExtResource("1_beast")
+beast_id = &"B-15"
+display_name = "Vermis de Cristal"
+classification = "Criatura Subterranea"
+tier = 2
+base_defense = 18
+combat_tags = PackedStringArray("beast", "complex")
+reward_legacy_points = 3
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])
+defeat_consequence_ids = PackedStringArray("discard_2_basic_resources_choice", "discard_1_card_choice")
+reward_text = "3 PL + 1 FA"
+defeat_text = "Descarta 2 recursos basicos de tu eleccion y 1 carta de la mano."
+rules_text = "Permanece si no es derrotada."
