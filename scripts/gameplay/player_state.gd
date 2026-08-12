@@ -7,6 +7,7 @@ var current_coord: Vector2i = Vector2i.ZERO
 
 var resource_inventory: KarmanyResourceInventory = KarmanyResourceInventory.new()
 var karmany_roster: KarmanyRoster = KarmanyRoster.new()
+var equipment_inventory: KarmanyEquipmentInventory = KarmanyEquipmentInventory.new()
 
 
 var mn: int:
@@ -65,6 +66,7 @@ func setup_new_game(
 	current_coord = starting_coord
 	resource_inventory.reset_to_starting_resources()
 	karmany_roster.clear()
+	equipment_inventory.clear()
 
 
 func set_board_position(coord: Vector2i) -> void:
@@ -145,3 +147,25 @@ func has_karmany_instance(instance_id: StringName) -> bool:
 
 func get_linked_karmanys() -> Array[KarmanyRuntimeState]:
 	return karmany_roster.get_all()
+
+
+func add_equipment(equipment: KarmanyEquipmentData) -> bool:
+	return equipment_inventory.add_equipment(equipment)
+
+
+func replace_equipment(
+	discard_equipment_id: StringName,
+	new_equipment: KarmanyEquipmentData
+) -> KarmanyEquipmentData:
+	return equipment_inventory.replace_equipment(
+		discard_equipment_id,
+		new_equipment
+	)
+
+
+func get_equipped_equipment() -> Array[KarmanyEquipmentData]:
+	return equipment_inventory.get_all()
+
+
+func get_equipment_count() -> int:
+	return equipment_inventory.get_count()
