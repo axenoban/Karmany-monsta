@@ -6,6 +6,7 @@ var coord: Vector2i
 var tile_data: KarmanyTileData
 var revealed: bool
 var occupying_unit_id: StringName = &""
+var beast_state: KarmanyBeastRuntimeState = null
 
 
 func _init(
@@ -20,3 +21,11 @@ func _init(
 
 func is_occupied() -> bool:
 	return occupying_unit_id != &""
+
+
+func has_beast() -> bool:
+	return beast_state != null and beast_state.is_blocking()
+
+
+func is_blocked_by_beast() -> bool:
+	return has_beast()
