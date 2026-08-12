@@ -26,6 +26,7 @@ var attacker_exhaustion_pending: bool = false
 var reward_legacy_points_pending: int = 0
 var reward_effect_results: Array[KarmanyEffectResult] = []
 var defeat_effect_results: Array[KarmanyEffectResult] = []
+var entry_effect_results: Array[KarmanyEffectResult] = []
 var reward_consequence_ids: PackedStringArray = PackedStringArray()
 var defeat_consequence_ids: PackedStringArray = PackedStringArray()
 
