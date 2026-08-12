@@ -30,7 +30,7 @@ var reward_legacy_points: int = 2
 func is_valid() -> bool:
 	if turn_manager == null or board_state == null:
 		return false
-	if authorization == null or not authorization.is_valid():
+	if authorization == null:
 		return false
 	if truce_tracker == null:
 		return false
