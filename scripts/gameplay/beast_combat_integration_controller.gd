@@ -15,6 +15,14 @@ static func fight_with_existing_systems(
 		return KarmanyBeastCombatResult.new()
 	if coordinator.board_state == null or coordinator.turn_manager == null:
 		return KarmanyBeastCombatResult.new()
+	if not coordinator.turn_manager.is_running:
+		return KarmanyBeastCombatResult.new()
+	if coordinator.turn_manager.get_active_player() != player:
+		return KarmanyBeastCombatResult.new()
+	if not coordinator.turn_manager.can_spend_action(context.action_cost):
+		return KarmanyBeastCombatResult.new()
+	if not player.has_active_karmany():
+		return KarmanyBeastCombatResult.new()
 	if context.combat_modifiers == null:
 		context.combat_modifiers = KarmanyCombatPowerModifiers.new()
 
@@ -22,8 +30,14 @@ static func fight_with_existing_systems(
 	if beast_state == null or beast_state.beast_data == null:
 		return KarmanyBeastCombatResult.new()
 
-	# Libro III: +2 Poder contra Bestias Complejas. La bonificacion se
-	# incorpora al contenedor de modificadores ya usado por CombatResolver.
+	# Reutiliza el traductor de Equipo de Fase 12. No recalcula efectos aqui.
+	KarmanyEquipmentCombatRules.apply_to_combat_modifiers(
+		player.equipment_inventory,
+		KarmanyCombatRequest.TargetType.BEAST,
+		context.combat_modifiers
+	)
+
+	# Libro III: +2 Poder contra Bestias Complejas, segun v0.74.
 	if (
 		book_state != null
 		and book_state.level >= 3
@@ -42,6 +56,14 @@ static func fight_with_existing_systems(
 		]
 	)
 	var played_card: KarmanyResonanceData = null
+	var combat_tags := PackedStringArray([
+		"combat",
+		"pve",
+		"beast",
+		"target_beast"
+	])
+	if beast_state.beast_data.tier == KarmanyBeastData.Tier.COMPLEX:
+		combat_tags.append("complex")
 
 	if resonance_id != &"":
 		played_card = player.resonance_hand.get_card_by_id(resonance_id)
@@ -50,13 +72,7 @@ static func fight_with_existing_systems(
 
 		var use_context := KarmanyResonanceUseContext.new()
 		use_context.window_id = KarmanyResonanceUseContext.WINDOW_COMBAT
-		use_context.context_tags = PackedStringArray([
-			"combat",
-			"pve",
-			"beast"
-		])
-		if beast_state.beast_data.tier == KarmanyBeastData.Tier.COMPLEX:
-			use_context.context_tags.append("complex")
+		use_context.context_tags = combat_tags
 		use_context.combat_id = combat_id
 		use_context.combat_modifiers = context.combat_modifiers
 		use_context.effect_context = coordinator.effect_context
@@ -82,13 +98,7 @@ static func fight_with_existing_systems(
 	)
 
 	if played_card != null:
-		var after_tags := PackedStringArray([
-			"combat",
-			"pve",
-			"beast"
-		])
-		if beast_state.beast_data.tier == KarmanyBeastData.Tier.COMPLEX:
-			after_tags.append("complex")
+		var after_tags: PackedStringArray = combat_tags.duplicate()
 		if result.is_victory():
 			after_tags.append("combat_won")
 		elif result.combat_result != null and result.combat_result.is_defeat():
