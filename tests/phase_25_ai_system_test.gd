@@ -210,11 +210,13 @@ func _test_special_candidates_require_legal_check() -> bool:
 
 	var rejected := _candidate(KarmanyAiActionCandidate.ActionType.PVP, "PvP no autorizado")
 	rejected.aggression_value = 10.0
-	rejected.payload["legal_check"] = func() -> bool: return false
+	rejected.payload["legal_check"] = func() -> bool:
+		return false
 
 	var accepted := _candidate(KarmanyAiActionCandidate.ActionType.FIGHT_BEAST, "Bestia legal simulada")
 	accepted.aggression_value = 5.0
-	accepted.payload["legal_check"] = func() -> bool: return true
+	accepted.payload["legal_check"] = func() -> bool:
+		return true
 
 	var extras: Array[KarmanyAiActionCandidate] = [rejected, accepted]
 	var candidates := KarmanyAiLegalActionGenerator.build_legal_actions(
