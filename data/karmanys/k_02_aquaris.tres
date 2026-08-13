@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="AbilityAquaris"]
+script = ExtResource("2_ability")
+ability_id = &"aquaris_defeat_protection"
+display_name = "Guardia de Bruma"
+trigger_id = &"defeat_vs_beast"
+rules_text = "Si pierdes contra una Bestia, evita el retroceso o reduce en 2 recursos basicos la perdida de derrota."
+effect_tags = PackedStringArray("beast", "defeat", "protection")
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-02"
+display_name = "Aquaris"
+subtitle = "Guardian de Bruma"
+rank = 0
+compatible_ranks = PackedInt32Array(0, 1)
+primary_type = 3
+type_tags = PackedStringArray("Defensivo")
+power = 5
+acquisition_text = "Karmany inicial."
+is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityAquaris")])
