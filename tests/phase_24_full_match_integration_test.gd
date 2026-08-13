@@ -40,8 +40,8 @@ func _test_initial_state() -> bool:
 	ok = _expect(prototype.player_1.get_resonance_count() == 5 and prototype.player_2.get_resonance_count() == 5, "Cada jugador debe recibir 5 Resonancias.") and ok
 	ok = _expect(prototype.equipment_market.get_visible_count() == 4, "El mercado debe iniciar con 4 Equipos visibles.") and ok
 	ok = _expect(prototype.board_prototype.board_state.get_cell_count() == 7, "El sandbox integrado debe conservar 7 hexagonos.") and ok
-	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(prototype.P1_START) != &"", "P1 debe ocupar su inicio.") and ok
-	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(prototype.P2_START) == prototype.P2_UNIT_ID, "P2 debe ocupar su inicio logico.") and ok
+	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(KarmanyPhase24FullMatchBridge.P1_START) != &"", "P1 debe ocupar su inicio.") and ok
+	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(KarmanyPhase24FullMatchBridge.P2_START) == KarmanyPhase24FullMatchBridge.P2_UNIT_ID, "P2 debe ocupar su inicio logico.") and ok
 	print("Setup + 2 acciones + recursos + manos + mercado + ocupacion: ", "OK" if ok else "ERROR")
 	return ok
 
@@ -57,7 +57,7 @@ func _test_final_state() -> bool:
 		ok = _expect(prototype.coordinator.final_evaluation.should_end_match, "La evaluacion debe ordenar final de partida.") and ok
 		ok = _expect(prototype.coordinator.final_evaluation.reason_id == KarmanyLegacyPointsController.REASON_LEGACY_RACE_TARGET, "El final debe provenir de Carrera de Legado.") and ok
 		ok = _expect(prototype.coordinator.final_evaluation.leader_player_ids.has(prototype.player_1.player_id), "player_1 debe ser lider final del recorrido.") and ok
-	ok = _expect(prototype.legacy_points.get_total(prototype.player_1.player_id) >= prototype.DEMO_RACE_TARGET, "P1 debe alcanzar la meta de PL.") and ok
+	ok = _expect(prototype.legacy_points.get_total(prototype.player_1.player_id) >= KarmanyPhase24FullMatchBridge.DEMO_RACE_TARGET, "P1 debe alcanzar la meta de PL.") and ok
 	ok = _expect(prototype.coordinator.aeterna_state.defeated, "Aeterna debe quedar derrotada.") and ok
 	ok = _expect(prototype.coordinator.aeterna_state.defeated_by_player_id == prototype.player_1.player_id, "Aeterna debe haber sido derrotada por P1.") and ok
 	print("Final de ronda + Carrera de Legado + Aeterna + ganador: ", "OK" if ok else "ERROR")
@@ -82,6 +82,7 @@ func _test_progression_and_rewards() -> bool:
 	var mission_p2: KarmanyMissionAssignment = prototype.objectives_missions.get_mission_assignment(prototype.player_2.player_id)
 	ok = _expect(mission_p1 != null and mission_p1.is_completed(), "Mision de Alderion debe completarse.") and ok
 	ok = _expect(mission_p2 != null and mission_p2.is_completed(), "Mision de Dorian debe completarse con Bestia+PvP en rondas distintas.") and ok
+	ok = _expect(prototype.dorian_pvp.has_used_special_pvp(prototype.player_2.player_id, 2), "El PvP de ronda 2 debe provenir de la habilidad E-03 de Dorian.") and ok
 	var objective: KarmanyObjectiveState = prototype.objectives_missions.get_objective_state(&"OP-E01")
 	ok = _expect(objective != null and objective.claimed_by_player_id == prototype.player_1.player_id, "OP-E01 debe ser reclamado por P1.") and ok
 
@@ -90,21 +91,21 @@ func _test_progression_and_rewards() -> bool:
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_1.player_id, KarmanyLegacyPointsEntry.SourceType.MILESTONE) >= 4, "P1 debe puntuar N2 vinculado y Libro III.") and ok
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_2.player_id, KarmanyLegacyPointsEntry.SourceType.BEAST) == 1, "Bestia debe aportar 1 PL a P2.") and ok
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_2.player_id, KarmanyLegacyPointsEntry.SourceType.PVP) == 2, "PvP debe aportar 2 PL a P2.") and ok
-	print("Libro + vinculo + Equipo + Misiones + Objetivo + origen de PL: ", "OK" if ok else "ERROR")
+	print("Libro + vinculo + Equipo + Misiones + Objetivo + Dorian + origen de PL: ", "OK" if ok else "ERROR")
 	return ok
 
 
 func _test_consistency_after_finish() -> bool:
 	var ok: bool = true
-	ok = _expect(prototype.player_1.current_coord == prototype.TILE_AETERNA, "P1 debe terminar en el Santuario.") and ok
-	ok = _expect(prototype.player_2.current_coord == prototype.P2_START, "P2 debe conservar su posicion inicial.") and ok
-	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(prototype.TILE_AETERNA) != &"", "La ocupacion final de P1 debe coincidir con su coordenada.") and ok
-	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(prototype.P2_START) == prototype.P2_UNIT_ID, "La ocupacion final de P2 debe ser consistente.") and ok
+	ok = _expect(prototype.player_1.current_coord == KarmanyPhase24FullMatchBridge.TILE_AETERNA, "P1 debe terminar en el Santuario.") and ok
+	ok = _expect(prototype.player_2.current_coord == KarmanyPhase24FullMatchBridge.P2_START, "P2 debe conservar su posicion inicial.") and ok
+	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(KarmanyPhase24FullMatchBridge.TILE_AETERNA) != &"", "La ocupacion final de P1 debe coincidir con su coordenada.") and ok
+	ok = _expect(prototype.board_prototype.board_state.get_occupying_unit_id(KarmanyPhase24FullMatchBridge.P2_START) == KarmanyPhase24FullMatchBridge.P2_UNIT_ID, "La ocupacion final de P2 debe ser consistente.") and ok
 	ok = _expect(prototype.player_1.mn >= 0 and prototype.player_1.mr >= 0 and prototype.player_1.ek >= 0 and prototype.player_1.fa >= 0, "P1 no puede tener recursos negativos.") and ok
 	ok = _expect(prototype.player_2.mn >= 0 and prototype.player_2.mr >= 0 and prototype.player_2.ek >= 0 and prototype.player_2.fa >= 0, "P2 no puede tener recursos negativos.") and ok
 	ok = _expect(prototype.player_1.resonance_hand.get_pending_discard_count() == 0, "P1 no debe terminar con descarte pendiente.") and ok
 	ok = _expect(prototype.player_2.resonance_hand.get_pending_discard_count() == 0, "P2 no debe terminar con descarte pendiente.") and ok
-	ok = _expect(not prototype.coordinator.move_player(prototype.player_1, prototype.P1_START), "No deben aceptarse acciones despues del final.") and ok
+	ok = _expect(not prototype.coordinator.move_player(prototype.player_1, KarmanyPhase24FullMatchBridge.P1_START), "No deben aceptarse acciones despues del final.") and ok
 	print("Recursos + ocupacion + descartes + bloqueo post-final: ", "OK" if ok else "ERROR")
 	return ok
 
