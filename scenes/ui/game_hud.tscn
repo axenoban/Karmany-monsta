@@ -1,0 +1,103 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/game_hud.gd" id="1_hud"]
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="MainMargin" type="MarginContainer" parent="."]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 466.0
+offset_bottom = 355.0
+
+[node name="Panel" type="PanelContainer" parent="MainMargin"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MainMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="MainMargin/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TitleLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — HUD"
+
+[node name="PlayerLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Jugador activo: -"
+
+[node name="RoundLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Ronda: -"
+
+[node name="ActionsLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Acciones: - / 2"
+
+[node name="ResourcesLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Recursos: MN - | MR - | EK - | FA -"
+
+[node name="ActiveKarmanyLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Karmany activo: -"
+
+[node name="ReserveLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Reserva: -"
+autowrap_mode = 2
+
+[node name="CardsLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Cartas: Resonancias - | Equipos -"
+
+[node name="LegacyPointsLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "PL: -"
+
+[node name="Separator" type="HSeparator" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ActionGrid" type="GridContainer" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+columns = 3
+
+[node name="MoveButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Mover"
+
+[node name="ExploreButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Explorar"
+
+[node name="InteractButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Interactuar"
+
+[node name="CombatButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Combatir"
+
+[node name="CallBondButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Llamar / Vincular"
+
+[node name="ImproveBookButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Mejorar Libro"
+
+[node name="EndTurnButton" type="Button" parent="MainMargin/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Finalizar turno"
+
+[node name="ActionContextLabel" type="Label" parent="MainMargin/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Contexto: selecciona una accion disponible."
+autowrap_mode = 2
