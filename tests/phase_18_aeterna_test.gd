@@ -128,7 +128,7 @@ func _test_defeat_consequences() -> bool:
 	var setup := _new_setup(KarmanyLegacyModeConfig.MapFormat.MAP_22, 6, 3, 1)
 	var ok: bool = true
 	setup.context.instinct_roll = 6
-	var hand_seeded := setup.deck.draw_to_hand(setup.p1.resonance_hand, 1)
+	var hand_seeded: int = setup.deck.draw_to_hand(setup.p1.resonance_hand, 1)
 	ok = _expect(hand_seeded == 1, "No se pudo preparar Resonancia para penalizacion.") and ok
 
 	var result := KarmanyAeternaResolver.resolve_combat(setup.p1, setup.context)

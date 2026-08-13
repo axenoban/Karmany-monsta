@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KarmanyData" format=3 uid="uid://dra27prlilgng"]
 
-[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://cwkp1ujrd8pwl" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dc2ulvekytuk6" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_idxix"]
 
 [sub_resource type="Resource" id="AbilityAeterna"]
 script = ExtResource("2_ability")
@@ -25,10 +26,6 @@ power = 18
 encounter_defense = 26
 legacy_points = 8
 acquisition_text = "Solo en Santuario de Aeterna. Requiere Libro III, 1 FA disponible, ronda habilitada y Karmany activo."
-is_starting_karmany = false
-can_acquire_by_payment = false
 can_acquire_by_defeat = true
-can_acquire_by_condition = false
 abilities = Array[ExtResource("2_ability")]([SubResource("AbilityAeterna")])
-resonance_affinity_id = &""
 resonance_affinity_tags = PackedStringArray()
