@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[sub_resource type="Resource" id="DrawTwo"]
+script = ExtResource("3_effect")
+effect_type = 3
+amount = 2
+card_source_id = &"resonance"
+description = "Roba 2 Resonancias."
+[sub_resource type="Resource" id="DiscardOne"]
+script = ExtResource("3_effect")
+effect_type = 7
+amount = 1
+card_source_id = &"resonance"
+description = "Descarta 1 Resonancia."
+[sub_resource type="Resource" id="AfterLoss"]
+script = ExtResource("2_block")
+timing_id = &"after_combat"
+required_context_tags = PackedStringArray("combat_lost")
+effects = Array[ExtResource("3_effect")]([SubResource("DrawTwo"), SubResource("DiscardOne")])
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-20"
+display_name = "Ultima Defensa"
+resonance_type = 1
+printed_power = 5
+use_windows = PackedStringArray("combat")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("AfterLoss")])
+rules_text = "Combate: +5 Poder. Si pierdes, roba 2 Resonancias y descarta 1."
