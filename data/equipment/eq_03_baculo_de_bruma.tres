@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
+
+[sub_resource type="Resource" id="EQ03Power"]
+script = ExtResource("2_modifier")
+modifier_id = &"eq03_after_explore_next_combat"
+amount = 2
+target_tags = PackedStringArray("any_pve")
+trigger_id = &"after_explore_next_combat"
+automatic_in_combat = false
+rules_text = "Despues de Explorar, gana +2 Poder en tu proximo combate de ese turno."
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-03"
+display_name = "Baculo de Bruma"
+tags = PackedStringArray("Exploracion", "Poder")
+cost = {
+0: 2,
+1: 1
+}
+rules_text = "Despues de Explorar, gana +2 Poder en tu proximo combate de ese turno."
+trigger_tags = PackedStringArray("after_explore", "next_combat", "once")
+modifiers = Array[ExtResource("2_modifier")]([SubResource("EQ03Power")])
