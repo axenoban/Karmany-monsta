@@ -16,6 +16,7 @@ enum Status {
 
 var status: Status = Status.INVALID_REQUEST
 var message: String = ""
+var combat_id: StringName = &""
 
 var attacker_player_id: StringName = &""
 var defender_player_id: StringName = &""
