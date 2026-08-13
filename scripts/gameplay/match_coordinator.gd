@@ -96,6 +96,10 @@ func configure(
 
 	is_finished = false
 	final_evaluation = null
+	_combat_serial = 0
+	pvp_truce_tracker.clear()
+	aeterna_state.reset()
+	forge_controller.clear()
 	_configured = true
 	_log("Partida integrada configurada sobre los sistemas existentes.")
 	return true
@@ -111,7 +115,10 @@ func get_book_state(player_id: StringName) -> KarmanyBookProgressState:
 
 func get_previous_coord(player_id: StringName) -> Vector2i:
 	var value: Variant = _previous_coord_by_player.get(player_id, Vector2i.ZERO)
-	return value as Vector2i
+	if value is Vector2i:
+		var coord: Vector2i = value
+		return coord
+	return Vector2i.ZERO
 
 
 func move_player(player: KarmanyPlayerState, target_coord: Vector2i) -> bool:
@@ -185,8 +192,10 @@ func call_karmany(
 		selected_index,
 		compatible_rank
 	)
-	if result.is_success():
-		_log("%s llama Karmany: %s" % [String(player.player_id), result.encounter.karmany_data.display_name])
+	if result.is_success() and result.encounter != null:
+		var called_data: KarmanyData = result.encounter.get_karmany_data()
+		if called_data != null:
+			_log("%s llama Karmany: %s" % [String(player.player_id), called_data.display_name])
 	return result
 
 
@@ -282,6 +291,14 @@ func resolve_pvp(
 	attacker_resonance_id: StringName = &"",
 	defender_resonance_id: StringName = &""
 ) -> KarmanyPvpCombatResult:
+	var preflight: KarmanyPvpCombatResult = _validate_pvp_preflight(attacker, defender, authorization)
+	if preflight != null:
+		return preflight
+	if not _can_prepare_combat_resonance(attacker, attacker_resonance_id):
+		return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "La Resonancia del atacante no esta disponible para PvP.")
+	if not _can_prepare_combat_resonance(defender, defender_resonance_id):
+		return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "La Resonancia del defensor no esta disponible para PvP.")
+
 	_combat_serial += 1
 	var combat_id := StringName("phase24_pvp_%d_r%d" % [_combat_serial, turn_manager.current_round])
 	var context := KarmanyPvpCombatContext.new()
@@ -294,8 +311,13 @@ func resolve_pvp(
 	context.effect_context = effect_context
 	context.combat_id = combat_id
 
-	_play_combat_resonance(attacker, attacker_resonance_id, combat_id, context.attacker_modifiers, PackedStringArray(["combat", "pvp"]))
-	_play_combat_resonance(defender, defender_resonance_id, combat_id, context.defender_modifiers, PackedStringArray(["combat", "pvp"]))
+	if attacker_resonance_id != &"":
+		if _play_combat_resonance(attacker, attacker_resonance_id, combat_id, context.attacker_modifiers, PackedStringArray(["combat", "pvp"])) == null:
+			return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "No se pudo jugar la Resonancia del atacante.")
+	if defender_resonance_id != &"":
+		if _play_combat_resonance(defender, defender_resonance_id, combat_id, context.defender_modifiers, PackedStringArray(["combat", "pvp"])) == null:
+			resonance_usage_tracker.clear_combat(combat_id)
+			return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "No se pudo jugar la Resonancia del defensor.")
 
 	var result := KarmanyPvpResolver.resolve(attacker, defender, context)
 	if result.is_resolved():
@@ -326,6 +348,20 @@ func resolve_aeterna_combat(
 	instinct_roll: int,
 	risk_roll: int = 0
 ) -> KarmanyAeternaResult:
+	if instinct_roll < 1 or instinct_roll > 6:
+		return _aeterna_error(KarmanyAeternaResult.Status.INVALID_REQUEST, "Dado de Instinto invalido.")
+	var card: KarmanyResonanceData = null
+	if resonance_id != &"":
+		card = player.resonance_hand.get_card_by_id(resonance_id)
+		if card == null or not card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
+			return _aeterna_error(KarmanyAeternaResult.Status.INVALID_REQUEST, "La Resonancia elegida no esta disponible para combate.")
+	if risk_roll != 0:
+		if risk_roll < 1 or risk_roll > 6 or card == null or not card.tags.has("risk_authorization"):
+			return _aeterna_error(KarmanyAeternaResult.Status.INVALID_REQUEST, "El Dado de Riesgo no esta autorizado por la Resonancia elegida.")
+	var attempt_preflight := _build_aeterna_context(player, instinct_roll, KarmanyCombatPowerModifiers.new(), risk_roll != 0, risk_roll)
+	if not KarmanyAeternaResolver.can_attempt(player, attempt_preflight):
+		return KarmanyAeternaResolver.resolve_combat(player, attempt_preflight)
+
 	_combat_serial += 1
 	var combat_id := StringName("phase24_aeterna_%d_r%d" % [_combat_serial, turn_manager.current_round])
 	var modifiers := KarmanyCombatPowerModifiers.new()
@@ -334,6 +370,8 @@ func resolve_aeterna_combat(
 		played_card = _play_combat_resonance(
 			player, resonance_id, combat_id, modifiers, PackedStringArray(["combat", "legendary", "aeterna"])
 		)
+		if played_card == null:
+			return _aeterna_error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudo jugar la Resonancia contra Aeterna.")
 	var risk_authorized: bool = played_card != null and played_card.tags.has("risk_authorization")
 	var context := _build_aeterna_context(player, instinct_roll, modifiers, risk_authorized, risk_roll)
 	var result := KarmanyAeternaResolver.resolve_combat(player, context)
@@ -362,6 +400,29 @@ func resolve_aeterna_resonance_reward(
 ) -> bool:
 	var context := _build_aeterna_context(player, 1, KarmanyCombatPowerModifiers.new(), false, 0)
 	return KarmanyAeternaResolver.resolve_victory_resonance_reward(player, context, victory_result)
+
+
+func resolve_aeterna_equipment_reward(
+	player: KarmanyPlayerState,
+	victory_result: KarmanyAeternaResult,
+	equipment: KarmanyEquipmentData,
+	discard_equipment_id: StringName = &""
+) -> bool:
+	return KarmanyAeternaResolver.resolve_victory_equipment_reward(
+		player,
+		victory_result,
+		equipment,
+		discard_equipment_id,
+		equipment_market
+	)
+
+
+func collect_aeterna_post_defeat_ek(player: KarmanyPlayerState) -> KarmanyAeternaResult:
+	var context := _build_aeterna_context(player, 1, KarmanyCombatPowerModifiers.new(), false, 0)
+	var result := KarmanyAeternaResolver.collect_post_defeat_ek(player, context)
+	if result.is_resolved():
+		_log("%s Interactua con Santuario post-Aeterna: +2 EK" % String(player.player_id))
+	return result
 
 
 func resolve_pending_resonance_discard(
@@ -435,6 +496,39 @@ func _play_combat_resonance(
 	return play_result.card
 
 
+func _can_prepare_combat_resonance(player: KarmanyPlayerState, resonance_id: StringName) -> bool:
+	if resonance_id == &"":
+		return true
+	if player == null:
+		return false
+	var card: KarmanyResonanceData = player.resonance_hand.get_card_by_id(resonance_id)
+	return card != null and card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT)
+
+
+func _validate_pvp_preflight(
+	attacker: KarmanyPlayerState,
+	defender: KarmanyPlayerState,
+	authorization: KarmanyPvpAuthorizationContext
+) -> KarmanyPvpCombatResult:
+	if attacker == null or defender == null or attacker == defender:
+		return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "Atacante y defensor PvP invalidos.")
+	if not turn_manager.is_running or turn_manager.get_active_player() != attacker:
+		return _pvp_error(KarmanyPvpCombatResult.Status.INVALID_REQUEST, "Solo el jugador activo puede iniciar PvP.")
+	if turn_manager.current_round <= 1:
+		return _pvp_error(KarmanyPvpCombatResult.Status.PVP_FORBIDDEN_ROUND_ONE, "PvP esta prohibido en ronda 1.")
+	if not turn_manager.can_spend_action(1):
+		return _pvp_error(KarmanyPvpCombatResult.Status.ACTION_NOT_AVAILABLE, "No quedan acciones para PvP.")
+	if authorization == null or not authorization.is_valid():
+		return _pvp_error(KarmanyPvpCombatResult.Status.PVP_NOT_AUTHORIZED, "PvP requiere una fuente valida.")
+	if not authorization.is_target_in_range(board_state, attacker.current_coord, defender.current_coord):
+		return _pvp_error(KarmanyPvpCombatResult.Status.OUT_OF_RANGE, "El defensor esta fuera de alcance PvP.")
+	if not attacker.has_active_karmany() or not defender.has_active_karmany():
+		return _pvp_error(KarmanyPvpCombatResult.Status.NO_ACTIVE_KARMANY, "Ambos jugadores requieren Karmany activo.")
+	if not pvp_truce_tracker.can_attack(attacker.player_id, defender.player_id, turn_manager.current_round):
+		return _pvp_error(KarmanyPvpCombatResult.Status.TRUCE_BLOCKED, "La Tregua bloquea este PvP.")
+	return null
+
+
 func _build_aeterna_context(
 	player: KarmanyPlayerState,
 	instinct_roll: int,
@@ -506,6 +600,20 @@ func _coord_key(coord: Vector2i) -> String:
 
 func _encounter_error(status_value: int, text: String) -> KarmanyEncounterResult:
 	var result := KarmanyEncounterResult.new()
+	result.status = status_value
+	result.message = text
+	return result
+
+
+func _pvp_error(status_value: int, text: String) -> KarmanyPvpCombatResult:
+	var result := KarmanyPvpCombatResult.new()
+	result.status = status_value
+	result.message = text
+	return result
+
+
+func _aeterna_error(status_value: int, text: String) -> KarmanyAeternaResult:
+	var result := KarmanyAeternaResult.new()
 	result.status = status_value
 	result.message = text
 	return result
