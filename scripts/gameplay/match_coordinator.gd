@@ -185,12 +185,17 @@ func call_karmany(
 	selected_index: int,
 	compatible_rank: int
 ) -> KarmanyEncounterResult:
+	if player == null or board_state == null:
+		return _encounter_error(KarmanyEncounterResult.Status.INVALID_REQUEST, "Jugador o tablero invalido para Llamar Karmany.")
+	var source_coord: Vector2i = player.current_coord
 	var result := encounter_resolver.call_karmany(
 		player,
-		player.current_coord,
+		source_coord,
+		compatible_rank,
 		candidate_cards,
 		selected_index,
-		compatible_rank
+		board_state.is_revealed(source_coord),
+		board_state.is_blocked_by_beast(source_coord)
 	)
 	if result.is_success() and result.encounter != null:
 		var called_data: KarmanyData = result.encounter.get_karmany_data()
@@ -200,10 +205,15 @@ func call_karmany(
 
 
 func bond_visible_by_payment(player: KarmanyPlayerState) -> KarmanyEncounterResult:
+	if player == null:
+		return _encounter_error(KarmanyEncounterResult.Status.INVALID_REQUEST, "Jugador invalido para Vincular.")
 	var state := get_book_state(player.player_id)
 	if state == null or not state.can_hold_karmany_count(player.get_linked_karmanys().size() + 1):
 		return _encounter_error(KarmanyEncounterResult.Status.ROSTER_REJECTED, "El Libro no tiene espacio para otro Karmany.")
-	var result := encounter_resolver.bond_by_payment(player, player.current_coord)
+	var visible: Array[KarmanyEncounterState] = encounter_resolver.get_visible_encounters_at(player.current_coord)
+	if visible.size() != 1:
+		return _encounter_error(KarmanyEncounterResult.Status.ENCOUNTER_UNAVAILABLE, "Se requiere exactamente un Karmany visible en la loseta para este flujo de pago.")
+	var result := encounter_resolver.attempt_payment_bond(visible[0], player)
 	if result.is_success() and result.linked_karmany != null:
 		_on_karmany_linked(player, result.linked_karmany)
 	return result
