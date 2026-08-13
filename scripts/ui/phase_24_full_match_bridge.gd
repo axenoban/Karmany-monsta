@@ -26,6 +26,7 @@ const RAUK: KarmanyData = preload("res://data/karmanys/k_11_rauk.tres")
 const B01: KarmanyBeastData = preload("res://data/beasts/b_01_garravol.tres")
 
 const EQ02: KarmanyEquipmentData = preload("res://data/equipment/eq_02_guante_runico.tres")
+const EQ03: KarmanyEquipmentData = preload("res://data/equipment/eq_03_baculo_de_bruma.tres")
 const EQ01: KarmanyEquipmentData = preload("res://data/equipment/eq_01_cristal_de_crecimiento.tres")
 const EQ05: KarmanyEquipmentData = preload("res://data/equipment/eq_05_nucleo_luminico.tres")
 const EQ08: KarmanyEquipmentData = preload("res://data/equipment/eq_08_prisma_ancestral.tres")
@@ -270,6 +271,8 @@ func _run_round_7() -> bool:
 	craft_context.allow_advanced = true
 	var craft := coordinator.craft_from_market(player_1, 0, craft_context)
 	if not craft.is_success() or craft.equipment != EQ02: return _step_error("R7 crafteo EQ-02 fallo.")
+	if equipment_market.get_visible_count() != KarmanyEquipmentMarket.MARKET_SIZE:
+		return _step_error("R7 el mercado no se repuso a 4 Equipos.")
 	if not _finish_turn(&"R-02"): return false
 	return _run_p2_double_interact(7)
 
@@ -415,7 +418,7 @@ func _configure_decks_and_market() -> bool:
 	if not resonance_deck.setup(resonance_cards, false): return false
 	if not resonance_deck.deal_initial_hand(player_1): return false
 	if not resonance_deck.deal_initial_hand(player_2): return false
-	var equipment_cards: Array[KarmanyEquipmentData] = [EQ02, EQ01, EQ05, EQ08]
+	var equipment_cards: Array[KarmanyEquipmentData] = [EQ02, EQ01, EQ05, EQ08, EQ03]
 	if not equipment_market.setup(equipment_cards, false): return false
 	var beasts: Array[KarmanyBeastData] = [B01]
 	return beast_deck.setup(beasts, false)
