@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N3-02"
+display_name = "Forja Antigua"
+level = 3
+function_tags = PackedStringArray("Forja", "Crafteo ancestral", "Libro", "FA")
+icon_tags = PackedStringArray("Taller", "FA", "Libro")
+on_explore_text = "Elige una preparacion de Forja segun v0.74."
+entry_bonus_text = "Entrada: preparacion de Forja."
+later_use_text = "Craftear Equipo Avanzado/Ancestral; mejorar Libro si puedes pagar; o convertir 2 recursos comunes en 1 FA una vez por jugador."
+limit_text = "Conversion a FA maximo una vez por jugador por partida."
+starts_revealed = false
+can_rotate_visual = true
