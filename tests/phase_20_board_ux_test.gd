@@ -61,7 +61,7 @@ func _test_selection_and_invalid_feedback() -> bool:
 		return false
 
 	hidden_tile.tile_clicked.emit(hidden_tile)
-	var context: String = prototype.hud.get_snapshot().action_context
+	var context: String = _get_hud_context()
 	ok = _expect(hidden_tile.is_selected(), "La loseta clicada debe permanecer seleccionada.") and ok
 	ok = _expect(context.contains("Oculta"), "El HUD debe identificar una loseta oculta.") and ok
 	ok = _expect(context.contains("Explorar: DISPONIBLE"), "El HUD debe indicar Explorar disponible.") and ok
@@ -69,7 +69,7 @@ func _test_selection_and_invalid_feedback() -> bool:
 
 	var actions_before: int = prototype.board_prototype.turn_manager.actions_remaining
 	prototype.hud.move_button.pressed.emit()
-	context = prototype.hud.get_snapshot().action_context
+	context = _get_hud_context()
 	ok = _expect(prototype.board_prototype.turn_manager.actions_remaining == actions_before, "Mover invalido no debe gastar accion.") and ok
 	ok = _expect(context.contains("Mover no disponible"), "El HUD debe mostrar feedback de Mover invalido.") and ok
 	ok = _expect(context.contains("oculta"), "El feedback debe explicar que Mover no entra en loseta oculta.") and ok
@@ -99,13 +99,13 @@ func _test_blocked_beast_feedback() -> bool:
 
 	if blocked_tile != null:
 		blocked_tile.tile_clicked.emit(blocked_tile)
-		var context: String = prototype.hud.get_snapshot().action_context
+		var context: String = _get_hud_context()
 		ok = _expect(context.contains("BLOQUEADA"), "El HUD debe mostrar estado BLOQUEADA.") and ok
 		ok = _expect(context.contains("Garravol"), "El HUD debe identificar la Bestia visible que bloquea.") and ok
 
 		var actions_before: int = prototype.board_prototype.turn_manager.actions_remaining
 		prototype.hud.move_button.pressed.emit()
-		context = prototype.hud.get_snapshot().action_context
+		context = _get_hud_context()
 		ok = _expect(prototype.board_prototype.turn_manager.actions_remaining == actions_before, "Bestia bloqueando no debe consumir Mover.") and ok
 		ok = _expect(context.contains("bloqueada por una Bestia"), "El feedback debe explicar el bloqueo por Bestia.") and ok
 
@@ -155,6 +155,11 @@ func _test_move_explore_refresh_and_turn_change() -> bool:
 
 	print("Refresh tras Mover/Explorar + cambio de turno: ", "OK" if ok else "ERROR")
 	return ok
+
+
+func _get_hud_context() -> String:
+	var snapshot: Dictionary = prototype.hud.get_snapshot()
+	return String(snapshot.get("action_context", ""))
 
 
 func _expect(condition: bool, message: String) -> bool:
