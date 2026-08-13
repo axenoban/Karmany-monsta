@@ -221,8 +221,6 @@ func _run_round_2() -> bool:
 	if not pvp.is_resolved() or pvp.winner_player_id != player_2.player_id:
 		return _step_error("R2 PvP de Dorian no fue resuelto legalmente.")
 	dorian_pvp.mark_special_pvp_used(player_2.player_id, turn_manager.current_round)
-	if not player_1.resonance_hand.has_card_id(&"R-05"):
-		return _step_error("R2 Resonancia Cruzada no transfirio R-05 al ciclo de P1.")
 	if not coordinator.interact_effect_option(player_2, 1).is_success(): return _step_error("R2 P2 segunda accion fallo.")
 	return _finish_turn()
 
@@ -270,6 +268,10 @@ func _run_round_6() -> bool:
 	if not _require_turn(6, player_1): return false
 	var bond := coordinator.bond_visible_by_payment(player_1)
 	if not bond.is_success() or bond.linked_karmany == null: return _step_error("R6 Vincular Brumak fallo.")
+	if not player_1.set_active_karmany(bond.linked_karmany.instance_id):
+		return _step_error("R6 Brumak no pudo convertirse en Karmany activo.")
+	if player_1.get_active_karmany() == null or player_1.get_active_karmany().karmany_data != BRUMAK:
+		return _step_error("R6 el Karmany activo no coincide con Brumak.")
 	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R6 N2 +2 MR fallo.")
 	if not _finish_turn(&"R-02"): return false
 	return _run_p2_double_interact(6)
@@ -282,8 +284,8 @@ func _run_round_7() -> bool:
 	craft_context.source_id = &"N2-05"
 	craft_context.allow_basic = true
 	craft_context.allow_advanced = true
-	var craft := coordinator.craft_from_market(player_1, 0, craft_context)
-	if not craft.is_success() or craft.equipment != EQ02: return _step_error("R7 crafteo EQ-02 fallo.")
+	var craft := coordinator.craft_from_market(player_1, 1, craft_context)
+	if not craft.is_success() or craft.equipment != EQ01: return _step_error("R7 crafteo EQ-01 fallo.")
 	if equipment_market.get_visible_count() != KarmanyEquipmentMarket.MARKET_SIZE:
 		return _step_error("R7 el mercado no se repuso a 4 Equipos.")
 	if not _finish_turn(&"R-02"): return false
@@ -320,6 +322,8 @@ func _run_round_10() -> bool:
 
 func _run_round_11() -> bool:
 	if not _require_turn(11, player_1): return false
+	if not player_1.resonance_hand.has_card_id(&"R-04"):
+		return _step_error("R11 R-04 no esta disponible para enfrentar B-15.")
 	var spawn := coordinator.spawn_beast(TILE_EK, complex_beast_deck, false)
 	if not spawn.is_spawned() or spawn.beast_state.beast_data != B15:
 		return _step_error("R11 no pudo aparecer B-15 Vermis de Cristal.")
@@ -327,7 +331,6 @@ func _run_round_11() -> bool:
 	context.turn_manager = turn_manager
 	context.effect_context = coordinator.effect_context
 	context.instinct_roll = 1
-	context.risk_roll = 6
 	context.action_cost = 1
 	var result := KarmanyBeastCombatIntegrationController.fight_with_existing_systems(
 		coordinator,
@@ -335,18 +338,13 @@ func _run_round_11() -> bool:
 		TILE_EK,
 		complex_beast_deck,
 		context,
-		&"R-05",
+		&"R-04",
 		coordinator.get_book_state(player_1.player_id)
 	)
 	if not result.is_victory() or result.combat_result == null:
-		return _step_error("R11 B-15 no fue derrotada mediante los sistemas integrados.")
-	if not KarmanyCombatConsequenceResolver.resolve_risk_win_basic_resources(
-		player_1,
-		result.combat_result,
-		KarmanyEffectData.ResourceType.MN,
-		KarmanyEffectData.ResourceType.MN
-	):
-		return _step_error("R11 recompensa de Riesgo de B-15 no fue resuelta.")
+		return _step_error("R11 B-15 no fue derrotada mediante Brumak + Libro III + EQ-01 + R-04.")
+	if result.combat_result.total_power < result.combat_result.effective_defense:
+		return _step_error("R11 el resultado numerico de B-15 es inconsistente.")
 	if player_1.fa != 1:
 		return _step_error("R11 B-15 debe dejar exactamente 1 FA disponible para Aeterna.")
 	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R11 segunda accion en N1-03 fallo.")
