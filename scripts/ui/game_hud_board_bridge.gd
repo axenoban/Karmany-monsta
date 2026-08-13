@@ -13,8 +13,9 @@ func _ready() -> void:
 		push_error("FASE 19 ERROR: No se pudo conectar tablero y HUD.")
 		return
 
+	var manager: KarmanyTurnManager = board_prototype.turn_manager
 	var players: Array[KarmanyPlayerState] = []
-	for player in board_prototype.turn_manager.players:
+	for player in manager.players:
 		players.append(player)
 
 	var mode_config := KarmanyLegacyModeConfig.new()
@@ -23,12 +24,12 @@ func _ready() -> void:
 		push_error("FASE 19 ERROR: No se pudo configurar PL para el HUD.")
 		return
 
-	hud.bind_turn_manager(board_prototype.turn_manager)
+	hud.bind_turn_manager(manager)
 	hud.bind_legacy_points_controller(legacy_points_controller)
 	hud.action_requested.connect(_on_action_requested)
 
-	board_prototype.turn_manager.action_spent.connect(_on_turn_state_changed)
-	board_prototype.turn_manager.turn_started.connect(_on_turn_started)
+	manager.action_spent.connect(_on_turn_state_changed)
+	manager.turn_started.connect(_on_turn_started)
 	_sync_action_states()
 
 
@@ -45,7 +46,8 @@ func _on_action_requested(action_id: StringName) -> void:
 			else:
 				hud.set_action_context_text("Explorar no se resolvio. Revisa la loseta seleccionada.")
 		KarmanyGameHUD.ACTION_END_TURN:
-			if board_prototype.turn_manager.end_turn():
+			var manager: KarmanyTurnManager = board_prototype.turn_manager
+			if manager.end_turn():
 				hud.set_action_context_text("Turno finalizado.")
 			else:
 				hud.set_action_context_text("El turno solo puede finalizar despues de gastar las 2 acciones.")
