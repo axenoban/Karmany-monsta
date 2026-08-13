@@ -176,7 +176,52 @@ func _animate_newly_revealed_tiles() -> void:
 
 func _on_tile_clicked_feedback(tile: KarmanyHexTile3D) -> void:
 	if tile != null:
-		feedback.animate_selection(tile)
+		_play_selection_ripple(tile)
+
+
+func _play_selection_ripple(tile: KarmanyHexTile3D) -> void:
+	if tile == null or feedback_root == null:
+		return
+
+	var ripple := MeshInstance3D.new()
+	ripple.name = "SelectionRipple"
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.82
+	mesh.bottom_radius = 0.82
+	mesh.height = 0.025
+	mesh.radial_segments = 32
+	ripple.mesh = mesh
+
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = Color(0.96, 0.78, 0.28, 0.50)
+	ripple.material_override = material
+
+	feedback_root.add_child(ripple)
+	ripple.global_position = tile.global_position + Vector3(0.0, 0.16, 0.0)
+	ripple.scale = Vector3.ONE * 0.88
+
+	var duration: float = feedback.selection_duration * feedback.duration_scale
+	if duration <= 0.0:
+		ripple.queue_free()
+		return
+
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(ripple, "scale", Vector3.ONE * 1.12, duration)
+	tween.parallel().tween_property(
+		material,
+		"albedo_color",
+		Color(0.96, 0.78, 0.28, 0.0),
+		duration
+	)
+	tween.finished.connect(
+		func() -> void:
+			if is_instance_valid(ripple):
+				ripple.queue_free()
+	)
 
 
 func _get_trainer() -> KarmanyTrainerUnit3D:
