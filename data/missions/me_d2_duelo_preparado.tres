@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[sub_resource type="Resource" id="WinPvp"]
+script = ExtResource("2_cond")
+condition_type = 3
+event_id = &"pvp_won"
+[sub_resource type="Resource" id="BookTwo"]
+script = ExtResource("2_cond")
+condition_type = 2
+state_id = &"book_level"
+threshold = 2
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-D2"
+trainer_id = &"dorian"
+trainer_display_name = "Dorian"
+display_name = "Duelo Preparado"
+condition_text = "Gana 1 PvP y termina un turno con Libro II o superior."
+completion_timing = 1
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("3_effect")]([SubResource("RewardFA")])
+conditions = Array[ExtResource("2_cond")]([SubResource("WinPvp"), SubResource("BookTwo")])

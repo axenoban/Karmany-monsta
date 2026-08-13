@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[sub_resource type="Resource" id="LinkTwo"]
+script = ExtResource("2_cond")
+condition_type = 0
+event_id = &"karmany_linked"
+threshold = 2
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-L1"
+trainer_id = &"lyra"
+trainer_display_name = "Lyra"
+display_name = "Vinculos del Camino"
+recommended_first_game = true
+condition_text = "Vincula 2 Karmany no iniciales."
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("3_effect")]([SubResource("RewardFA")])
+conditions = Array[ExtResource("2_cond")]([SubResource("LinkTwo")])
