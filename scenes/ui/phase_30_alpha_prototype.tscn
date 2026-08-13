@@ -1,0 +1,80 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_30_alpha_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_28_vertical_slice_prototype.tscn" id="2_slice"]
+
+[node name="Phase30AlphaPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase28VerticalSlicePrototype" parent="." instance=ExtResource("2_slice")]
+
+[node name="AlphaOverlay" type="CanvasLayer" parent="."]
+layer = 9
+
+[node name="Panel" type="PanelContainer" parent="AlphaOverlay"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 430.0
+offset_bottom = 704.0
+
+[node name="Margin" type="MarginContainer" parent="AlphaOverlay/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="AlphaOverlay/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Title" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — ALPHA"
+theme_override_font_sizes/font_size = 20
+
+[node name="StatusLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "ALPHA · inicializando"
+autowrap_mode = 2
+
+[node name="OnboardingLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "ALPHA GUIADO"
+autowrap_mode = 2
+
+[node name="ChecklistLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Checklist"
+autowrap_mode = 2
+
+[node name="Separator1" type="HSeparator" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="GameplayLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "GAMEPLAY"
+autowrap_mode = 2
+
+[node name="BalanceLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "BALANCE PRELIMINAR"
+autowrap_mode = 2
+
+[node name="RuntimeLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "RENDIMIENTO"
+autowrap_mode = 2
+
+[node name="Separator2" type="HSeparator" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="LogLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "ULTIMOS EVENTOS"
+autowrap_mode = 2
+
+[node name="HelpLabel" type="Label" parent="AlphaOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Este panel solo observa. No ejecuta ni modifica reglas de gameplay. Sigue el objetivo guiado del panel derecho."
+autowrap_mode = 2
