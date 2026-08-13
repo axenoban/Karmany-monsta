@@ -42,48 +42,48 @@ static func execute(
 			success = interaction != null and interaction.is_success()
 
 		KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK:
-			var book := coordinator.improve_book(player)
-			raw = book
-			success = book != null and book.is_success()
+			var book_result := coordinator.improve_book(player)
+			raw = book_result
+			success = book_result != null and book_result.is_success()
 
 		KarmanyAiActionCandidate.ActionType.BOND_PAYMENT:
-			var bond := coordinator.bond_visible_by_payment(player)
-			raw = bond
-			success = bond != null and bond.is_success()
+			var bond_result := coordinator.bond_visible_by_payment(player)
+			raw = bond_result
+			success = bond_result != null and bond_result.is_success()
 
 		KarmanyAiActionCandidate.ActionType.CRAFT_EQUIPMENT:
 			var craft_context_value: Variant = candidate.payload.get("craft_context", null)
 			if craft_context_value is KarmanyEquipmentCraftContext:
 				var visible_index: int = int(candidate.payload.get("visible_index", -1))
 				var discard_id: StringName = StringName(candidate.payload.get("discard_equipment_id", ""))
-				var craft := coordinator.craft_from_market(
+				var craft_result := coordinator.craft_from_market(
 					player,
 					visible_index,
 					craft_context_value as KarmanyEquipmentCraftContext,
 					discard_id
 				)
-				raw = craft
-				success = craft != null and craft.is_success()
+				raw = craft_result
+				success = craft_result != null and craft_result.is_success()
 
 		KarmanyAiActionCandidate.ActionType.FORGE:
 			var first_resource: int = int(candidate.payload.get("first_resource", -1))
 			var second_resource: int = int(candidate.payload.get("second_resource", -1))
-			var forge := coordinator.forge_common_to_fa(
+			var forge_result := coordinator.forge_common_to_fa(
 				player,
 				first_resource,
 				second_resource
 			)
-			raw = forge
-			success = forge != null and forge.is_success()
+			raw = forge_result
+			success = forge_result != null and forge_result.is_success()
 
 		KarmanyAiActionCandidate.ActionType.FIGHT_BEAST:
 			var deck_value: Variant = candidate.payload.get("deck", null)
 			var context_value: Variant = candidate.payload.get("combat_context", null)
 			if deck_value is KarmanyBeastDeck and context_value is KarmanyBeastCombatContext:
-				var resonance_id: StringName = StringName(candidate.payload.get("resonance_id", ""))
+				var beast_resonance_id: StringName = StringName(candidate.payload.get("resonance_id", ""))
 				var book_value: Variant = candidate.payload.get("book_state", null)
 				var beast_result: KarmanyBeastCombatResult
-				if resonance_id != &"" or book_value is KarmanyBookProgressState:
+				if beast_resonance_id != &"" or book_value is KarmanyBookProgressState:
 					var book_state: KarmanyBookProgressState = null
 					if book_value is KarmanyBookProgressState:
 						book_state = book_value as KarmanyBookProgressState
@@ -93,7 +93,7 @@ static func execute(
 						candidate.target_coord,
 						deck_value as KarmanyBeastDeck,
 						context_value as KarmanyBeastCombatContext,
-						resonance_id,
+						beast_resonance_id,
 						book_state
 					)
 				else:
@@ -113,7 +113,7 @@ static func execute(
 				var attacker_resonance: StringName = StringName(candidate.payload.get("attacker_resonance_id", ""))
 				var defender_resonance: StringName = StringName(candidate.payload.get("defender_resonance_id", ""))
 				var trainer_bonus: int = int(candidate.payload.get("attacker_trainer_power_bonus", 0))
-				var pvp := coordinator.resolve_pvp(
+				var pvp_result := coordinator.resolve_pvp(
 					player,
 					defender_value as KarmanyPlayerState,
 					authorization_value as KarmanyPvpAuthorizationContext,
@@ -121,21 +121,21 @@ static func execute(
 					defender_resonance,
 					trainer_bonus
 				)
-				raw = pvp
-				success = pvp != null and pvp.is_resolved()
+				raw = pvp_result
+				success = pvp_result != null and pvp_result.is_resolved()
 
 		KarmanyAiActionCandidate.ActionType.AETERNA:
-			var resonance_id: StringName = StringName(candidate.payload.get("resonance_id", ""))
+			var aeterna_resonance_id: StringName = StringName(candidate.payload.get("resonance_id", ""))
 			var instinct_roll: int = int(candidate.payload.get("instinct_roll", 0))
 			var risk_roll: int = int(candidate.payload.get("risk_roll", 0))
-			var aeterna := coordinator.resolve_aeterna_combat(
+			var aeterna_result := coordinator.resolve_aeterna_combat(
 				player,
-				resonance_id,
+				aeterna_resonance_id,
 				instinct_roll,
 				risk_roll
 			)
-			raw = aeterna
-			success = aeterna != null and aeterna.is_resolved()
+			raw = aeterna_result
+			success = aeterna_result != null and aeterna_result.is_resolved()
 
 	result.raw_result = raw
 	result.success = success
