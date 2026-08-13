@@ -52,6 +52,12 @@ func get_total(player_id: StringName) -> int:
 	return int(_totals.get(player_id, 0))
 
 
+func get_points(player_id: StringName) -> int:
+	# Alias de lectura para capas UI/integracion. La fuente de verdad sigue
+	# siendo exactamente el mismo total centralizado de Fase 17.
+	return get_total(player_id)
+
+
 func has_player(player_id: StringName) -> bool:
 	return _totals.has(player_id)
 
