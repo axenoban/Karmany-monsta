@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[sub_resource type="Resource" id="RewardMR"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 2
+resource_type = 1
+description = "R-09 victoria contra Bestia: +2 MR."
+[sub_resource type="Resource" id="AfterWinBeast"]
+script = ExtResource("2_block")
+timing_id = &"after_combat"
+required_context_tags = PackedStringArray("combat_won", "target_beast")
+effects = Array[ExtResource("3_effect")]([SubResource("RewardMR")])
+description = "Si ganas contra Bestia, obten +2 MR."
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-09"
+display_name = "Ruptura Runica"
+resonance_type = 0
+printed_power = 4
+use_windows = PackedStringArray("combat")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("AfterWinBeast")])
+rules_text = "Combate: +4 Poder. Si ganas contra Bestia, obten +2 MR."
+tags = PackedStringArray("ataque", "combate", "bestia", "recurso")
