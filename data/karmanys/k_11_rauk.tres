@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="KarmanyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-11"
+display_name = "Rauk"
+subtitle = "Colmillo Depredador Salvaje"
+rank = 2
+compatible_ranks = PackedInt32Array(2)
+primary_type = 1
+type_tags = PackedStringArray("salvaje", "riesgo")
+power = 8
+encounter_defense = 14
+legacy_points = 0
+acquisition_text = "Derrota Defensa 14. Puede lanzar Dado de Riesgo 2.0; si obtiene 6 y gana, +1 PL maximo una vez por partida."
+is_starting_karmany = false
+can_acquire_by_payment = false
+can_acquire_by_defeat = true
+can_acquire_by_condition = false
