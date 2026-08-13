@@ -1,5 +1,14 @@
-[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityGemmir"]
+script = ExtResource("2_ability")
+ability_id = &"gemmir_resource_conversion"
+display_name = "Instinto de Forja"
+trigger_id = &"collect_mn_or_mr"
+usage_limit = 2
+rules_text = "La primera vez por ronda que recolectes MN o MR, puedes convertir 1 recurso basico obtenido en otro recurso basico."
+effect_tags = PackedStringArray("collect", "resource", "conversion")
 [resource]
 script = ExtResource("1_data")
 karmany_id = &"K-27"
@@ -8,6 +17,8 @@ subtitle = "Topo de Cristal Tierno"
 rank = 0
 compatible_ranks = PackedInt32Array(0, 1)
 primary_type = 4
+type_tags = PackedStringArray("Recolector", "Forja")
 power = 5
-acquisition_text = "Karmany inicial; especialidad Recolector y Forja."
+acquisition_text = "Karmany inicial."
 is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityGemmir")])
