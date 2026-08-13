@@ -20,7 +20,7 @@ func _ready() -> void:
 	setup_ok = session.configure(slice_match)
 	if not setup_ok:
 		push_error("FASE 28 ERROR: VerticalSliceSession no pudo configurarse.")
-		_refresh_ui()
+		_refresh_all()
 		return
 	_bind_actions()
 	session.state_changed.connect(_refresh_all)
@@ -72,10 +72,11 @@ func _refresh_all() -> void:
 	progress_label.text = session.get_progress_summary()
 	metrics_label.text = session.get_metrics_summary()
 	var human_turn: bool = session.is_human_turn()
+	var has_action: bool = human_turn and session.turn_manager.actions_remaining > 0
 	for child in action_grid.get_children():
 		var button := child as Button
 		if button != null:
-			button.disabled = not human_turn
+			button.disabled = not has_action
 	var end_button := action_grid.get_child(7) as Button
 	if end_button != null:
 		end_button.disabled = not human_turn or session.turn_manager.actions_remaining != 0
