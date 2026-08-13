@@ -74,6 +74,8 @@ func assign_secret_mission(
 ) -> bool:
 	if player == null or player.player_id == &"" or trainer_id == &"":
 		return false
+	if turn_manager == null or turn_manager.get_player_by_id(player.player_id) != player:
+		return false
 	if mission == null or not mission.is_valid_definition():
 		return false
 	if mission.trainer_id != trainer_id:
@@ -96,6 +98,8 @@ func record_event(
 	round_number: int = -1
 ) -> bool:
 	if turn_manager == null or player == null or event_id == &"":
+		return false
+	if turn_manager.get_player_by_id(player.player_id) != player:
 		return false
 
 	var resolved_round: int = round_number
@@ -129,6 +133,8 @@ func set_progress_state(
 ) -> bool:
 	if player == null or state_id == &"":
 		return false
+	if turn_manager == null or turn_manager.get_player_by_id(player.player_id) != player:
+		return false
 	if not progress_tracker.set_state_int(
 		player.player_id,
 		state_id,
@@ -136,7 +142,7 @@ func set_progress_state(
 	):
 		return false
 
-	if turn_manager != null and turn_manager.get_active_player() == player:
+	if turn_manager.get_active_player() == player:
 		_try_complete_mission(
 			player,
 			turn_manager.current_round,
@@ -210,6 +216,9 @@ func _on_turn_ended(
 		{}
 	)
 	_try_complete_mission(player, round_number, true)
+	# Una Mision puede otorgar FA inmediatamente; refrescar antes de evaluar
+	# Objetivos de fin de turno mantiene el estado real del jugador.
+	_sync_player_snapshot(player)
 	_claim_eligible_public_objectives(player, round_number)
 
 
