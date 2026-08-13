@@ -119,7 +119,9 @@ func _show_coord(coord: Vector2i) -> void:
 	var level_map := phase_31.get_level_map()
 	var level: int = int(level_map.get(coord, -1))
 	var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(level)
-	var public_tile := content_session.get_public_tile_data(phase_31.board_state, coord) if content_session != null else null
+	var public_tile: KarmanyTileData = null
+	if content_session != null:
+		public_tile = content_session.get_public_tile_data(phase_31.board_state, coord)
 	if public_tile == null:
 		selection_label.text = "%s %s | OCULTA | identidad no expuesta." % [level_name, coord]
 	else:
@@ -135,7 +137,8 @@ func _clear_selection() -> void:
 
 func _refresh_all_tile_views() -> void:
 	for coord_value in phase_31.get_level_map().keys():
-		_refresh_tile_view(coord_value as Vector2i)
+		var coord: Vector2i = coord_value
+		_refresh_tile_view(coord)
 
 func _refresh_tile_view(coord: Vector2i) -> void:
 	var tile := phase_31.get_tile_view(coord)
