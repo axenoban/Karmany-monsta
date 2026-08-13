@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-07"
+display_name = "Filo Exacto"
+resonance_type = 0
+printed_power = 4
+use_windows = PackedStringArray("combat")
+rules_text = "Combate: +4 Poder. Si el Poder final iguala exactamente la Defensa efectiva, roba 1 Resonancia."
+tags = PackedStringArray("ataque", "combate", "precision")
