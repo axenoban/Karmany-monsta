@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 3
+description = "Recompensa B-23: +2 FA."
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-23"
+display_name = "Drakmaw"
+classification = "Falso Dragon de Ruinas"
+tier = 3
+base_defense = 24
+combat_tags = PackedStringArray("boss", "beast", "risk_lock")
+special_rule_ids = PackedStringArray("risk_no_repeat_or_modify", "reward_equipment_choice")
+reward_legacy_points = 6
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])
+reward_text = "6 PL + 2 FA + roba 2 Equipo y conserva 1 ancestral si esta disponible."
+defeat_text = "Pierdes 2 recursos basicos, 1 Resonancia y retrocedes 1 loseta."
+rules_text = "Durante este combate no puedes repetir ni modificar el Dado de Riesgo."
