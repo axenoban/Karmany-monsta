@@ -1,5 +1,13 @@
-[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityZephyr"]
+script = ExtResource("2_ability")
+ability_id = &"zephyr_explore_momentum"
+display_name = "Impulso de Bruma"
+trigger_id = &"after_explore"
+rules_text = "Despues de explorar una loseta oculta, gana +2 Poder en tu proximo combate esta ronda. Si no combates este turno, roba 1 Resonancia al final del turno."
+effect_tags = PackedStringArray("explore", "combat", "resonance")
 [resource]
 script = ExtResource("1_data")
 karmany_id = &"K-25"
@@ -8,6 +16,8 @@ subtitle = "Cria de Viento Bruma"
 rank = 0
 compatible_ranks = PackedInt32Array(0, 1)
 primary_type = 2
+type_tags = PackedStringArray("Tactico", "Movilidad")
 power = 5
 acquisition_text = "Karmany inicial."
 is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityZephyr")])
