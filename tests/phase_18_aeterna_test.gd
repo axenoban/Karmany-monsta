@@ -22,6 +22,7 @@ func _ready() -> void:
 	var ok: bool = true
 	ok = _test_canonical_data_and_round_gate() and ok
 	ok = _test_sanctuary_attunement_and_sync() and ok
+	ok = _test_sanctuary_tile_paths_and_embedded_combat() and ok
 	ok = _test_defeat_consequences() and ok
 	ok = _test_victory_legacy_and_resonance_reward() and ok
 	ok = _test_ancestral_equipment_reward_and_post_defeat_ek() and ok
@@ -73,6 +74,13 @@ func _test_sanctuary_attunement_and_sync() -> bool:
 	)
 	ok = _expect(repeated.status == KarmanyAeternaResult.Status.ALREADY_USED, "Sintonia del Santuario solo puede usarse una vez por jugador.") and ok
 
+	var entry_bonus := KarmanyAeternaResolver.resolve_sanctuary_entry_bonus_after_attunement(
+		attune_setup.p1,
+		attune_setup.context
+	)
+	ok = _expect(entry_bonus.is_resolved(), "Tras usar Sintonia debe habilitarse la Bonificacion de entrada de L-01.") and ok
+	ok = _expect(entry_bonus.resonance_cards_drawn == 1 and entry_bonus.resonance_discard_pending == 1, "Entrada L-01 debe robar 1 y descartar 1.") and ok
+
 	var sync_setup := _new_setup(KarmanyLegacyModeConfig.MapFormat.MAP_22, 2, 1, 0)
 	var sync := KarmanyAeternaResolver.resolve_aeterna_sync(sync_setup.p1, sync_setup.context)
 	ok = _expect(sync.is_resolved(), "Sintonizar con Aeterna debe estar disponible en Santuario.") and ok
@@ -82,7 +90,37 @@ func _test_sanctuary_attunement_and_sync() -> bool:
 	var sync_repeat := KarmanyAeternaResolver.resolve_aeterna_sync(sync_setup.p1, sync_setup.context)
 	ok = _expect(sync_repeat.status == KarmanyAeternaResult.Status.ALREADY_USED, "Sintonizar solo puede usarse una vez por partida por jugador.") and ok
 
-	print("Sintonia gratuita + Sintonizar 1 accion / una vez: ", "OK" if ok else "ERROR")
+	print("Sintonia + Entrada + Sintonizar una vez: ", "OK" if ok else "ERROR")
+	return ok
+
+
+func _test_sanctuary_tile_paths_and_embedded_combat() -> bool:
+	var ok: bool = true
+	var fallback_setup := _new_setup(KarmanyLegacyModeConfig.MapFormat.MAP_22, 3, 1, 0)
+	var fallback := KarmanyAeternaResolver.resolve_on_explore_without_requirements(
+		fallback_setup.p1,
+		fallback_setup.context
+	)
+	ok = _expect(fallback.is_resolved(), "Al explorar sin requisitos debe tener fallback de Resonancias.") and ok
+	ok = _expect(fallback.resonance_cards_drawn == 2 and fallback.resonance_discard_pending == 1, "Fallback L-01 debe robar 2 y descartar 1.") and ok
+
+	var prep_setup := _new_setup(KarmanyLegacyModeConfig.MapFormat.MAP_22, 6, 3, 1)
+	var prep := KarmanyAeternaResolver.resolve_on_explore_preparation(prep_setup.p1, prep_setup.context)
+	ok = _expect(prep.is_resolved(), "Al explorar con requisitos debe poder elegir preparacion.") and ok
+	ok = _expect(prep.resonance_cards_drawn == 3 and prep.resonance_discard_pending == 1, "Preparacion L-01 debe robar 3 y descartar 1.") and ok
+	ok = _expect(prep_setup.turn.actions_remaining == 2, "La preparacion es parte de Explorar y no cobra otra accion.") and ok
+
+	var combat_setup := _new_setup(KarmanyLegacyModeConfig.MapFormat.MAP_22, 6, 3, 1)
+	combat_setup.turn.spend_action_for(&"explore", 1)
+	combat_setup.context.action_cost = 0
+	combat_setup.context.instinct_roll = 1
+	combat_setup.context.modifiers.other_power = 25
+	var embedded := KarmanyAeternaResolver.resolve_combat(combat_setup.p1, combat_setup.context)
+	ok = _expect(embedded.is_victory(), "El combate generado por Al explorar debe reutilizar CombatResolver.") and ok
+	ok = _expect(not embedded.action_consumed, "Combate embebido en Explorar no debe consumir una segunda accion.") and ok
+	ok = _expect(combat_setup.turn.actions_remaining == 1, "Tras Explorar + combate embebido debe quedar 1 accion, no 0.") and ok
+
+	print("L-01 Al explorar + preparacion + combate embebido sin doble coste: ", "OK" if ok else "ERROR")
 	return ok
 
 
@@ -181,7 +219,9 @@ func _new_setup(
 	board.set_unit_occupant(Vector2i.ZERO, p1.player_id)
 	board.set_unit_occupant(Vector2i(1, 0), p2.player_id)
 
-	var players: Array[KarmanyPlayerState] = [p1, p2]
+	var players: Array[KarmanyPlayerState] = []
+	players.append(p1)
+	players.append(p2)
 	var turn := KarmanyTurnManager.new()
 	turn.setup_players(players)
 	turn.start_match()
@@ -192,7 +232,13 @@ func _new_setup(
 	var legacy := KarmanyLegacyPointsController.new()
 	legacy.configure(players, mode)
 
-	var cards: Array[KarmanyResonanceData] = [R01, R03, R04, R13, R22, R37]
+	var cards: Array[KarmanyResonanceData] = []
+	cards.append(R01)
+	cards.append(R03)
+	cards.append(R04)
+	cards.append(R13)
+	cards.append(R22)
+	cards.append(R37)
 	var deck := KarmanyResonanceDeck.new()
 	deck.setup(cards, false)
 
