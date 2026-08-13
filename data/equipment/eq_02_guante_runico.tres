@@ -1,23 +1,20 @@
-[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3 uid="uid://32ml3qryujs8"]
 
-[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
+[ext_resource type="Script" uid="uid://dyj2tkmnx4pys" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://b8c1xygk8ph37" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
 
 [sub_resource type="Resource" id="EQ02Power"]
 script = ExtResource("2_modifier")
 modifier_id = &"eq02_first_zero_resonance_power"
-modifier_type = 0
 amount = 2
 target_tags = PackedStringArray("any_pve")
 trigger_id = &"first_zero_resonance_each_round"
-automatic_in_combat = false
 rules_text = "La primera Resonancia +0 que juegues en cada ronda gana +2 Poder."
 
 [resource]
 script = ExtResource("1_data")
 equipment_id = &"EQ-02"
 display_name = "Guante Runico"
-rarity = 0
 tags = PackedStringArray("Resonancia", "Poder")
 cost = {
 1: 2,

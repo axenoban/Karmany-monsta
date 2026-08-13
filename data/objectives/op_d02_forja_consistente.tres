@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" format=3 uid="uid://c01k28nd014ws"]
 
-[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
-[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" uid="uid://q3kgsqwqce3j" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" uid="uid://7lfgcy1cih71" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
 
 [sub_resource type="Resource" id="Condition_equipment_3"]
 script = ExtResource("2_cond")

@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" format=3 uid="uid://d3msi1gqp27q1"]
 
-[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
-[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" uid="uid://q3kgsqwqce3j" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" uid="uid://7lfgcy1cih71" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
 
 [sub_resource type="Resource" id="Condition_pvp_win"]
 script = ExtResource("2_cond")
-condition_type = 0
 event_id = &"pvp_won"
-threshold = 1
 minimum_round = 2
 description = "Ganar 1 PvP desde ronda 2."
 

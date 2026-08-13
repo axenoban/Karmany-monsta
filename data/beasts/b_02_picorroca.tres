@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3 uid="uid://caltcj8wnwfho"]
 
-[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_beast"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[ext_resource type="Script" uid="uid://0s8120ljcsrk" path="res://scripts/data/beast_data.gd" id="1_beast"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="RewardMR"]
 script = ExtResource("2_effect")
@@ -15,12 +15,13 @@ script = ExtResource("1_beast")
 beast_id = &"B-02"
 display_name = "Picorroca"
 classification = "Ave de Penasco"
-tier = 0
 base_defense = 8
 combat_tags = PackedStringArray("beast", "basic")
 special_rule_ids = PackedStringArray("risk_used_plus_2_power")
 reward_legacy_points = 1
 reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardMR")])
+reward_consequence_ids = null
+defeat_consequence_ids = null
 reward_text = "1 PL + 2 MR"
 defeat_text = "Retrocede 1 loseta."
 rules_text = "Si usaste Dado de Riesgo 2.0, gana +2 Poder."

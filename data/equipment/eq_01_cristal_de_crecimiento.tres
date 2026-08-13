@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3 uid="uid://cgntcfvnjy3my"]
 
-[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
+[ext_resource type="Script" uid="uid://dyj2tkmnx4pys" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://b8c1xygk8ph37" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
 
 [sub_resource type="Resource" id="EQ01Power"]
 script = ExtResource("2_modifier")
 modifier_id = &"eq01_beast_power"
-modifier_type = 0
 amount = 2
 target_tags = PackedStringArray("beast")
 trigger_id = &"combat"
@@ -17,7 +16,6 @@ rules_text = "Tu Karmany gana +2 Poder contra Bestias."
 script = ExtResource("1_data")
 equipment_id = &"EQ-01"
 display_name = "Cristal de Crecimiento"
-rarity = 0
 tags = PackedStringArray("Poder", "Bestia")
 cost = {
 0: 2,

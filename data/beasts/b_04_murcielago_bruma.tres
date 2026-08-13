@@ -1,7 +1,14 @@
-[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3 uid="uid://c0faipx0cs6ds"]
 
-[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_beast"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[ext_resource type="Script" uid="uid://0s8120ljcsrk" path="res://scripts/data/beast_data.gd" id="1_beast"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="DefeatDiscard"]
+script = ExtResource("2_effect")
+effect_type = 7
+amount = 1
+card_source_id = &"resonance"
+description = "Derrota: descarta 1 Resonancia."
 
 [sub_resource type="Resource" id="RewardDraw"]
 script = ExtResource("2_effect")
@@ -17,24 +24,19 @@ amount = 1
 card_source_id = &"resonance"
 description = "Recompensa: descarta 1 Resonancia de tu eleccion."
 
-[sub_resource type="Resource" id="DefeatDiscard"]
-script = ExtResource("2_effect")
-effect_type = 7
-amount = 1
-card_source_id = &"resonance"
-description = "Derrota: descarta 1 Resonancia."
-
 [resource]
 script = ExtResource("1_beast")
 beast_id = &"B-04"
 display_name = "Murcielago Bruma"
 classification = "Criatura de Niebla"
-tier = 0
 base_defense = 8
 combat_tags = PackedStringArray("beast", "basic", "resonance")
+special_rule_ids = null
 reward_legacy_points = 1
 reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardDraw"), SubResource("RewardDiscard")])
+reward_consequence_ids = null
 defeat_effects = Array[ExtResource("2_effect")]([SubResource("DefeatDiscard")])
+defeat_consequence_ids = null
 reward_text = "1 PL + roba 3 Resonancias y descarta 1."
 defeat_text = "Descarta 1 Resonancia."
 rules_text = "Ninguno."

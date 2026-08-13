@@ -278,7 +278,7 @@ func _claim_eligible_public_objectives(
 			continue
 		if state.is_claimed():
 			continue
-		var objective := state.objective_data
+		var objective: KarmanyObjectiveData = state.objective_data
 		if not progress_tracker.are_conditions_met(
 			player.player_id,
 			objective.conditions

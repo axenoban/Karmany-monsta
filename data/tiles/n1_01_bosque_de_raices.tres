@@ -1,19 +1,17 @@
-[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3 uid="uid://bqh6wa21wnmnt"]
 
-[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[ext_resource type="Script" uid="uid://blidw0bgnkn2r" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="EntryEffect"]
 script = ExtResource("2_effect")
 effect_type = 1
-resource_type = 0
 amount = 1
 description = "Obtén 1 MN."
 
 [sub_resource type="Resource" id="LaterUseEffect"]
 script = ExtResource("2_effect")
 effect_type = 1
-resource_type = 0
 amount = 2
 description = "Recolectar 2 MN."
 
@@ -30,5 +28,3 @@ later_use_text = "Recolectar 2 MN."
 limit_text = "Sin límite especial."
 entry_effects = Array[ExtResource("2_effect")]([SubResource("EntryEffect")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("LaterUseEffect")])
-starts_revealed = false
-can_rotate_visual = true

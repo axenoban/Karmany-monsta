@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3 uid="uid://bcebdd1a8peds"]
 
-[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/resonance_modifier_data.gd" id="2_modifier"]
+[ext_resource type="Script" uid="uid://54yhackp1x2l" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dqnklywiehham" path="res://scripts/data/resonance_effect_block_data.gd" id="1_w8878"]
+[ext_resource type="Script" uid="uid://b4itlfvydpdcc" path="res://scripts/data/resonance_modifier_data.gd" id="2_modifier"]
 
 [sub_resource type="Resource" id="R37BeastPower"]
 script = ExtResource("2_modifier")
 amount = 2
 required_context_tags = PackedStringArray("target_beast")
+forbidden_context_tags = null
 description = "Contra Bestia, gana +2 Poder."
 
 [resource]
@@ -14,7 +16,6 @@ script = ExtResource("1_data")
 resonance_id = &"R-37"
 display_name = "Instinto de Caza"
 resonance_type = 4
-printed_power = 0
 use_windows = PackedStringArray("combat")
 modifiers = Array[ExtResource("2_modifier")]([SubResource("R37BeastPower")])
 rules_text = "Combate contra Bestia: gana +2 Poder."

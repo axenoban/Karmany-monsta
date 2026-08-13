@@ -1,16 +1,14 @@
-[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3 uid="uid://ch6gy2v17hjfy"]
 
-[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
+[ext_resource type="Script" uid="uid://dyj2tkmnx4pys" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://b8c1xygk8ph37" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
 
 [sub_resource type="Resource" id="EQ08Power"]
 script = ExtResource("2_modifier")
 modifier_id = &"eq08_resonance_power"
-modifier_type = 0
 amount = 2
 target_tags = PackedStringArray("any_pve")
 trigger_id = &"resonance_played"
-automatic_in_combat = false
 rules_text = "La Resonancia que juegues en combate gana +2 Poder."
 
 [resource]

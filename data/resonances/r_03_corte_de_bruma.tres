@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3 uid="uid://blx83x0h671e7"]
 
-[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[ext_resource type="Script" uid="uid://54yhackp1x2l" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dqnklywiehham" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" uid="uid://b4itlfvydpdcc" path="res://scripts/data/resonance_modifier_data.gd" id="3_061kk"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
 
 [sub_resource type="Resource" id="R03Draw"]
 script = ExtResource("3_effect")
@@ -20,7 +21,6 @@ description = "Descarta 1 Resonancia de tu eleccion."
 
 [sub_resource type="Resource" id="R03OnPlay"]
 script = ExtResource("2_block")
-timing_id = &"on_play"
 required_context_tags = PackedStringArray("tile_revealed_or_explored_this_turn")
 effects = Array[ExtResource("3_effect")]([SubResource("R03Draw"), SubResource("R03Discard")])
 description = "Si la condicion de loseta se cumple, roba 2 y descarta 1."
@@ -29,7 +29,6 @@ description = "Si la condicion de loseta se cumple, roba 2 y descarta 1."
 script = ExtResource("1_data")
 resonance_id = &"R-03"
 display_name = "Corte de Bruma"
-resonance_type = 0
 printed_power = 4
 use_windows = PackedStringArray("combat")
 effect_blocks = Array[ExtResource("2_block")]([SubResource("R03OnPlay")])

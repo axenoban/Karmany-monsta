@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="KarmanyData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="KarmanyData" format=3 uid="uid://bg74oslm4kenk"]
 
-[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[ext_resource type="Script" uid="uid://cwkp1ujrd8pwl" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dc2ulvekytuk6" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
 
 [sub_resource type="Resource" id="FloraviaGainEffect"]
 script = ExtResource("3_effect")
 effect_type = 1
 amount = 2
-resource_type = 0
 description = "Obtén 2 MN adicionales."
 
 [sub_resource type="Resource" id="AbilityFloravia"]
@@ -26,23 +25,17 @@ script = ExtResource("1_data")
 karmany_id = &"K-05"
 display_name = "Floravia"
 subtitle = "Custodia Verde"
-rank = 1
 compatible_ranks = PackedInt32Array(1)
 primary_type = 4
 type_tags = PackedStringArray("Recolector")
 power = 5
 encounter_defense = 8
-legacy_points = 0
 acquisition_text = "Paga 2 MN + 1 EK o derrota Defensa 8"
-is_starting_karmany = false
 can_acquire_by_payment = true
 can_acquire_by_defeat = true
-can_acquire_by_condition = false
-acquisition_condition_id = &""
 bond_cost = {
 0: 2,
 2: 1
 }
 abilities = Array[ExtResource("2_ability")]([SubResource("AbilityFloravia")])
-resonance_affinity_id = &""
 resonance_affinity_tags = PackedStringArray()

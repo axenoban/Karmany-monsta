@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3 uid="uid://cdjaugapsbndm"]
 
-[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[ext_resource type="Script" uid="uid://54yhackp1x2l" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dqnklywiehham" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[ext_resource type="Script" uid="uid://b4itlfvydpdcc" path="res://scripts/data/resonance_modifier_data.gd" id="3_m761c"]
 
 [sub_resource type="Resource" id="R13PreventRetreat"]
 script = ExtResource("3_effect")

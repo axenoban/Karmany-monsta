@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3 uid="uid://biwild4gyua6j"]
 
-[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_beast"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[ext_resource type="Script" uid="uid://0s8120ljcsrk" path="res://scripts/data/beast_data.gd" id="1_beast"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="RewardFA"]
 script = ExtResource("2_effect")
@@ -21,6 +21,7 @@ combat_tags = PackedStringArray("beast", "boss")
 special_rule_ids = PackedStringArray("requires_book_2_or_higher")
 reward_legacy_points = 5
 reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])
+reward_consequence_ids = null
 defeat_consequence_ids = PackedStringArray("discard_3_basic_resources_choice")
 reward_text = "5 PL + 1 FA"
 defeat_text = "Descarta 3 recursos basicos de tu eleccion y retrocede 1 loseta."

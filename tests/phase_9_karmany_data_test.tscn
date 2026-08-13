@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://nvv0xpkerjts"]
 
-[ext_resource type="Script" path="res://tests/phase_9_karmany_data_test.gd" id="1_test"]
+[ext_resource type="Script" uid="uid://db7gj2vx86pnl" path="res://tests/phase_9_karmany_data_test.gd" id="1_test"]
 
-[node name="Phase9KarmanyDataTest" type="Node"]
+[node name="Phase9KarmanyDataTest" type="Node" unique_id=286008745]
 script = ExtResource("1_test")

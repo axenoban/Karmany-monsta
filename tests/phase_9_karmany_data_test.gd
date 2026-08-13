@@ -118,7 +118,7 @@ func _validate_runtime_separation() -> bool:
 func _validate_affinity_field() -> bool:
 	var probe := KarmanyData.new()
 	probe.resonance_affinity_id = &"phase_9_test_affinity"
-	probe.resonance_affinity_tags = PackedStringArray("test", "resonance")
+	probe.resonance_affinity_tags = PackedStringArray(["test", "resonance"])
 
 	var ok: bool = true
 	ok = _expect(probe.resonance_affinity_id == &"phase_9_test_affinity", "No se puede almacenar afinidad/resonancia.") and ok

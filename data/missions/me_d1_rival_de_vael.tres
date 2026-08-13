@@ -1,21 +1,17 @@
-[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="KarmanyMissionData" format=3 uid="uid://cf8276sci6ex3"]
 
-[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
-[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+[ext_resource type="Script" uid="uid://j8tige7x10h2" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" uid="uid://7lfgcy1cih71" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
 
 [sub_resource type="Resource" id="Condition_pvp_win"]
 script = ExtResource("2_cond")
-condition_type = 0
 event_id = &"pvp_won"
-threshold = 1
 description = "Ganar 1 PvP."
 
 [sub_resource type="Resource" id="Condition_beast_win"]
 script = ExtResource("2_cond")
-condition_type = 0
 event_id = &"beast_defeated"
-threshold = 1
 description = "Derrotar 1 Bestia."
 
 [sub_resource type="Resource" id="Condition_distinct_rounds"]
@@ -23,7 +19,6 @@ script = ExtResource("2_cond")
 condition_type = 4
 event_id = &"pvp_won"
 secondary_event_id = &"beast_defeated"
-threshold = 1
 description = "Cumplir ambos logros en rondas distintas."
 
 [sub_resource type="Resource" id="Reward_fa"]
@@ -41,6 +36,5 @@ trainer_display_name = "Dorian"
 display_name = "Rival de Vael"
 recommended_first_game = true
 condition_text = "Gana 1 PvP y derrota 1 Bestia en rondas distintas."
-reward_legacy_points = 4
 reward_effects = Array[ExtResource("3_effect")]([SubResource("Reward_fa")])
 conditions = Array[ExtResource("2_cond")]([SubResource("Condition_pvp_win"), SubResource("Condition_beast_win"), SubResource("Condition_distinct_rounds")])

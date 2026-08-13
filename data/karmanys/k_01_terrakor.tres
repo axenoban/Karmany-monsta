@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="KarmanyData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyData" format=3 uid="uid://d3akm761vs2iw"]
 
-[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://cwkp1ujrd8pwl" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dc2ulvekytuk6" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_pnnbg"]
 
 [sub_resource type="Resource" id="AbilityTerrakor"]
 script = ExtResource("2_ability")
@@ -22,15 +23,7 @@ compatible_ranks = PackedInt32Array(0, 1)
 primary_type = 0
 type_tags = PackedStringArray("Estable")
 power = 6
-encounter_defense = -1
-legacy_points = 0
 acquisition_text = "Karmany inicial"
 is_starting_karmany = true
-can_acquire_by_payment = false
-can_acquire_by_defeat = false
-can_acquire_by_condition = false
-acquisition_condition_id = &""
-bond_cost = {}
 abilities = Array[ExtResource("2_ability")]([SubResource("AbilityTerrakor")])
-resonance_affinity_id = &""
 resonance_affinity_tags = PackedStringArray()
