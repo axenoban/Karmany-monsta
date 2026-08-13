@@ -1,0 +1,113 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_28_vertical_slice_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_24_full_match_prototype.tscn" id="2_phase24"]
+
+[node name="Phase28VerticalSlicePrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase24FullMatchPrototype" parent="." instance=ExtResource("2_phase24")]
+
+[node name="SliceOverlay" type="CanvasLayer" parent="."]
+layer = 8
+
+[node name="Panel" type="PanelContainer" parent="SliceOverlay"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -470.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 650.0
+
+[node name="Margin" type="MarginContainer" parent="SliceOverlay/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="SliceOverlay/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — VERTICAL SLICE"
+theme_override_font_sizes/font_size = 20
+
+[node name="GoalLabel" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "OBJETIVO ACTUAL"
+autowrap_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Progreso"
+autowrap_mode = 2
+
+[node name="Separator1" type="HSeparator" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ActionGrid" type="GridContainer" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="MoveButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Mover seleccionado"
+
+[node name="ExploreButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Explorar seleccionado"
+
+[node name="InteractButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Interactuar"
+
+[node name="KarmanyButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Llamar / Vincular"
+
+[node name="CraftButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Craftear EQ-01"
+
+[node name="CombatButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Combatir Bestia"
+
+[node name="BookButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Mejorar Libro"
+
+[node name="EndTurnButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/ActionGrid"]
+layout_mode = 2
+text = "Finalizar turno + IA"
+
+[node name="MessageLabel" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Selecciona una loseta o sigue el objetivo guiado."
+autowrap_mode = 2
+
+[node name="SaveRow" type="HBoxContainer" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="SaveButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/SaveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Guardar"
+
+[node name="LoadButton" type="Button" parent="SliceOverlay/Panel/Margin/VBox/SaveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cargar"
+
+[node name="MetricsLabel" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Metricas"
+autowrap_mode = 2
+
+[node name="HelpLabel" type="Label" parent="SliceOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Clic izquierdo selecciona loseta. Verde=Mover, azul=Explorar, rojo=Bestia. Usa 2 acciones y luego Finalizar turno + IA. WASD/rueda/Q-E conservan la camara estrategica."
+autowrap_mode = 2
