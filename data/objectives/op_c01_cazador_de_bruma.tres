@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[sub_resource type="Resource" id="DefeatThree"]
+script = ExtResource("2_cond")
+condition_type = 0
+event_id = &"beast_defeated"
+threshold = 3
+description = "Derrotar 3 Bestias."
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-C01"
+display_name = "Cazador de Bruma"
+family = 2
+condition_text = "Ser el primer jugador en derrotar 3 Bestias."
+reward_legacy_points = 4
+conditions = Array[ExtResource("2_cond")]([SubResource("DefeatThree")])

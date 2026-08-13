@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[sub_resource type="Resource" id="BookTwo"]
+script = ExtResource("2_cond")
+condition_type = 2
+state_id = &"book_level"
+threshold = 2
+description = "Tener Libro II o superior."
+[sub_resource type="Resource" id="ReserveOne"]
+script = ExtResource("2_cond")
+condition_type = 2
+state_id = &"linked_karmany_count"
+threshold = 2
+description = "Tener al menos 1 Karmany en reserva."
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-D03"
+display_name = "Libro Despierto"
+family = 1
+condition_text = "Ser el primer jugador en mejorar a Libro II y tener 1 Karmany en reserva."
+reward_legacy_points = 4
+conditions = Array[ExtResource("2_cond")]([SubResource("BookTwo"), SubResource("ReserveOne")])

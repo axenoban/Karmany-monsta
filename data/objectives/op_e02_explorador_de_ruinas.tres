@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[sub_resource type="Resource" id="RevealFour"]
+script = ExtResource("2_cond")
+condition_type = 0
+event_id = &"tile_revealed"
+threshold = 4
+description = "Revelar 4 losetas durante la partida."
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-E02"
+display_name = "Explorador de Ruinas"
+family = 0
+condition_text = "Ser el primer jugador en revelar 4 losetas durante la partida."
+reward_legacy_points = 3
+conditions = Array[ExtResource("2_cond")]([SubResource("RevealFour")])
