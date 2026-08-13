@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="Condition_equipment_2"]
+script = ExtResource("2_cond")
+condition_type = 2
+threshold = 2
+state_id = &"equipment_count"
+description = "Tener 2 Equipos equipados."
+
+[sub_resource type="Resource" id="Condition_book_2"]
+script = ExtResource("2_cond")
+condition_type = 2
+threshold = 2
+state_id = &"book_level"
+description = "Libro II o superior."
+
+[sub_resource type="Resource" id="Reward_fa"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Mision completada: +1 FA."
+
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-N1"
+trainer_id = &"nara"
+trainer_display_name = "Nara"
+display_name = "Forja Personal"
+recommended_first_game = true
+condition_text = "Termina tu turno con 2 Equipos equipados y Libro II o superior."
+completion_timing = 1
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("3_effect")]([SubResource("Reward_fa")])
+conditions = Array[ExtResource("2_cond")]([SubResource("Condition_equipment_2"), SubResource("Condition_book_2")])
