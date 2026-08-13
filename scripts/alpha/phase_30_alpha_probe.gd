@@ -1,0 +1,52 @@
+extends Node
+
+const ALPHA_SCENE: PackedScene = preload("res://scenes/ui/phase_30_alpha_prototype.tscn")
+const MATCH_SCENE: PackedScene = preload("res://scenes/ui/phase_24_full_match_prototype.tscn")
+
+func _ready() -> void:
+	print("\n=== KARMANY MONSTA - FASE 30 ALPHA PROBE ===")
+	var alpha_ok: bool = await _check_alpha()
+	var repeat_ok: bool = await _check_repeatability() if alpha_ok else false
+	if alpha_ok and repeat_ok:
+		print("FASE 30 OK - Alpha repetible, observable y guiado.")
+	else:
+		push_error("FASE 30 ERROR - Revisa el primer fallo del probe.")
+
+func _check_alpha() -> bool:
+	var alpha := ALPHA_SCENE.instantiate() as KarmanyPhase30AlphaBridge
+	if alpha == null:
+		return false
+	add_child(alpha)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var ok: bool = alpha.setup_ok and alpha.telemetry.configured
+	ok = ok and not alpha.get_onboarding_text().is_empty()
+	ok = ok and not alpha.telemetry.get_runtime_summary().is_empty()
+	ok = ok and not alpha.telemetry.get_balance_summary().is_empty()
+	alpha.queue_free()
+	await get_tree().process_frame
+	print("Capa Alpha + metricas + onboarding: ", "OK" if ok else "ERROR")
+	return ok
+
+func _check_repeatability() -> bool:
+	var signatures: Array[String] = []
+	for index in range(2):
+		var match := MATCH_SCENE.instantiate() as KarmanyPhase24FullMatchBridge
+		if match == null:
+			return false
+		add_child(match)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		if not match.setup_ok or not match.run_complete_match_fast():
+			match.queue_free()
+			return false
+		if not match.coordinator.is_finished or match.coordinator.final_evaluation == null:
+			match.queue_free()
+			return false
+		var p1: int = match.legacy_points.get_total(match.player_1.player_id)
+		var p2: int = match.legacy_points.get_total(match.player_2.player_id)
+		signatures.append("%d:%d:%d" % [p1, p2, match.turn_manager.current_round])
+		print("Run %d · PL %d-%d · ronda %d: OK" % [index + 1, p1, p2, match.turn_manager.current_round])
+		match.queue_free()
+		await get_tree().process_frame
+	return signatures.size() == 2 and signatures[0] == signatures[1]
