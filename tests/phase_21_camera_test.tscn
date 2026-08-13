@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tests/phase_21_camera_test.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_21_camera_prototype.tscn" id="2_phase21"]
+
+[node name="Phase21CameraTest" type="Node"]
+script = ExtResource("1_test")
+
+[node name="Phase21CameraPrototype" parent="." instance=ExtResource("2_phase21")]
