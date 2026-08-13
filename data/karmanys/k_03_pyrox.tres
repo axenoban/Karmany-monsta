@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="AbilityPyrox"]
+script = ExtResource("2_ability")
+ability_id = &"pyrox_risk_die"
+display_name = "Instinto Igneo"
+trigger_id = &"combat_risk_authorization"
+rules_text = "Puedes lanzar el Dado de Riesgo 2.0 al combatir. Solo las caras 5-6 agregan Poder."
+effect_tags = PackedStringArray("combat", "risk")
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-03"
+display_name = "Pyrox"
+subtitle = "Salamandra Ignea"
+rank = 0
+compatible_ranks = PackedInt32Array(0, 1)
+primary_type = 1
+type_tags = PackedStringArray("Salvaje", "Riesgo")
+power = 5
+acquisition_text = "Karmany inicial."
+is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityPyrox")])
