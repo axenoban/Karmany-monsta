@@ -1,7 +1,9 @@
-extends Node
+extends Node3D
 
 
-@onready var board_prototype: Node = $Board3DPrototype
+@onready var board_prototype: Node3D = $Board3DPrototype
+@onready var board_camera: Camera3D = $Board3DPrototype/Camera3D
+@onready var board_tiles_root: Node3D = $Board3DPrototype/Board
 @onready var hud: KarmanyGameHUD = $GameHUD
 
 
@@ -9,9 +11,17 @@ var legacy_points_controller: KarmanyLegacyPointsController = KarmanyLegacyPoint
 
 
 func _ready() -> void:
-	if board_prototype == null or hud == null:
-		push_error("FASE 19 ERROR: No se pudo conectar tablero y HUD.")
+	if board_prototype == null or board_camera == null or board_tiles_root == null or hud == null:
+		push_error("FASE 19 ERROR: No se pudo conectar tablero, camara y HUD.")
 		return
+
+	# La escena compuesta debe conservar un contexto 3D explicito. El tablero
+	# genera sus losetas en su propio _ready(); aqui solo garantizamos que su
+	# rama 3D siga visible y que su camara sea la activa del viewport.
+	board_prototype.visible = true
+	board_tiles_root.visible = true
+	board_camera.make_current()
+	board_camera.look_at(Vector3.ZERO, Vector3.UP)
 
 	var manager: KarmanyTurnManager = board_prototype.turn_manager
 	var players: Array[KarmanyPlayerState] = []
@@ -31,6 +41,25 @@ func _ready() -> void:
 	manager.action_spent.connect(_on_turn_state_changed)
 	manager.turn_started.connect(_on_turn_started)
 	_sync_action_states()
+	call_deferred("_verify_visual_integration")
+
+
+func _verify_visual_integration() -> void:
+	var generated_tiles: int = board_tiles_root.get_child_count()
+	if generated_tiles <= 0:
+		push_error(
+			"FASE 19 VISUAL ERROR: Board3DPrototype esta instanciado, pero no genero losetas visibles."
+		)
+		return
+
+	if not board_camera.is_current():
+		board_camera.make_current()
+
+	print(
+		"FASE 19 VISUAL: Board3DPrototype + GameHUD conectados; ",
+		generated_tiles,
+		" losetas 3D generadas y camara activa."
+	)
 
 
 func _on_action_requested(action_id: StringName) -> void:
