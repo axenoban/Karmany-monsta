@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_26_save_bridge.gd" id="1_script"]
+
+[node name="Phase26SavePrototype" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="MatchContainer" type="Node3D" parent="."]
+
+[node name="SaveOverlay" type="CanvasLayer" parent="."]
+layer = 30
+
+[node name="Panel" type="PanelContainer" parent="SaveOverlay"]
+offset_left = 486.0
+offset_top = 18.0
+offset_right = 1128.0
+offset_bottom = 250.0
+
+[node name="Margin" type="MarginContainer" parent="SaveOverlay/Panel"]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="SaveOverlay/Panel/Margin"]
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="SaveOverlay/Panel/Margin/VBox"]
+text = "FASE 26 — NUEVA PARTIDA / GUARDAR / CARGAR"
+
+[node name="StatusLabel" type="Label" parent="SaveOverlay/Panel/Margin/VBox"]
+text = "Preparando partida..."
+
+[node name="Buttons" type="HBoxContainer" parent="SaveOverlay/Panel/Margin/VBox"]
+theme_override_constants/separation = 6
+
+[node name="NewButton" type="Button" parent="SaveOverlay/Panel/Margin/VBox/Buttons"]
+text = "Nueva partida"
+
+[node name="CheckpointButton" type="Button" parent="SaveOverlay/Panel/Margin/VBox/Buttons"]
+text = "Preparar checkpoint"
+
+[node name="SaveButton" type="Button" parent="SaveOverlay/Panel/Margin/VBox/Buttons"]
+text = "Guardar"
+
+[node name="LoadButton" type="Button" parent="SaveOverlay/Panel/Margin/VBox/Buttons"]
+text = "Cargar"
+
+[node name="LogLabel" type="Label" parent="SaveOverlay/Panel/Margin/VBox"]
+text = ""
