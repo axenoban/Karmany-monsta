@@ -125,9 +125,9 @@ func _count_distinct_field_values(
 		if not _event_matches(event, condition.event_id, condition):
 			continue
 		var payload: Dictionary = event.get("payload", {})
-		if not payload.has(condition.field_id):
+		if not _payload_has(payload, condition.field_id):
 			continue
-		seen[payload[condition.field_id]] = true
+		seen[_payload_get(payload, condition.field_id)] = true
 	return seen.size()
 
 
@@ -167,18 +167,30 @@ func _event_matches(
 
 	var payload: Dictionary = event.get("payload", {})
 	if condition.required_int_field != &"":
-		if not payload.has(condition.required_int_field):
+		if not _payload_has(payload, condition.required_int_field):
 			return false
-		if int(payload[condition.required_int_field]) < condition.required_int_minimum:
+		if int(_payload_get(payload, condition.required_int_field)) < condition.required_int_minimum:
 			return false
 
 	if condition.required_string_field != &"":
-		if not payload.has(condition.required_string_field):
+		if not _payload_has(payload, condition.required_string_field):
 			return false
-		if String(payload[condition.required_string_field]) != condition.required_string_value:
+		if String(_payload_get(payload, condition.required_string_field)) != condition.required_string_value:
 			return false
 
 	return true
+
+
+func _payload_has(payload: Dictionary, field_id: StringName) -> bool:
+	if payload.has(field_id):
+		return true
+	return payload.has(String(field_id))
+
+
+func _payload_get(payload: Dictionary, field_id: StringName) -> Variant:
+	if payload.has(field_id):
+		return payload[field_id]
+	return payload.get(String(field_id), null)
 
 
 func _get_events(player_id: StringName) -> Array:
