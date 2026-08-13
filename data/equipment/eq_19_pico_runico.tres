@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-19"
+display_name = "Pico Runico"
+rarity = 0
+tags = PackedStringArray("Recoleccion", "MR")
+cost = {0: 2, 1: 1}
+rules_text = "Cuando recolectes MR, obten +2 MR adicionales. Maximo una vez por ronda."
+trigger_tags = PackedStringArray("collect_mr", "once_per_round")
