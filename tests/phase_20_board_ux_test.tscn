@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tests/phase_20_board_ux_test.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_20_board_ux_prototype.tscn" id="2_prototype"]
+
+[node name="Phase20BoardUXTest" type="Node"]
+script = ExtResource("1_test")
+
+[node name="Phase20BoardUXPrototype" parent="." instance=ExtResource("2_prototype")]
