@@ -6,10 +6,11 @@
 
 [sub_resource type="Resource" id="Condition_reveal_3"]
 script = ExtResource("2_cond")
-condition_type = 0
+condition_type = 1
 event_id = &"tile_revealed"
 threshold = 3
-description = "Revelar 3 losetas."
+field_id = &"tile_id"
+description = "Revelar 3 losetas distintas."
 
 [sub_resource type="Resource" id="Condition_enter_n2"]
 script = ExtResource("2_cond")
