@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_23_visual_direction_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_22_feedback_prototype.tscn" id="2_phase22"]
+[ext_resource type="Script" path="res://scripts/ui/visual_direction_controller.gd" id="3_visual"]
+
+[node name="Phase23VisualDirectionPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase22FeedbackPrototype" parent="." instance=ExtResource("2_phase22")]
+
+[node name="VisualDirectionRoot" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="VisualDirectionRoot"]
+
+[node name="KeyLight" type="DirectionalLight3D" parent="VisualDirectionRoot"]
+shadow_enabled = true
+
+[node name="FillLight" type="OmniLight3D" parent="VisualDirectionRoot"]
+
+[node name="RimLight" type="DirectionalLight3D" parent="VisualDirectionRoot"]
+
+[node name="VisualDirectionController" type="Node" parent="."]
+script = ExtResource("3_visual")
