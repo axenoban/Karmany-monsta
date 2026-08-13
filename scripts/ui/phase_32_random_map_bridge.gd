@@ -42,7 +42,7 @@ func _ready() -> void:
 		push_error("FASE 32 ERROR: No se pudo generar el mapa inicial.")
 
 func set_seed_and_regenerate(seed_value: int) -> bool:
-	var generated := KarmanyMap41ContentGenerator.generate(seed_value, pools)
+	var generated := KarmanyMap41ContentGenerator.generate(seed_value, pools, true)
 	if generated == null:
 		return false
 	if not generated.apply_public_state(phase_31.board_state):
