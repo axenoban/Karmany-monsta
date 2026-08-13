@@ -94,7 +94,21 @@ func get_assignment_fingerprint() -> String:
 	return signature.sha256_text()
 
 func get_fallback_report() -> Dictionary:
-	return _fallback_reports.duplicate(true)
+	var public_reports: Dictionary = {}
+	for level_value in _fallback_reports.keys():
+		var report_value: Variant = _fallback_reports[level_value]
+		if not (report_value is Dictionary):
+			continue
+		var source: Dictionary = report_value
+		var used_fallback: bool = bool(source.get("used_fallback", false))
+		public_reports[level_value] = {
+			"pool_size": int(source.get("pool_size", 0)),
+			"target_count": int(source.get("target_count", 0)),
+			"usage_counts": source.get("usage_counts", {}).duplicate() if used_fallback else {},
+			"repeated": source.get("repeated", {}).duplicate() if used_fallback else {},
+			"used_fallback": used_fallback
+		}
+	return public_reports
 
 func get_hidden_slot_count() -> int:
 	return _hidden_content.size()
