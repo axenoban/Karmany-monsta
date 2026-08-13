@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N3-03"
+display_name = "Cueva de Cristal Ancestral"
+level = 3
+function_tags = PackedStringArray("Bestia Compleja", "Fragmento Ancestral")
+icon_tags = PackedStringArray("Bestia", "FA", "MR")
+on_explore_text = "Elige: revela 1 Bestia Compleja y combatela; si la derrotas obtienes +1 FA; o recolecta 1 FA; o recolecta 2 MR y roba 2 Resonancias y descarta 1."
+entry_bonus_text = "Entrada: +1 Poder contra tu proxima Bestia Compleja, Jefe o Legendaria este turno."
+later_use_text = "Enfrentar 1 Bestia Compleja, recolectar 2 MR o recolectar 1 FA."
+limit_text = "Maximo 1 FA por jugador por ronda desde esta loseta."

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-01"
+display_name = "Nido de Bruma"
+level = 2
+function_tags = PackedStringArray("Bestia Media", "Recoleccion")
+icon_tags = PackedStringArray("Bestia", "EK")
+on_explore_text = "Elige: revela 1 Bestia Media y combatela; o recolecta 2 EK."
+entry_bonus_text = "Entrada: +1 Poder contra tu proxima Bestia Media o superior este turno."
+later_use_text = "Enfrentar 1 Bestia Media o recolectar 2 EK."
+limit_text = "Si la Bestia no es derrotada, permanece bloqueando la loseta."

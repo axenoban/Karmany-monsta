@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-04"
+display_name = "Campamento Antiguo"
+level = 1
+function_tags = PackedStringArray("Crafteo basico", "Taller")
+icon_tags = PackedStringArray("Taller", "MN")
+on_explore_text = "Elige: craftea 1 Equipo basico pagando su costo normal; o recolecta 2 MN."
+entry_bonus_text = "Entrada: Mira 1 carta de Equipo del mazo; dejala arriba o abajo."
+later_use_text = "Craftear 1 Equipo basico o recolectar 2 MN."
+limit_text = "No permite craftear Equipo avanzado o ancestral."
