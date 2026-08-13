@@ -1,3 +1,4 @@
+class_name KarmanyPhase20BoardUXBridge
 extends Node3D
 
 
