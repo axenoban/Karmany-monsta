@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+[sub_resource type="Resource" id="RewardMR"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 1
+description = "Recompensa B-07: +2 MR."
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-07"
+display_name = "Terranuk"
+classification = "Bestia de Roca"
+tier = 1
+base_defense = 12
+combat_tags = PackedStringArray("medium", "beast", "stable_interaction")
+special_rule_ids = PackedStringArray("stable_win_plus_2_mn")
+reward_legacy_points = 2
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardMR")])
+reward_text = "2 PL + 2 MR; si lo derrotas con Karmany Estable, obtienes +2 MN."
+defeat_text = "Descarta 2 recursos basicos de tu eleccion y retrocedes 1 loseta."
+rules_text = "La recompensa condicional por Karmany Estable queda pendiente de su trigger digital."
