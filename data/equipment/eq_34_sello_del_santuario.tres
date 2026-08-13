@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-34"
+display_name = "Sello del Santuario"
+rarity = 1
+cost = {2: 2, 3: 1}
+rules_text = "Contra Legendarios, gana +4 Poder."
