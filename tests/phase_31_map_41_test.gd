@@ -14,7 +14,8 @@ func _ready() -> void:
 	ok = _test_starting_positions() and ok
 	ok = _test_legendary_center() and ok
 	ok = _test_hidden_level_structure() and ok
-	ok = await _test_visual_map_and_camera() and ok
+	var visual_ok: bool = await _test_visual_map_and_camera()
+	ok = visual_ok and ok
 
 	print("")
 	print("================================")
