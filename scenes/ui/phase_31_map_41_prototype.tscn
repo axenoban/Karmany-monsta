@@ -1,0 +1,87 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_31_map_41_bridge.gd" id="1_bridge"]
+[ext_resource type="Script" path="res://scripts/ui/strategic_camera_controller.gd" id="2_camera"]
+
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.12, 0.14, 0.16, 1)
+roughness = 0.92
+
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+material = SubResource("GroundMaterial")
+size = Vector2(20, 20)
+center_offset = Vector3(0, -0.13, 0)
+
+[node name="Phase31Map41Prototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Board" type="Node3D" parent="."]
+
+[node name="Units" type="Node3D" parent="."]
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("GroundMesh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 16, 16)
+current = true
+fov = 50.0
+
+[node name="StrategicCameraController" type="Node" parent="."]
+script = ExtResource("2_camera")
+zoom_step = 1.25
+min_distance = 5.0
+max_distance = 24.0
+bounds_padding = 2.0
+
+[node name="Phase31Overlay" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="MainMargin" type="MarginContainer" parent="Phase31Overlay"]
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 128.0
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Phase31Overlay/MainMargin"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="InnerMargin" type="MarginContainer" parent="Phase31Overlay/MainMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="Phase31Overlay/MainMargin/Panel/InnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — FASE 31 · MAPA CANONICO DE 41"
+theme_override_font_sizes/font_size = 18
+
+[node name="StatusLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Construyendo geometria..."
+autowrap_mode = 2
+
+[node name="SelectionLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Selecciona una posicion para inspeccionar su nivel estructural."
+autowrap_mode = 2
+
+[node name="HelpLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "WASD/flechas: pan · rueda: zoom · Q/E: rotar · F: enfocar seleccion · C: jugador · Home: vista general"
+autowrap_mode = 2
