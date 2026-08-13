@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+
+[sub_resource type="Resource" id="Condition_book_2"]
+script = ExtResource("2_cond")
+condition_type = 2
+threshold = 2
+state_id = &"book_level"
+description = "Libro II o superior."
+
+[sub_resource type="Resource" id="Condition_equipment_2"]
+script = ExtResource("2_cond")
+condition_type = 2
+threshold = 2
+state_id = &"equipment_count"
+description = "Tener 2 Equipos equipados."
+
+[sub_resource type="Resource" id="Condition_fa_1"]
+script = ExtResource("2_cond")
+condition_type = 2
+threshold = 1
+state_id = &"fa"
+description = "Tener al menos 1 FA."
+
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-A03"
+display_name = "Preparacion Final"
+family = 3
+condition_text = "Ser el primer jugador en terminar su turno con Libro II o superior, 2 Equipos y 1 FA."
+reward_legacy_points = 5
+map_41_only = true
+conditions = Array[ExtResource("2_cond")]([SubResource("Condition_book_2"), SubResource("Condition_equipment_2"), SubResource("Condition_fa_1")])
