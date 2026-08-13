@@ -152,6 +152,9 @@ func _spawn_fresh_match() -> bool:
 	await get_tree().process_frame
 	if not current_match.setup_ok:
 		return false
+	var phase_24_overlay := current_match.get_node_or_null("Phase24Overlay") as CanvasLayer
+	if phase_24_overlay != null:
+		phase_24_overlay.visible = false
 	context = _build_context(current_match)
 	return context != null and context.is_valid()
 
