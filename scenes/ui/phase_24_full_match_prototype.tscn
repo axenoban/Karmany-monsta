@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_24_full_match_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_23_visual_direction_prototype.tscn" id="2_phase23"]
+
+[node name="Phase24FullMatchPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase23VisualDirectionPrototype" parent="." instance=ExtResource("2_phase23")]
+
+[node name="Phase24Overlay" type="CanvasLayer" parent="."]
+layer = 6
+
+[node name="Panel" type="PanelContainer" parent="Phase24Overlay"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -505.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 610.0
+
+[node name="Margin" type="MarginContainer" parent="Phase24Overlay/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Phase24Overlay/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "FASE 24 — PARTIDA COMPLETA"
+theme_override_font_sizes/font_size = 20
+
+[node name="StatusLabel" type="Label" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Preparando partida integrada..."
+autowrap_mode = 2
+
+[node name="Separator" type="HSeparator" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="RunButton" type="Button" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Ejecutar partida integrada"
+
+[node name="HelpLabel" type="Label" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Demo abreviada: 2 jugadores, 7 hexagonos y contenido representativo. El boton ejecuta un recorrido legal hasta Aeterna y cierre de Carrera de Legado."
+autowrap_mode = 2
+
+[node name="LogTitle" type="Label" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Ultimos eventos"
+theme_override_font_sizes/font_size = 16
+
+[node name="LogLabel" type="Label" parent="Phase24Overlay/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Sin eventos."
+autowrap_mode = 2
+vertical_alignment = 2
