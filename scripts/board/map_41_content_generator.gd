@@ -9,7 +9,8 @@ const L01: KarmanyTileData = preload("res://data/tiles/l_01_santuario_de_aeterna
 
 static func generate(
 	match_seed: int,
-	pools: KarmanyMap41TilePools
+	pools: KarmanyMap41TilePools,
+	log_fallback: bool = true
 ) -> KarmanyMap41ContentSession:
 	if pools == null or not pools.loaded:
 		return null
@@ -36,7 +37,7 @@ static func generate(
 			hidden_content[coords[index]] = tile
 
 		fallback_reports[level] = generated
-		if bool(generated.get("used_fallback", false)):
+		if log_fallback and bool(generated.get("used_fallback", false)):
 			print(
 				"FASE 32 ALPHA TILE POOL FALLBACK ",
 				KarmanyCanonicalMap41Layout.get_level_short_name(level),
