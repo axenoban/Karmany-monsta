@@ -1,6 +1,22 @@
-[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+[gd_resource type="Resource" script_class="KarmanyResonanceData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/resonance_effect_block_data.gd" id="2_block"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="R05LoseDiscard"]
+script = ExtResource("3_effect")
+effect_type = 7
+amount = 1
+card_source_id = &"resonance"
+description = "Si pierdes este PvP, descarta 1 Resonancia adicional de tu mano si tienes."
+
+[sub_resource type="Resource" id="R05AfterLoss"]
+script = ExtResource("2_block")
+timing_id = &"after_combat"
+required_context_tags = PackedStringArray("pvp", "combat_lost")
+effects = Array[ExtResource("3_effect")]([SubResource("R05LoseDiscard")])
+description = "Penalizacion de derrota de Furia Controlada."
 
 [resource]
 script = ExtResource("1_data")
@@ -9,5 +25,6 @@ display_name = "Furia Controlada"
 resonance_type = 0
 printed_power = 6
 use_windows = PackedStringArray("combat")
+effect_blocks = Array[ExtResource("2_block")]([SubResource("R05AfterLoss")])
 rules_text = "Solo PvP legal: +6 Poder. Si pierdes, descarta 1 Resonancia adicional de tu mano si tienes. Puedes lanzar Dado de Riesgo 2.0 aunque tu Karmany no sea Salvaje; aplica resultados 1-6 completos. No puede combinarse con otro efecto que permita Dado en este PvP."
 tags = PackedStringArray("ataque", "pvp", "risk_authorization")
