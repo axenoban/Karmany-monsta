@@ -57,7 +57,9 @@ func _test_board_materials_and_legibility() -> bool:
 		return false
 
 	var ground := board_ux.board_prototype.get_node_or_null("Ground") as MeshInstance3D
-	var ground_material := ground.material_override as StandardMaterial3D if ground != null else null
+	var ground_material: StandardMaterial3D = null
+	if ground != null:
+		ground_material = ground.material_override as StandardMaterial3D
 	ok = _expect(ground_material != null, "El suelo debe tener material dirigido.") and ok
 	if ground_material != null:
 		ok = _expect(
@@ -119,7 +121,7 @@ func _test_no_gameplay_mutation_and_idempotence() -> bool:
 	var manager: KarmanyTurnManager = board_ux.board_prototype.turn_manager
 	var coord_before: Vector2i = player.current_coord
 	var actions_before: int = manager.actions_remaining
-	var mn_before: int = player.get_resource_amount(KarmanyEffectData.ResourceType.MN)
+	var mn_before: int = player.get_resource(KarmanyEffectData.ResourceType.MN)
 	var cell_count_before: int = board_ux.board_prototype.board_state.get_cell_count()
 
 	var trainer_value: Variant = board_ux.board_prototype.get("trainer_unit")
@@ -131,7 +133,7 @@ func _test_no_gameplay_mutation_and_idempotence() -> bool:
 
 	ok = _expect(player.current_coord == coord_before, "Direccion visual no debe mover jugador.") and ok
 	ok = _expect(manager.actions_remaining == actions_before, "Direccion visual no debe consumir acciones.") and ok
-	ok = _expect(player.get_resource_amount(KarmanyEffectData.ResourceType.MN) == mn_before, "Direccion visual no debe cambiar recursos.") and ok
+	ok = _expect(player.get_resource(KarmanyEffectData.ResourceType.MN) == mn_before, "Direccion visual no debe cambiar recursos.") and ok
 	ok = _expect(board_ux.board_prototype.board_state.get_cell_count() == cell_count_before, "Direccion visual no debe cambiar tablero logico.") and ok
 	ok = _expect(_count_named_children(trainer, "KarmicBase") == karmic_base_count_before, "Reaplicar estilo no debe duplicar nodos visuales.") and ok
 
