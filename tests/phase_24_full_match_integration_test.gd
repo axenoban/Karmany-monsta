@@ -77,7 +77,8 @@ func _test_progression_and_rewards() -> bool:
 		if runtime.karmany_data != null and runtime.karmany_data.karmany_id == &"K-10":
 			has_brumak = true
 	ok = _expect(has_brumak, "Brumak debe haber quedado vinculado.") and ok
-	ok = _expect(prototype.player_1.equipment_inventory.has_equipment_id(&"EQ-02"), "EQ-02 debe haber sido crafteado.") and ok
+	ok = _expect(prototype.player_1.get_active_karmany() != null and prototype.player_1.get_active_karmany().karmany_data.karmany_id == &"K-10", "Brumak debe terminar como Karmany activo.") and ok
+	ok = _expect(prototype.player_1.equipment_inventory.has_equipment_id(&"EQ-01"), "EQ-01 debe haber sido crafteado y usado contra B-15.") and ok
 	ok = _expect(prototype.player_1.equipment_inventory.has_equipment_id(&"EQ-09"), "EQ-09 debe haberse obtenido de Aeterna.") and ok
 	ok = _expect(prototype.complex_beast_deck.get_discard_count() == 1, "B-15 debe quedar derrotada y en descarte del mazo Complejo.") and ok
 
@@ -96,7 +97,7 @@ func _test_progression_and_rewards() -> bool:
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_1.player_id, KarmanyLegacyPointsEntry.SourceType.MILESTONE) == 4, "Hitos N2 + Libro III deben aportar exactamente 4 PL.") and ok
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_2.player_id, KarmanyLegacyPointsEntry.SourceType.BEAST) == 1, "Garravol debe aportar 1 PL a P2.") and ok
 	ok = _expect(prototype.legacy_points.get_points_by_source_type(prototype.player_2.player_id, KarmanyLegacyPointsEntry.SourceType.PVP) == 2, "PvP debe aportar 2 PL a P2.") and ok
-	print("Libro + vinculo + Equipo + B-15 + Misiones + Objetivo + Dorian + origen de PL: ", "OK" if ok else "ERROR")
+	print("Libro + Brumak activo + EQ-01 + B-15 + Misiones + Objetivo + Dorian + origen de PL: ", "OK" if ok else "ERROR")
 	return ok
 
 
