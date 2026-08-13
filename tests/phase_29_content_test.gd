@@ -10,7 +10,7 @@ func _ready() -> void:
 	ok = _test_materialized_resources() and ok
 	ok = _test_coverage_separation() and ok
 	ok = _test_starter_roster() and ok
-	ok = _test_executable_samples() and ok
+	ok = _test_content_samples() and ok
 	if ok:
 		print("FASE 29 OK - Catalogo ampliado sin introducir contenido no automatizado en pools ejecutables.")
 	else:
@@ -62,8 +62,10 @@ func _test_coverage_separation() -> bool:
 		return _fail("Verdan debe ser ejecutable.")
 	if KarmanyPhase29ContentCatalog.get_coverage_state(&"resonances", &"R-09") != KarmanyPhase29ContentCatalog.CoverageState.EXECUTABLE:
 		return _fail("R-09 debe ser ejecutable.")
+	if KarmanyPhase29ContentCatalog.get_coverage_state(&"resonances", &"R-20") != KarmanyPhase29ContentCatalog.CoverageState.INTEGRATION_PENDING:
+		return _fail("R-20 debe permanecer integracion pendiente hasta cubrir todos sus contextos de combate.")
 	if KarmanyPhase29ContentCatalog.get_coverage_state(&"trainers", &"E-03") != KarmanyPhase29ContentCatalog.CoverageState.INTEGRATION_PENDING:
-		return _fail("E-03 debe permanecer marcado integracion pendiente hasta automatizar toda su carta.")
+		return _fail("E-03 debe permanecer integracion pendiente hasta automatizar toda su carta.")
 	if KarmanyPhase29ContentCatalog.get_coverage_state(&"beasts", &"B-23") != KarmanyPhase29ContentCatalog.CoverageState.INTEGRATION_PENDING:
 		return _fail("B-23 no debe entrar silenciosamente como Bestia completamente automatizada.")
 	if KarmanyPhase29ContentCatalog.get_coverage_state(&"equipment", &"EQ-34") != KarmanyPhase29ContentCatalog.CoverageState.INTEGRATION_PENDING:
@@ -93,7 +95,7 @@ func _test_starter_roster() -> bool:
 	return true
 
 
-func _test_executable_samples() -> bool:
+func _test_content_samples() -> bool:
 	var tile: KarmanyTileData = load("res://data/tiles/i_03_puesto_rocoso.tres") as KarmanyTileData
 	if tile == null or tile.entry_effects.size() != 1 or tile.later_use_effects.size() != 1:
 		return _fail("I-03 no contiene sus efectos ejecutables de Entrada/Uso posterior.")
@@ -114,9 +116,9 @@ func _test_executable_samples() -> bool:
 	var r20: KarmanyResonanceData = load("res://data/resonances/r_20_ultima_defensa.tres") as KarmanyResonanceData
 	var r20_blocks: Array[KarmanyResonanceEffectBlockData] = r20.get_matching_effect_blocks(&"after_combat", PackedStringArray(["combat_lost"]))
 	if r20_blocks.size() != 1 or r20_blocks[0].effects.size() != 2:
-		return _fail("R-20 no expone robo/descarte tras derrota.")
+		return _fail("R-20 no conserva su estructura de robo/descarte tras derrota.")
 
-	print("Muestras ejecutables I-03 + K-09 + R-09 + R-20: OK")
+	print("Muestras I-03 + K-09 + R-09 ejecutables; R-20 materializada con cobertura pendiente: OK")
 	return true
 
 
