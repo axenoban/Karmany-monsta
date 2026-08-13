@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="KarmanyTrainerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+card_id = &"E-03"
+trainer_id = &"dorian"
+display_name = "Dorian"
+title = "Duelista de Vael"
+strategic_style = "PvP / presion"
+difficulty_label = "Media"
+passive_text = "Cuando ganas un PvP, roba 2 Resonancias y descarta 1."
+active_text = "Una vez por ronda desde ronda 2, puedes iniciar PvP contra un rival en tu loseta o adyacente con igual o mas PL, aunque la loseta no lo habilite. En tu primer PvP de la ronda ganas +3 Poder. Tregua se aplica normalmente."
+setup_bonus_text = "Roba 1 Resonancia adicional durante la preparacion."
+balance_text = "Duelista de catch-up: encuentra enfrentamientos relevantes sin perseguir al jugador mas debil."
+passive_id = &"dorian_pvp_win_draw"
+active_id = &"dorian_catchup_pvp"
+setup_bonus_id = &"dorian_setup_resonance"
+automation_status = 1

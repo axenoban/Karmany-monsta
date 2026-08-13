@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="KarmanyTrainerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/trainer_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+card_id = &"E-08"
+trainer_id = &"oryn"
+display_name = "Oryn"
+title = "Apostador del Eco"
+strategic_style = "Riesgo / dado"
+difficulty_label = "Alta"
+passive_text = "La primera vez que lances Dado de Riesgo en cada ronda: con 3-4 roba 1 Resonancia; con 5-6, si ganas, gana +1 PL. Maximo 2 PL por partida por esta pasiva."
+active_text = "Una vez por ronda, permite que un Karmany no Salvaje lance Dado de Riesgo. Si ese lanzamiento sale 1 o 2, puedes tratarlo como 3."
+setup_bonus_text = "Roba 1 Resonancia adicional durante la preparacion."
+balance_text = "Especialista de riesgo: mantiene picos altos, pero puede neutralizar un fallo por ronda."
+passive_id = &"oryn_risk_passive"
+active_id = &"oryn_risk_authorization"
+setup_bonus_id = &"oryn_setup_resonance"
+automation_status = 0
