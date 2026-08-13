@@ -6,7 +6,9 @@ const MATCH_SCENE: PackedScene = preload("res://scenes/ui/phase_24_full_match_pr
 func _ready() -> void:
 	print("\n=== KARMANY MONSTA - FASE 30 ALPHA PROBE ===")
 	var alpha_ok: bool = await _check_alpha()
-	var repeat_ok: bool = await _check_repeatability() if alpha_ok else false
+	var repeat_ok: bool = false
+	if alpha_ok:
+		repeat_ok = await _check_repeatability()
 	if alpha_ok and repeat_ok:
 		print("FASE 30 OK - Alpha repetible, observable y guiado.")
 	else:
