@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-08"
+display_name = "Resonancia Creciente"
+resonance_type = 0
+printed_power = 3
+use_windows = PackedStringArray("combat")
+rules_text = "Combate: +3 Poder. Si usas Karmany Estable, gana +2 Poder adicional."
+tags = PackedStringArray("ataque", "combate", "estable")
