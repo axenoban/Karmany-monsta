@@ -30,6 +30,7 @@ func _ready() -> void:
 
 	var disk_snapshot: Dictionary = KarmanySaveGameService.load_snapshot_from_path(KarmanyPhase26SaveBridge.SAVE_PATH)
 	ok = _expect(KarmanySaveGameService.is_supported_snapshot(disk_snapshot), "El JSON guardado no tiene formato/version soportados.") and ok
+	ok = _expect(disk_snapshot.has("trainer_runtime"), "El guardado no contiene runtime de Entrenador.") and ok
 	var incompatible: Dictionary = disk_snapshot.duplicate(true)
 	incompatible["version"] = KarmanySaveGameService.FORMAT_VERSION + 1
 	ok = _expect(not KarmanySaveGameService.is_supported_snapshot(incompatible), "Una version futura/incompatible fue aceptada.") and ok
@@ -63,6 +64,7 @@ func _test_new_game_state() -> bool:
 	ok = _expect(match.player_1.get_equipment_count() == 0, "Nueva partida no debe conservar Equipo cargado.") and ok
 	ok = _expect(match.coordinator.encounter_resolver.active_encounters.is_empty(), "Nueva partida no debe conservar encuentros.") and ok
 	ok = _expect(_count_beasts(match) == 0, "Nueva partida no debe conservar Bestias de un save anterior.") and ok
+	ok = _expect(not match.dorian_pvp.has_used_special_pvp(match.player_2.player_id, 2), "Nueva partida no debe conservar uso previo de E-03 Dorian.") and ok
 	print("Nueva partida limpia: ", "OK" if ok else "ERROR")
 	return ok
 
@@ -87,7 +89,8 @@ func _test_checkpoint_state() -> bool:
 	ok = _expect(_count_beasts(match) == 1, "Bestia en tablero no fue preservada.") and ok
 	ok = _expect(match.resonance_deck.get_draw_count() == 0, "El orden/consumo del mazo de Resonancias no coincide con el checkpoint esperado.") and ok
 	ok = _expect(match.equipment_market.get_visible_count() == 4, "Mercado visible debe conservar 4 Equipos tras take/refill.") and ok
-	print("Checkpoint: turno + inventarios + mazos + PL + Libro + encuentros + tablero: ", "OK" if ok else "ERROR")
+	ok = _expect(match.dorian_pvp.has_used_special_pvp(match.player_2.player_id, 2), "El runtime de E-03 Dorian no fue preservado.") and ok
+	print("Checkpoint: turno + inventarios + mazos + PL + Libro + encuentros + tablero + Entrenador: ", "OK" if ok else "ERROR")
 	return ok
 
 
