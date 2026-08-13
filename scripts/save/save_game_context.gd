@@ -11,6 +11,7 @@ var beast_decks: Dictionary = {}
 var legacy_points: KarmanyLegacyPointsController = null
 var objectives_missions: KarmanyObjectiveMissionManager = null
 var coordinator: KarmanyMatchCoordinator = null
+var dorian_pvp: KarmanyDorianPvpController = null
 
 
 func configure(
@@ -22,7 +23,8 @@ func configure(
 	p_legacy_points: KarmanyLegacyPointsController,
 	p_objectives_missions: KarmanyObjectiveMissionManager,
 	p_coordinator: KarmanyMatchCoordinator,
-	p_beast_decks: Dictionary = {}
+	p_beast_decks: Dictionary = {},
+	p_dorian_pvp: KarmanyDorianPvpController = null
 ) -> bool:
 	board_state = p_board_state
 	turn_manager = p_turn_manager
@@ -33,6 +35,7 @@ func configure(
 	objectives_missions = p_objectives_missions
 	coordinator = p_coordinator
 	beast_decks = p_beast_decks.duplicate()
+	dorian_pvp = p_dorian_pvp
 	return is_valid()
 
 
