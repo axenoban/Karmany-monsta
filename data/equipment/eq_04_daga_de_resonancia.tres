@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-04"
+display_name = "Daga de Resonancia"
+rarity = 0
+tags = PackedStringArray("PvP", "Resonancia")
+cost = {1: 2}
+rules_text = "Despues de un PvP, roba 1 Resonancia."
+trigger_tags = PackedStringArray("after_pvp", "draw_resonance")
