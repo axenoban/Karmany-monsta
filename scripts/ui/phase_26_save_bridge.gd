@@ -121,6 +121,8 @@ func prepare_demo_checkpoint() -> bool:
 	)
 	current_match.board_ux.refresh_board_ux()
 	current_match.phase_23.refresh_visual_direction()
+	if current_match.hud != null:
+		current_match.hud.call("_refresh")
 	last_operation_ok = true
 	last_message = "CHECKPOINT OK — turno parcial + inventarios + encuentro + Bestia + PL preparados."
 	_log(last_message)
@@ -186,6 +188,8 @@ func _refresh_loaded_presentation() -> void:
 	current_match.board_prototype.call("place_trainer_at", current_match.player_1.current_coord)
 	current_match.board_ux.refresh_board_ux()
 	current_match.phase_23.refresh_visual_direction()
+	if current_match.hud != null:
+		current_match.hud.call("_refresh")
 	current_match.call("_update_status")
 
 
