@@ -10,7 +10,7 @@ const L01: KarmanyTileData = preload("res://data/tiles/l_01_santuario_de_aeterna
 static func generate(
 	match_seed: int,
 	pools: KarmanyMap41TilePools,
-	log_fallback: bool = true
+	log_fallback: bool = false
 ) -> KarmanyMap41ContentSession:
 	if pools == null or not pools.loaded:
 		return null
@@ -36,14 +36,21 @@ static func generate(
 				return null
 			hidden_content[coords[index]] = tile
 
-		fallback_reports[level] = generated
-		if log_fallback and bool(generated.get("used_fallback", false)):
+		var safe_report: Dictionary = {
+			"pool_size": pool.size(),
+			"target_count": coords.size(),
+			"usage_counts": generated.get("usage_counts", {}).duplicate(),
+			"repeated": generated.get("repeated", {}).duplicate(),
+			"used_fallback": bool(generated.get("used_fallback", false))
+		}
+		fallback_reports[level] = safe_report
+		if log_fallback and bool(safe_report["used_fallback"]):
 			print(
 				"FASE 32 ALPHA TILE POOL FALLBACK ",
 				KarmanyCanonicalMap41Layout.get_level_short_name(level),
 				" | pool ", pool.size(),
 				" -> slots ", coords.size(),
-				" | repetidos ", generated.get("repeated", {})
+				" | repetidos ", safe_report["repeated"]
 			)
 
 	var fixed_content := _build_fixed_content()
