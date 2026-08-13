@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_21_camera_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_20_board_ux_prototype.tscn" id="2_phase20"]
+[ext_resource type="Script" path="res://scripts/ui/strategic_camera_controller.gd" id="3_camera"]
+
+[node name="Phase21CameraPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase20BoardUXPrototype" parent="." instance=ExtResource("2_phase20")]
+
+[node name="StrategicCameraController" type="Node" parent="."]
+script = ExtResource("3_camera")
