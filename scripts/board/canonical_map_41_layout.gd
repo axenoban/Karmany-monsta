@@ -11,10 +11,10 @@ const LEGENDARY_COORD: Vector2i = Vector2i.ZERO
 
 static func get_starting_coords() -> Array[Vector2i]:
 	return [
-		Vector2i(4, -2),   # Este
-		Vector2i(-1, 4),   # Sur
-		Vector2i(-4, 2),   # Oeste
-		Vector2i(1, -4)    # Norte
+		Vector2i(4, -2),
+		Vector2i(-1, 4),
+		Vector2i(-4, 2),
+		Vector2i(1, -4)
 	]
 
 static func build_level_map() -> Dictionary:
@@ -38,10 +38,11 @@ static func build_level_map() -> Dictionary:
 static func get_coords_for_level(level: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	var levels := build_level_map()
-	for coord_value in levels.keys():
-		var coord: Vector2i = coord_value
-		if int(levels[coord]) == level:
-			result.append(coord)
+	for q in range(-4, 5):
+		for r in range(-4, 5):
+			var coord := Vector2i(q, r)
+			if levels.has(coord) and int(levels[coord]) == level:
+				result.append(coord)
 	return result
 
 static func get_level_counts() -> Dictionary:
@@ -57,7 +58,7 @@ static func get_level_counts() -> Dictionary:
 		counts[level] = int(counts.get(level, 0)) + 1
 	return counts
 
-static func is_fully_connected() -> bool:
+static func is_connected() -> bool:
 	var levels := build_level_map()
 	var pending: Array[Vector2i] = [LEGENDARY_COORD]
 	var visited: Dictionary = {}
@@ -70,6 +71,9 @@ static func is_fully_connected() -> bool:
 			if levels.has(neighbor) and not visited.has(neighbor):
 				pending.append(neighbor)
 	return visited.size() == levels.size()
+
+static func is_fully_connected() -> bool:
+	return is_connected()
 
 static func get_level_short_name(level: int) -> String:
 	match level:
