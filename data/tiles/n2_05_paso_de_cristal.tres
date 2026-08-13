@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_later_mr"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 1
+description = "Uso posterior N2-05: +2 MR."
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-05"
+display_name = "Paso de Cristal"
+level = 2
+function_tags = PackedStringArray("Crafteo avanzado", "Mineral")
+icon_tags = PackedStringArray("MR", "Taller")
+on_explore_text = "Elige: recolecta 2 MR y mira 1 carta del mercado; o craftea 1 Equipo Basico pagando su costo."
+entry_bonus_text = "Entrada: Mira 1 carta de Equipo del mazo; dejala arriba o abajo."
+later_use_text = "Recolectar 2 MR o craftear 1 Equipo Basico/Avanzado si puedes pagar."
+limit_text = "Maximo 1 crafteo por turno desde esta loseta."
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mr")])
+starts_revealed = false
+can_rotate_visual = true
