@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_later_mr"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 1
+description = "Uso posterior N1-02: +2 MR."
+
+[sub_resource type="Resource" id="Effect_entry_mr"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 1
+description = "Entrada N1-02: +1 MR."
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-02"
+display_name = "Mina Pequena"
+level = 1
+function_tags = PackedStringArray("Recoleccion de MR")
+icon_tags = PackedStringArray("MR")
+on_explore_text = "Elige: recolecta 2 MR; o mira 2 cartas de Equipo, deja 1 visible y devuelve la otra abajo."
+entry_bonus_text = "Entrada: Obten 1 MR."
+later_use_text = "Recolectar 2 MR."
+limit_text = "-"
+entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_mr")])
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mr")])
+starts_revealed = false
+can_rotate_visual = true
