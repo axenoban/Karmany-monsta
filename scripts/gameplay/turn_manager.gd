@@ -96,6 +96,15 @@ func start_match() -> bool:
 	return true
 
 
+func stop_match() -> bool:
+	if not is_running:
+		return false
+	is_running = false
+	actions_remaining = 0
+	_action_usage_this_turn.clear()
+	return true
+
+
 func get_player_count() -> int:
 	return players.size()
 
@@ -227,6 +236,11 @@ func end_turn() -> bool:
 
 	if starts_new_round:
 		round_ended.emit(current_round)
+		# Un coordinador de partida puede detener legalmente la partida en
+		# el cierre de ronda (limite estandar o Carrera de Legado). Si lo
+		# hizo durante la senal, no se abre una ronda fantasma posterior.
+		if not is_running:
+			return true
 		current_round += 1
 		active_player_index = 0
 	else:
