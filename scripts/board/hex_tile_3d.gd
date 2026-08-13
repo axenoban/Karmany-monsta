@@ -5,6 +5,14 @@ extends StaticBody3D
 signal tile_clicked(tile: KarmanyHexTile3D)
 
 
+enum UxHint {
+	NONE,
+	MOVE,
+	EXPLORE,
+	BLOCKED
+}
+
+
 @export_group("Karmany Data")
 
 @export var coord: Vector2i = Vector2i.ZERO
@@ -40,6 +48,27 @@ signal tile_clicked(tile: KarmanyHexTile3D)
 	1.0
 )
 
+@export var move_hint_color: Color = Color(
+	0.30,
+	0.70,
+	0.38,
+	1.0
+)
+
+@export var explore_hint_color: Color = Color(
+	0.28,
+	0.58,
+	0.82,
+	1.0
+)
+
+@export var blocked_hint_color: Color = Color(
+	0.68,
+	0.28,
+	0.25,
+	1.0
+)
+
 @export_range(0.0, 360.0, 1.0) var visual_y_rotation_degrees: float = 30.0
 
 
@@ -52,6 +81,7 @@ var _material: StandardMaterial3D
 
 var _is_hovered: bool = false
 var _is_selected: bool = false
+var _ux_hint: int = UxHint.NONE
 
 
 func _ready() -> void:
@@ -172,6 +202,21 @@ func is_selected() -> bool:
 	return _is_selected
 
 
+func set_ux_hint(value: int) -> void:
+	if value < UxHint.NONE or value > UxHint.BLOCKED:
+		value = UxHint.NONE
+	_ux_hint = value
+	_refresh_visual()
+
+
+func get_ux_hint() -> int:
+	return _ux_hint
+
+
+func clear_ux_hint() -> void:
+	set_ux_hint(UxHint.NONE)
+
+
 func set_base_color(value: Color) -> void:
 	base_color = value
 	_refresh_visual()
@@ -190,6 +235,18 @@ func _refresh_visual() -> void:
 	elif _is_hovered:
 
 		_material.albedo_color = hover_color
+
+	elif _ux_hint == UxHint.MOVE:
+
+		_material.albedo_color = move_hint_color
+
+	elif _ux_hint == UxHint.EXPLORE:
+
+		_material.albedo_color = explore_hint_color
+
+	elif _ux_hint == UxHint.BLOCKED:
+
+		_material.albedo_color = blocked_hint_color
 
 	else:
 
