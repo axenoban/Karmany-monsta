@@ -299,7 +299,8 @@ func resolve_pvp(
 	defender: KarmanyPlayerState,
 	authorization: KarmanyPvpAuthorizationContext,
 	attacker_resonance_id: StringName = &"",
-	defender_resonance_id: StringName = &""
+	defender_resonance_id: StringName = &"",
+	attacker_trainer_power_bonus: int = 0
 ) -> KarmanyPvpCombatResult:
 	var preflight: KarmanyPvpCombatResult = _validate_pvp_preflight(attacker, defender, authorization)
 	if preflight != null:
@@ -320,6 +321,7 @@ func resolve_pvp(
 	context.resonance_usage_tracker = resonance_usage_tracker
 	context.effect_context = effect_context
 	context.combat_id = combat_id
+	context.attacker_modifiers.trainer_power += maxi(attacker_trainer_power_bonus, 0)
 
 	if attacker_resonance_id != &"":
 		if _play_combat_resonance(attacker, attacker_resonance_id, combat_id, context.attacker_modifiers, PackedStringArray(["combat", "pvp"])) == null:
