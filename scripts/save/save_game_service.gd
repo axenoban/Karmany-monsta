@@ -91,7 +91,13 @@ static func restore(context: KarmanySaveGameContext, snapshot: Dictionary) -> bo
 		return false
 	if not _restore_coordinator(context.coordinator, snapshot.get("coordinator", {})):
 		return false
-	return _restore_turn(context.turn_manager, context.players, snapshot.get("turn", {}))
+	if not _restore_turn(context.turn_manager, context.players, snapshot.get("turn", {})):
+		return false
+	if context.coordinator.is_finished:
+		context.coordinator.final_evaluation = context.legacy_points.evaluate_end_of_round(
+			context.turn_manager.current_round
+		)
+	return true
 
 
 static func _capture_turn(turn_manager: KarmanyTurnManager) -> Dictionary:
@@ -646,8 +652,8 @@ static func _restore_coordinator(coordinator: KarmanyMatchCoordinator, data: Dic
 	if not _restore_encounters(coordinator.encounter_resolver, data.get("encounters", {})):
 		return false
 	_restore_aeterna(coordinator.aeterna_state, data.get("aeterna", {}))
-	coordinator.pvp_truce_tracker._last_pvp_round_by_pair = _restore_string_dictionary(data.get("pvp_truce", {}), false)
-	coordinator.forge_controller._conversion_used_by_player = _restore_string_dictionary(data.get("forge_usage", {}), true)
+	coordinator.pvp_truce_tracker._last_pvp_round_by_pair = _restore_string_key_int_dictionary(data.get("pvp_truce", {}))
+	coordinator.forge_controller._conversion_used_by_player = _restore_stringname_key_dictionary(data.get("forge_usage", {}), true)
 	return true
 
 
@@ -724,9 +730,9 @@ static func _restore_aeterna(state: KarmanyAeternaState, data: Dictionary) -> vo
 	state.defeated = bool(data.get("defeated", false))
 	state.defeated_by_player_id = StringName(String(data.get("defeated_by", "")))
 	state.defeated_round = int(data.get("defeated_round", 0))
-	state._sanctuary_attunement_used = _restore_string_dictionary(data.get("attunement", {}), true)
-	state._aeterna_sync_used = _restore_string_dictionary(data.get("sync", {}), true)
-	state._post_defeat_ek_round_by_player = _restore_string_dictionary(data.get("post_ek", {}), false)
+	state._sanctuary_attunement_used = _restore_stringname_key_dictionary(data.get("attunement", {}), true)
+	state._aeterna_sync_used = _restore_stringname_key_dictionary(data.get("sync", {}), true)
+	state._post_defeat_ek_round_by_player = _restore_stringname_key_dictionary(data.get("post_ek", {}), false)
 
 
 static func _capture_resource_array(items: Array) -> Array:
@@ -762,7 +768,17 @@ static func _string_key_dictionary(source: Dictionary) -> Dictionary:
 	return result
 
 
-static func _restore_string_dictionary(source_value: Variant, bool_values: bool) -> Dictionary:
+static func _restore_string_key_int_dictionary(source_value: Variant) -> Dictionary:
+	var result: Dictionary = {}
+	if not (source_value is Dictionary):
+		return result
+	var source: Dictionary = source_value
+	for key in source.keys():
+		result[String(key)] = int(source[key])
+	return result
+
+
+static func _restore_stringname_key_dictionary(source_value: Variant, bool_values: bool) -> Dictionary:
 	var result: Dictionary = {}
 	if not (source_value is Dictionary):
 		return result
