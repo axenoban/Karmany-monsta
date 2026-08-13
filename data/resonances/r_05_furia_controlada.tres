@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-05"
+display_name = "Furia Controlada"
+resonance_type = 0
+printed_power = 6
+use_windows = PackedStringArray("combat")
+rules_text = "Combate/PvP: +6 Poder. Puede autorizar Dado de Riesgo cuando su texto lo permita."
+tags = PackedStringArray("ataque", "pvp", "risk_authorization")
