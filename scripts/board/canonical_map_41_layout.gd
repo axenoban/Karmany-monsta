@@ -10,7 +10,12 @@ const LEGENDARY_COUNT: int = 1
 const LEGENDARY_COORD: Vector2i = Vector2i.ZERO
 
 static func get_starting_coords() -> Array[Vector2i]:
-	return [Vector2i(4, -2), Vector2i(0, 4), Vector2i(-4, 2), Vector2i(0, -4)]
+	return [
+		Vector2i(4, -2),   # Este
+		Vector2i(-1, 4),   # Sur
+		Vector2i(-4, 2),   # Oeste
+		Vector2i(1, -4)    # Norte
+	]
 
 static func build_level_map() -> Dictionary:
 	var levels: Dictionary = {}
@@ -52,7 +57,7 @@ static func get_level_counts() -> Dictionary:
 		counts[level] = int(counts.get(level, 0)) + 1
 	return counts
 
-static func is_connected() -> bool:
+static func is_fully_connected() -> bool:
 	var levels := build_level_map()
 	var pending: Array[Vector2i] = [LEGENDARY_COORD]
 	var visited: Dictionary = {}
