@@ -17,9 +17,18 @@ func move_to(coord: Vector2i) -> bool:
 	return _can_human_act() and coordinator.move_player(human_player, coord)
 
 func explore_to(coord: Vector2i) -> bool:
-	if not _can_human_act() or not coordinator.explore_player(human_player, coord):
+	if not _can_human_act():
 		return false
-	if coord == KarmanyPhase24FullMatchBridge.TILE_EK and not slice_match.board_prototype.board_state.has_beast(coord):
+	var board_state: KarmanyBoardState = slice_match.board_prototype.board_state
+	var should_spawn_beast: bool = (
+		coord == KarmanyPhase24FullMatchBridge.TILE_EK
+		and not board_state.has_beast(coord)
+	)
+	if should_spawn_beast and slice_match.beast_deck.is_empty():
+		return false
+	if not coordinator.explore_player(human_player, coord):
+		return false
+	if should_spawn_beast:
 		var spawn_result: KarmanyBeastSpawnResult = coordinator.spawn_beast(coord, slice_match.beast_deck, false)
 		if not spawn_result.is_spawned():
 			return false
@@ -36,8 +45,7 @@ func call_or_bond() -> bool:
 		var bond: KarmanyEncounterResult = coordinator.bond_visible_by_payment(human_player)
 		if not bond.is_success() or bond.linked_karmany == null:
 			return false
-		human_player.set_active_karmany(bond.linked_karmany.instance_id)
-		return true
+		return human_player.set_active_karmany(bond.linked_karmany.instance_id)
 	if human_player.current_coord != KarmanyPhase24FullMatchBridge.TILE_N2:
 		return false
 	var candidates: Array[KarmanyData] = [KarmanyPhase24FullMatchBridge.BRUMAK, KarmanyPhase24FullMatchBridge.RAUK]
