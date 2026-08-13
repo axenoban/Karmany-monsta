@@ -36,7 +36,7 @@ func new_game() -> bool:
 func save_game() -> bool:
 	if context == null or not context.is_valid():
 		return _operation_error("No existe contexto valido para guardar.")
-	last_operation_ok = KarmanySaveGameService.save_to_path(context, SAVE_PATH)
+	last_operation_ok = KarmanySaveGameFacade.save_to_path(context, SAVE_PATH)
 	last_message = "GUARDADO OK → %s" % SAVE_PATH if last_operation_ok else "GUARDADO ERROR"
 	_log(last_message)
 	_update_status()
@@ -44,12 +44,12 @@ func save_game() -> bool:
 
 
 func load_game() -> bool:
-	var snapshot := KarmanySaveGameService.load_snapshot_from_path(SAVE_PATH)
+	var snapshot := KarmanySaveGameFacade.load_snapshot_from_path(SAVE_PATH)
 	if snapshot.is_empty():
 		return _operation_error("No existe un guardado compatible para cargar.")
 	if not await _spawn_fresh_match():
 		return _operation_error("No se pudo crear la instancia limpia previa a Cargar.")
-	if not KarmanySaveGameService.restore(context, snapshot):
+	if not KarmanySaveGameFacade.restore(context, snapshot):
 		return _operation_error("El snapshot no pudo restaurarse en la partida nueva.")
 	_refresh_loaded_presentation()
 	last_operation_ok = true
@@ -114,6 +114,13 @@ func prepare_demo_checkpoint() -> bool:
 	if not beast_spawn.is_spawned():
 		return _operation_error("No se pudo preparar Bestia del checkpoint.")
 
+	# Estado por ronda de Entrenador: debe sobrevivir a Cargar igual que una
+	# tregua o limite de Llamar; de lo contrario Dorian podria reutilizar E-03.
+	current_match.dorian_pvp.mark_special_pvp_used(
+		current_match.player_2.player_id,
+		2
+	)
+
 	current_match.objectives_missions.record_event(
 		player,
 		KarmanyMatchCoordinator.EVENT_TILE_VISITED,
@@ -133,7 +140,7 @@ func prepare_demo_checkpoint() -> bool:
 func capture_current_snapshot() -> Dictionary:
 	if context == null:
 		return {}
-	return KarmanySaveGameService.capture(context)
+	return KarmanySaveGameFacade.capture(context)
 
 
 func _spawn_fresh_match() -> bool:
@@ -177,7 +184,8 @@ func _build_context(match: KarmanyPhase24FullMatchBridge) -> KarmanySaveGameCont
 		match.legacy_points,
 		match.objectives_missions,
 		match.coordinator,
-		beast_decks
+		beast_decks,
+		match.dorian_pvp
 	):
 		return null
 	return result
