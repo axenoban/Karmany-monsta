@@ -2,7 +2,7 @@ class_name KarmanyVerticalSliceProgress
 extends RefCounted
 
 
-static func get_text(session: KarmanyVerticalSliceSession) -> String:
+static func get_text(session) -> String:
 	if session == null or not session.configured:
 		return "Sin sesion."
 	var assignment: KarmanyMissionAssignment = (
