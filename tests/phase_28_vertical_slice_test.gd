@@ -73,7 +73,9 @@ func _run_slice() -> bool:
 	return true
 
 func _two_actions(session: KarmanyVerticalSliceSession, first_action: Callable, second_action: Callable) -> bool:
-	if not first_action.call() or not second_action.call():
+	var first_ok: bool = bool(first_action.call())
+	var second_ok: bool = bool(second_action.call())
+	if not first_ok or not second_ok:
 		return _fail("Dos acciones representativas fallaron.")
 	return session.turn_manager.actions_remaining == 0
 
