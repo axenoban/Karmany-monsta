@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-25"
+display_name = "Zephyr"
+subtitle = "Cria de Viento Bruma"
+rank = 0
+compatible_ranks = PackedInt32Array(0, 1)
+primary_type = 2
+power = 5
+acquisition_text = "Karmany inicial."
+is_starting_karmany = true
