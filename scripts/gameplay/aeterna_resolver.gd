@@ -7,6 +7,8 @@ const BASE_DEFENSE: int = 26
 const REQUIRED_BOOK_LEVEL: int = 3
 const ATTEMPT_FA_COST: int = 1
 const VICTORY_LEGACY_POINTS: int = 8
+const SPECIAL_ACTION_COST: int = 1
+
 const ACTION_ID_COMBAT: StringName = &"combat_aeterna"
 const ACTION_ID_SYNC: StringName = &"aeterna_sync"
 const ACTION_ID_POST_DEFEAT_EK: StringName = &"interact_aeterna_post_defeat"
@@ -48,11 +50,15 @@ static func resolve_combat(
 				"Dado de Riesgo invalido o no autorizado para este intento."
 			)
 
-	if not context.turn_manager.spend_action_for(ACTION_ID_COMBAT, context.action_cost):
-		return _error(
-			KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE,
-			"No se pudo consumir la accion de Combatir contra Aeterna."
-		)
+	var action_consumed := false
+	if context.action_cost > 0:
+		if not context.turn_manager.spend_action_for(ACTION_ID_COMBAT, context.action_cost):
+			return _error(
+				KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE,
+				"No se pudo consumir la accion de Combatir contra Aeterna."
+			)
+		action_consumed = true
+
 	if not player.spend_resource(KarmanyEffectData.ResourceType.FA, ATTEMPT_FA_COST):
 		return _error(
 			KarmanyAeternaResult.Status.FA_REQUIRED,
@@ -74,7 +80,7 @@ static func resolve_combat(
 
 	var combat := KarmanyCombatResolver.resolve(request)
 	var result := KarmanyAeternaResult.new()
-	result.action_consumed = true
+	result.action_consumed = action_consumed
 	result.fa_spent = ATTEMPT_FA_COST
 	result.combat_result = combat
 
@@ -123,6 +129,72 @@ static func resolve_combat(
 	return result
 
 
+static func resolve_on_explore_without_requirements(
+	player: KarmanyPlayerState,
+	context: KarmanyAeternaContext
+) -> KarmanyAeternaResult:
+	var base_error := _validate_sanctuary_presence(player, context)
+	if base_error != null:
+		return base_error
+	if context.aeterna_state.defeated or _meets_attempt_requirements(player, context):
+		return _error(
+			KarmanyAeternaResult.Status.REWARD_NOT_AVAILABLE,
+			"El fallback Al explorar solo corresponde si aun no puedes enfrentar a Aeterna."
+		)
+	return _draw_and_request_discard(
+		player,
+		context,
+		2,
+		1,
+		KarmanyAeternaResult.Outcome.SANCTUARY_EXPLORE_FALLBACK,
+		"Al explorar L-01 sin requisitos: roba 2 Resonancias y descarta 1."
+	)
+
+
+static func resolve_on_explore_preparation(
+	player: KarmanyPlayerState,
+	context: KarmanyAeternaContext
+) -> KarmanyAeternaResult:
+	var base_error := _validate_sanctuary_presence(player, context)
+	if base_error != null:
+		return base_error
+	if not _meets_attempt_requirements(player, context):
+		return _error(
+			KarmanyAeternaResult.Status.REWARD_NOT_AVAILABLE,
+			"La preparacion Al explorar de L-01 requiere poder enfrentar a Aeterna."
+		)
+	return _draw_and_request_discard(
+		player,
+		context,
+		3,
+		1,
+		KarmanyAeternaResult.Outcome.SANCTUARY_EXPLORE_PREPARATION,
+		"Preparacion Al explorar L-01: roba 3 Resonancias y descarta 1."
+	)
+
+
+static func resolve_sanctuary_entry_bonus_after_attunement(
+	player: KarmanyPlayerState,
+	context: KarmanyAeternaContext
+) -> KarmanyAeternaResult:
+	var base_error := _validate_sanctuary_presence(player, context)
+	if base_error != null:
+		return base_error
+	if not context.aeterna_state.has_used_sanctuary_attunement(player.player_id):
+		return _error(
+			KarmanyAeternaResult.Status.ATTUNEMENT_NOT_AVAILABLE,
+			"Si Sintonia aun no fue usada, reemplaza esta Bonificacion de entrada."
+		)
+	return _draw_and_request_discard(
+		player,
+		context,
+		1,
+		1,
+		KarmanyAeternaResult.Outcome.SANCTUARY_ENTRY_BONUS,
+		"Bonificacion de entrada L-01: roba 1 Resonancia y descarta 1."
+	)
+
+
 static func resolve_sanctuary_attunement(
 	player: KarmanyPlayerState,
 	context: KarmanyAeternaContext,
@@ -152,12 +224,16 @@ static func resolve_sanctuary_attunement(
 		if not player.gain_resource(KarmanyEffectData.ResourceType.FA, 1):
 			return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudo otorgar 1 FA.")
 	elif preparation_choice == PREPARATION_RESONANCES:
-		if _available_resonances(context.resonance_deck) < 3:
-			return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No hay 3 Resonancias disponibles para Sintonia.")
-		result.resonance_cards_drawn = context.resonance_deck.draw_to_hand(player.resonance_hand, 3)
-		if result.resonance_cards_drawn != 3 or not player.resonance_hand.request_discard(2):
-			return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudo resolver roba 3 / conserva 1.")
-		result.resonance_discard_pending = 2
+		result = _draw_and_request_discard(
+			player,
+			context,
+			3,
+			2,
+			KarmanyAeternaResult.Outcome.SANCTUARY_ATTUNEMENT,
+			"Sintonia del Santuario: roba 3 Resonancias y conserva 1."
+		)
+		if not result.is_resolved():
+			return result
 	else:
 		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "Eleccion de Sintonia invalida.")
 
@@ -183,27 +259,26 @@ static func resolve_aeterna_sync(
 		return _error(KarmanyAeternaResult.Status.ALREADY_USED, "Este jugador ya uso Sintonizar con Aeterna.")
 	if _available_resonances(context.resonance_deck) < 3:
 		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No hay 3 Resonancias disponibles para Sintonizar.")
-	if not context.turn_manager.can_spend_action(context.action_cost):
+	if not context.turn_manager.can_spend_action(SPECIAL_ACTION_COST):
 		return _error(KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE, "No quedan acciones para Sintonizar.")
-	if not context.turn_manager.spend_action_for(ACTION_ID_SYNC, context.action_cost):
+	if not context.turn_manager.spend_action_for(ACTION_ID_SYNC, SPECIAL_ACTION_COST):
 		return _error(KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE, "No se pudo consumir la accion de Sintonizar.")
 
-	var result := KarmanyAeternaResult.new()
+	var result := _draw_and_request_discard(
+		player,
+		context,
+		3,
+		2,
+		KarmanyAeternaResult.Outcome.AETERNA_SYNC,
+		"Sintonizar con Aeterna: roba 3 y conserva 1."
+	)
 	result.action_consumed = true
-	result.resonance_cards_drawn = context.resonance_deck.draw_to_hand(player.resonance_hand, 3)
-	if result.resonance_cards_drawn != 3 or not player.resonance_hand.request_discard(2):
-		result.status = KarmanyAeternaResult.Status.INVALID_REQUEST
-		result.message = "No se pudo resolver roba 3 / conserva 1 al Sintonizar."
+	if not result.is_resolved():
 		return result
-	result.resonance_discard_pending = 2
 	if not context.aeterna_state.mark_aeterna_sync_used(player.player_id):
 		result.status = KarmanyAeternaResult.Status.INVALID_REQUEST
 		result.message = "No se pudo registrar el uso unico de Sintonizar."
 		return result
-
-	result.status = KarmanyAeternaResult.Status.RESOLVED
-	result.outcome = KarmanyAeternaResult.Outcome.AETERNA_SYNC
-	result.message = "Sintonizar con Aeterna resuelto: roba 3 y conserva 1."
 	return result
 
 
@@ -220,9 +295,7 @@ static func resolve_victory_resonance_reward(
 		return false
 
 	var drawn := context.resonance_deck.draw_to_hand(player.resonance_hand, 3)
-	if drawn != 3:
-		return false
-	if not player.resonance_hand.request_discard(1):
+	if drawn != 3 or not player.resonance_hand.request_discard(1):
 		return false
 
 	victory_result.reward_choice = KarmanyAeternaResult.RewardChoice.RESONANCES
@@ -259,9 +332,7 @@ static func resolve_victory_equipment_reward(
 		if current == null or not equipment_market.can_accept_discard(current):
 			return false
 		replaced = player.replace_equipment(discard_equipment_id, equipment)
-		if replaced == null:
-			return false
-		if not equipment_market.add_to_discard(replaced):
+		if replaced == null or not equipment_market.add_to_discard(replaced):
 			return false
 	else:
 		if not player.add_equipment(equipment):
@@ -288,9 +359,9 @@ static func collect_post_defeat_ek(
 	var round_number := context.turn_manager.current_round
 	if not context.aeterna_state.can_collect_post_defeat_ek(player.player_id, round_number):
 		return _error(KarmanyAeternaResult.Status.ALREADY_USED, "Ya recolectaste los 2 EK del Santuario esta ronda.")
-	if not context.turn_manager.can_spend_action(context.action_cost):
+	if not context.turn_manager.can_spend_action(SPECIAL_ACTION_COST):
 		return _error(KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE, "No quedan acciones para Interactuar con el Santuario.")
-	if not context.turn_manager.spend_action_for(ACTION_ID_POST_DEFEAT_EK, context.action_cost):
+	if not context.turn_manager.spend_action_for(ACTION_ID_POST_DEFEAT_EK, SPECIAL_ACTION_COST):
 		return _error(KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE, "No se pudo consumir la accion del Santuario.")
 	if not player.gain_resource(KarmanyEffectData.ResourceType.EK, 2):
 		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudieron otorgar los 2 EK.")
@@ -323,7 +394,7 @@ static func _validate_attempt(
 		return _error(KarmanyAeternaResult.Status.NO_ACTIVE_KARMANY, "Se requiere un Karmany activo.")
 	if not player.can_spend_resource(KarmanyEffectData.ResourceType.FA, ATTEMPT_FA_COST):
 		return _error(KarmanyAeternaResult.Status.FA_REQUIRED, "Se requiere 1 FA disponible para el intento.")
-	if not context.turn_manager.can_spend_action(context.action_cost):
+	if context.action_cost > 0 and not context.turn_manager.can_spend_action(context.action_cost):
 		return _error(KarmanyAeternaResult.Status.ACTION_NOT_AVAILABLE, "No quedan acciones para Combatir.")
 	var ok := KarmanyAeternaResult.new()
 	ok.status = KarmanyAeternaResult.Status.RESOLVED
@@ -358,6 +429,33 @@ static func _meets_attempt_requirements(
 	if not player.has_active_karmany():
 		return false
 	return player.can_spend_resource(KarmanyEffectData.ResourceType.FA, ATTEMPT_FA_COST)
+
+
+static func _draw_and_request_discard(
+	player: KarmanyPlayerState,
+	context: KarmanyAeternaContext,
+	draw_amount: int,
+	discard_amount: int,
+	outcome_value: int,
+	message: String
+) -> KarmanyAeternaResult:
+	if draw_amount <= 0 or discard_amount <= 0 or discard_amount > draw_amount:
+		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "Parametros de Resonancia invalidos.")
+	if _available_resonances(context.resonance_deck) < draw_amount:
+		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No hay suficientes Resonancias disponibles.")
+
+	var result := KarmanyAeternaResult.new()
+	result.resonance_cards_drawn = context.resonance_deck.draw_to_hand(player.resonance_hand, draw_amount)
+	if result.resonance_cards_drawn != draw_amount:
+		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudieron robar todas las Resonancias requeridas.")
+	if not player.resonance_hand.request_discard(discard_amount):
+		return _error(KarmanyAeternaResult.Status.INVALID_REQUEST, "No se pudo registrar el descarte elegido de Resonancias.")
+
+	result.status = KarmanyAeternaResult.Status.RESOLVED
+	result.outcome = outcome_value
+	result.resonance_discard_pending = discard_amount
+	result.message = message
+	return result
 
 
 static func _available_resonances(deck: KarmanyResonanceDeck) -> int:
