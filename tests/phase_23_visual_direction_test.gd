@@ -17,8 +17,7 @@ func _ready() -> void:
 	ok = _test_environment_and_lighting() and ok
 	ok = _test_board_materials_and_legibility() and ok
 	ok = _test_trainer_and_hud_direction() and ok
-	ok = _test_no_gameplay_mutation_and_idempotence() and ok
-
+	ok = (await _test_no_gameplay_mutation_and_idempotence()) and ok
 	print("")
 	print("================================")
 	if ok:

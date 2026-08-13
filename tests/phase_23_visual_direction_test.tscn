@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b411prabc728s"]
 
-[ext_resource type="Script" path="res://tests/phase_23_visual_direction_test.gd" id="1_test"]
+[ext_resource type="Script" uid="uid://bq5aql2nn6ble" path="res://tests/phase_23_visual_direction_test.gd" id="1_test"]
 [ext_resource type="PackedScene" path="res://scenes/ui/phase_23_visual_direction_prototype.tscn" id="2_phase23"]
 
-[node name="Phase23VisualDirectionTest" type="Node"]
+[node name="Phase23VisualDirectionTest" type="Node" unique_id=732151023]
 script = ExtResource("1_test")
 
-[node name="Phase23VisualDirectionPrototype" parent="." instance=ExtResource("2_phase23")]
+[node name="Phase23VisualDirectionPrototype" parent="." unique_id=1224919488 instance=ExtResource("2_phase23")]
