@@ -1,0 +1,46 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_22_feedback_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_21_camera_prototype.tscn" id="2_phase21"]
+[ext_resource type="Script" path="res://scripts/ui/presentation_feedback_controller.gd" id="3_feedback"]
+
+[node name="Phase22FeedbackPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase21CameraPrototype" parent="." instance=ExtResource("2_phase21")]
+
+[node name="FeedbackRoot" type="Node3D" parent="."]
+
+[node name="PresentationFeedbackController" type="Node" parent="."]
+script = ExtResource("3_feedback")
+
+[node name="FeedbackOverlay" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="TransitionRect" type="ColorRect" parent="FeedbackOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.035, 0.045, 0.065, 0)
+
+[node name="TransitionLabel" type="Label" parent="FeedbackOverlay"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -30.0
+offset_right = 220.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+text = "FASE 22 — FEEDBACK VISUAL"
+horizontal_alignment = 1
+vertical_alignment = 1
+visible = false
