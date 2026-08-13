@@ -10,6 +10,7 @@ const TILE_N2: Vector2i = Vector2i(0, -1)
 const TILE_N3: Vector2i = Vector2i(-1, 0)
 const TILE_AETERNA: Vector2i = Vector2i(-1, 1)
 const P2_UNIT_ID: StringName = &"trainer_player_2"
+const P2_TRAINER_ID: StringName = &"dorian"
 const DEMO_RACE_TARGET: int = 16
 
 const TILE_I02: KarmanyTileData = preload("res://data/tiles/i_02_campamento_rio_bruma.tres")
@@ -69,6 +70,7 @@ var resonance_deck: KarmanyResonanceDeck = KarmanyResonanceDeck.new()
 var equipment_market: KarmanyEquipmentMarket = KarmanyEquipmentMarket.new()
 var beast_deck: KarmanyBeastDeck = KarmanyBeastDeck.new()
 var coordinator: KarmanyMatchCoordinator = KarmanyMatchCoordinator.new()
+var dorian_pvp: KarmanyDorianPvpController = KarmanyDorianPvpController.new()
 
 var setup_ok: bool = false
 var last_demo_success: bool = false
@@ -130,6 +132,7 @@ func setup_integration_match() -> bool:
 	):
 		return _setup_error("KarmanyMatchCoordinator no pudo configurarse.")
 
+	dorian_pvp.clear()
 	coordinator.integration_event.connect(_on_integration_event)
 	coordinator.match_finished.connect(_on_match_finished)
 	_record_initial_visit(player_1)
@@ -190,135 +193,221 @@ func _validate_initial_guardrails() -> bool:
 
 
 func _run_round_1() -> bool:
-	if not _require_turn(1, player_1): return false
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R1 P1 Interactuar #1 fallo.")
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R1 P1 Interactuar #2 fallo.")
-	if not _finish_turn(&"R-02"): return false
-	if not _require_turn(1, player_2): return false
+	if not _require_turn(1, player_1):
+		return false
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R1 P1 Interactuar #1 fallo.")
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R1 P1 Interactuar #2 fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
+
+	if not _require_turn(1, player_2):
+		return false
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R1 P2 Interactuar #1 fallo.")
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R1 P2 Interactuar #2 fallo.")
+	return _finish_turn()
+
+
+func _run_round_2() -> bool:
+	if not _require_turn(2, player_1):
+		return false
+	if not coordinator.explore_player(player_1, TILE_MR):
+		return _step_error("R2 P1 Explorar N1-02 fallo.")
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R2 P1 +2 MR fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
+
+	if not _require_turn(2, player_2):
+		return false
+	var authorization: KarmanyPvpAuthorizationContext = dorian_pvp.build_authorization(
+		player_2,
+		player_1,
+		board_prototype.board_state,
+		turn_manager,
+		legacy_points
+	)
+	if authorization == null or authorization.source_id != KarmanyDorianPvpController.SOURCE_ID:
+		return _step_error("R2 Dorian no pudo autorizar su PvP canonico.")
+	var trainer_bonus: int = dorian_pvp.get_power_bonus(player_2, turn_manager.current_round)
+	if trainer_bonus != KarmanyDorianPvpController.FIRST_PVP_POWER_BONUS:
+		return _step_error("R2 Dorian no otorgo +3 Poder a su primer PvP de la ronda.")
+	var pvp := coordinator.resolve_pvp(
+		player_2,
+		player_1,
+		authorization,
+		&"R-01",
+		&"",
+		trainer_bonus
+	)
+	if not pvp.is_resolved() or pvp.winner_player_id != player_2.player_id:
+		return _step_error("R2 PvP de Dorian no fue resuelto legalmente a favor de player_2.")
+	dorian_pvp.mark_special_pvp_used(player_2.player_id, turn_manager.current_round)
+	if player_1.current_coord != P1_START:
+		return _step_error("R2 PvP no aplico el retroceso de player_1.")
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R2 P2 segunda accion fallo.")
+	return _finish_turn()
+
+
+func _run_round_3() -> bool:
+	if not _require_turn(3, player_1):
+		return false
+	var book := coordinator.improve_book(player_1)
+	if not book.is_success() or book.new_level != 2:
+		return _step_error("R3 Libro II fallo.")
+	if not coordinator.explore_player(player_1, TILE_EK):
+		return _step_error("R3 Explorar N1-03 fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
+
+	if not _require_turn(3, player_2):
+		return false
 	var spawn := coordinator.spawn_beast(P2_START, beast_deck, false)
-	if not spawn.is_spawned(): return _step_error("R1 no pudo aparecer Garravol.")
+	if not spawn.is_spawned():
+		return _step_error("R3 no pudo aparecer Garravol.")
 	var context := KarmanyBeastCombatContext.new()
 	context.turn_manager = turn_manager
 	context.effect_context = coordinator.effect_context
 	context.instinct_roll = 1
 	context.action_cost = 1
 	var beast_result := coordinator.fight_beast(player_2, P2_START, beast_deck, context)
-	if not beast_result.is_victory(): return _step_error("R1 player_2 no derroto Garravol.")
-	if not coordinator.interact_effect_option(player_2, 1).is_success(): return _step_error("R1 P2 Interactuar fallo.")
+	if not beast_result.is_victory():
+		return _step_error("R3 player_2 no derroto Garravol.")
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R3 P2 segunda accion fallo.")
 	return _finish_turn()
-
-
-func _run_round_2() -> bool:
-	if not _require_turn(2, player_1): return false
-	if not coordinator.explore_player(player_1, TILE_MR): return _step_error("R2 P1 Explorar N1-02 fallo.")
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R2 P1 +2 MR fallo.")
-	if not _finish_turn(&"R-02"): return false
-	if not _require_turn(2, player_2): return false
-	var auth := KarmanyPvpAuthorizationContext.new()
-	auth.source_id = &"phase24_legal_pvp_source"
-	auth.range_mode = KarmanyPvpAuthorizationContext.RangeMode.ADJACENT
-	var pvp := coordinator.resolve_pvp(player_2, player_1, auth, &"R-01")
-	if not pvp.is_resolved() or pvp.winner_player_id != player_2.player_id:
-		return _step_error("R2 PvP no fue resuelto legalmente a favor de player_2.")
-	if player_1.current_coord != P1_START:
-		return _step_error("R2 PvP no aplico el retroceso de player_1.")
-	if not coordinator.interact_effect_option(player_2, 1).is_success(): return _step_error("R2 P2 segunda accion fallo.")
-	return _finish_turn()
-
-
-func _run_round_3() -> bool:
-	if not _require_turn(3, player_1): return false
-	var book := coordinator.improve_book(player_1)
-	if not book.is_success() or book.new_level != 2: return _step_error("R3 Libro II fallo.")
-	if not coordinator.explore_player(player_1, TILE_EK): return _step_error("R3 Explorar N1-03 fallo.")
-	if not _finish_turn(&"R-02"): return false
-	return _run_p2_double_interact(3)
 
 
 func _run_round_4() -> bool:
-	if not _require_turn(4, player_1): return false
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R4 +2 EK #1 fallo.")
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R4 +2 EK #2 fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not _require_turn(4, player_1):
+		return false
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R4 +2 EK #1 fallo.")
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R4 +2 EK #2 fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(4)
 
 
 func _run_round_5() -> bool:
-	if not _require_turn(5, player_1): return false
-	if not coordinator.explore_player(player_1, TILE_N2): return _step_error("R5 Explorar N2-05 fallo.")
+	if not _require_turn(5, player_1):
+		return false
+	if not coordinator.explore_player(player_1, TILE_N2):
+		return _step_error("R5 Explorar N2-05 fallo.")
 	var candidates: Array[KarmanyData] = [BRUMAK, RAUK]
-	var call_result := coordinator.call_karmany(player_1, candidates, 0, KarmanyData.Rank.N2)
-	if not call_result.is_success(): return _step_error("R5 Llamar Karmany N2 fallo.")
-	if not _finish_turn(&"R-02"): return false
+	var call_result := coordinator.call_karmany(
+		player_1,
+		candidates,
+		0,
+		KarmanyData.Rank.N2
+	)
+	if not call_result.is_success():
+		return _step_error("R5 Llamar Karmany N2 fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(5)
 
 
 func _run_round_6() -> bool:
-	if not _require_turn(6, player_1): return false
+	if not _require_turn(6, player_1):
+		return false
 	var bond := coordinator.bond_visible_by_payment(player_1)
-	if not bond.is_success() or bond.linked_karmany == null: return _step_error("R6 Vincular Brumak fallo.")
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R6 N2 +2 MR fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not bond.is_success() or bond.linked_karmany == null:
+		return _step_error("R6 Vincular Brumak fallo.")
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R6 N2 +2 MR fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(6)
 
 
 func _run_round_7() -> bool:
-	if not _require_turn(7, player_1): return false
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R7 N2 +2 MR fallo.")
+	if not _require_turn(7, player_1):
+		return false
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R7 N2 +2 MR fallo.")
 	var craft_context := KarmanyEquipmentCraftContext.new()
 	craft_context.source_id = &"N2-05"
 	craft_context.allow_basic = true
 	craft_context.allow_advanced = true
 	var craft := coordinator.craft_from_market(player_1, 0, craft_context)
-	if not craft.is_success() or craft.equipment != EQ02: return _step_error("R7 crafteo EQ-02 fallo.")
+	if not craft.is_success() or craft.equipment != EQ02:
+		return _step_error("R7 crafteo EQ-02 fallo.")
 	if equipment_market.get_visible_count() != KarmanyEquipmentMarket.MARKET_SIZE:
 		return _step_error("R7 el mercado no se repuso a 4 Equipos.")
-	if not _finish_turn(&"R-02"): return false
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(7)
 
 
 func _run_round_8() -> bool:
-	if not _require_turn(8, player_1): return false
-	if not coordinator.interact_effect_option(player_1, 0).is_success(): return _step_error("R8 N2 +2 MR fallo.")
-	if not coordinator.explore_player(player_1, TILE_N3): return _step_error("R8 Explorar Forja Antigua fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not _require_turn(8, player_1):
+		return false
+	if not coordinator.interact_effect_option(player_1, 0).is_success():
+		return _step_error("R8 N2 +2 MR fallo.")
+	if not coordinator.explore_player(player_1, TILE_N3):
+		return _step_error("R8 Explorar Forja Antigua fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(8)
 
 
 func _run_round_9() -> bool:
-	if not _require_turn(9, player_1): return false
+	if not _require_turn(9, player_1):
+		return false
 	var forge := coordinator.forge_common_to_fa(
-		player_1, KarmanyEffectData.ResourceType.MR, KarmanyEffectData.ResourceType.MR
+		player_1,
+		KarmanyEffectData.ResourceType.MR,
+		KarmanyEffectData.ResourceType.MR
 	)
-	if not forge.is_success(): return _step_error("R9 conversion Forja -> FA fallo.")
-	if not coordinator.move_player(player_1, P1_START): return _step_error("R9 retorno al centro fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not forge.is_success():
+		return _step_error("R9 conversion Forja -> FA fallo.")
+	if not coordinator.move_player(player_1, P1_START):
+		return _step_error("R9 retorno al centro fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(9)
 
 
 func _run_round_10() -> bool:
-	if not _require_turn(10, player_1): return false
-	if not coordinator.move_player(player_1, TILE_EK): return _step_error("R10 Mover a N1-03 fallo.")
+	if not _require_turn(10, player_1):
+		return false
+	if not coordinator.move_player(player_1, TILE_EK):
+		return _step_error("R10 Mover a N1-03 fallo.")
 	var book := coordinator.improve_book(player_1)
-	if not book.is_success() or book.new_level != 3: return _step_error("R10 Libro III fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not book.is_success() or book.new_level != 3:
+		return _step_error("R10 Libro III fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(10)
 
 
 func _run_round_11() -> bool:
-	if not _require_turn(11, player_1): return false
-	if not coordinator.move_player(player_1, P1_START): return _step_error("R11 Mover al centro fallo.")
-	if not coordinator.explore_player(player_1, TILE_AETERNA): return _step_error("R11 Explorar Santuario fallo.")
+	if not _require_turn(11, player_1):
+		return false
+	if not coordinator.move_player(player_1, P1_START):
+		return _step_error("R11 Mover al centro fallo.")
+	if not coordinator.explore_player(player_1, TILE_AETERNA):
+		return _step_error("R11 Explorar Santuario fallo.")
 	var attune := coordinator.resolve_sanctuary_attunement_gain_fa(player_1)
-	if not attune.is_resolved() or player_1.fa != 1: return _step_error("R11 Sintonia gratuita +1 FA fallo.")
-	if not _finish_turn(&"R-02"): return false
+	if not attune.is_resolved() or player_1.fa != 1:
+		return _step_error("R11 Sintonia gratuita +1 FA fallo.")
+	if not _finish_turn(&"R-02"):
+		return false
 	return _run_p2_double_interact(11)
 
 
 func _run_round_12() -> bool:
-	if not _require_turn(12, player_1): return false
+	if not _require_turn(12, player_1):
+		return false
 	var aeterna := coordinator.resolve_aeterna_combat(player_1, &"R-02", 1, 6)
-	if not aeterna.is_victory() or aeterna.combat_result == null: return _step_error("R12 Aeterna no fue derrotada.")
+	if not aeterna.is_victory() or aeterna.combat_result == null:
+		return _step_error("R12 Aeterna no fue derrotada.")
 	if not KarmanyCombatConsequenceResolver.resolve_risk_win_basic_resources(
 		player_1,
 		aeterna.combat_result,
@@ -328,12 +417,15 @@ func _run_round_12() -> bool:
 		return _step_error("R12 recompensa del Dado de Riesgo 6 no fue resuelta.")
 	if not coordinator.resolve_aeterna_equipment_reward(player_1, aeterna, EQ09):
 		return _step_error("R12 recompensa Equipo Ancestral fallo.")
-	if not _resolve_pending_discard(player_1, &""): return false
+	if not _resolve_pending_discard(player_1, &""):
+		return false
 	var post := coordinator.collect_aeterna_post_defeat_ek(player_1)
 	if not post.is_resolved() or post.post_defeat_ek_gained != 2:
 		return _step_error("R12 Uso posterior Santuario +2 EK fallo.")
-	if not _finish_turn(): return false
-	if not _run_p2_double_interact(12): return false
+	if not _finish_turn():
+		return false
+	if not _run_p2_double_interact(12):
+		return false
 	if not coordinator.is_finished or coordinator.final_evaluation == null:
 		return _step_error("La Carrera de Legado no termino al cierre de ronda 12.")
 	if not coordinator.final_evaluation.leader_player_ids.has(player_1.player_id):
@@ -344,9 +436,12 @@ func _run_round_12() -> bool:
 
 
 func _run_p2_double_interact(round_number: int) -> bool:
-	if not _require_turn(round_number, player_2): return false
-	if not coordinator.interact_effect_option(player_2, 1).is_success(): return _step_error("R%d P2 Interactuar #1 fallo." % round_number)
-	if not coordinator.interact_effect_option(player_2, 1).is_success(): return _step_error("R%d P2 Interactuar #2 fallo." % round_number)
+	if not _require_turn(round_number, player_2):
+		return false
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R%d P2 Interactuar #1 fallo." % round_number)
+	if not coordinator.interact_effect_option(player_2, 1).is_success():
+		return _step_error("R%d P2 Interactuar #2 fallo." % round_number)
 	return _finish_turn()
 
 
@@ -375,15 +470,20 @@ func _resolve_pending_discard(
 	var pending: int = player.resonance_hand.get_pending_discard_count()
 	if pending <= 0:
 		return true
+
 	var selected: Array[StringName] = []
 	for card in player.get_resonance_hand():
-		if selected.size() >= pending: break
-		if card.resonance_id == protected_resonance_id: continue
+		if selected.size() >= pending:
+			break
+		if card.resonance_id == protected_resonance_id:
+			continue
 		selected.append(card.resonance_id)
 	if selected.size() < pending and protected_resonance_id != &"":
 		for card in player.get_resonance_hand():
-			if selected.size() >= pending: break
-			if card.resonance_id == protected_resonance_id: selected.append(card.resonance_id)
+			if selected.size() >= pending:
+				break
+			if card.resonance_id == protected_resonance_id:
+				selected.append(card.resonance_id)
 	if selected.size() != pending:
 		return _step_error("No se pudieron seleccionar los descartes pendientes de Resonancia.")
 	if not coordinator.resolve_pending_resonance_discard(player, selected):
@@ -395,9 +495,12 @@ func _configure_board_layout() -> bool:
 	var board: KarmanyBoardState = board_prototype.board_state
 	board.clear()
 	var layout: Dictionary = {
-		P1_START: [TILE_I02, true], P2_START: [TILE_I04, true],
-		TILE_MR: [TILE_N102, false], TILE_EK: [TILE_N103, false],
-		TILE_N2: [TILE_N205, false], TILE_N3: [TILE_N302, false],
+		P1_START: [TILE_I02, true],
+		P2_START: [TILE_I04, true],
+		TILE_MR: [TILE_N102, false],
+		TILE_EK: [TILE_N103, false],
+		TILE_N2: [TILE_N205, false],
+		TILE_N3: [TILE_N302, false],
 		TILE_AETERNA: [TILE_L01, false]
 	}
 	for coord_value in layout.keys():
@@ -405,81 +508,120 @@ func _configure_board_layout() -> bool:
 		var entry: Array = layout[coord]
 		var tile_data: KarmanyTileData = entry[0]
 		var revealed: bool = bool(entry[1])
-		if not board.add_cell(coord, tile_data, revealed): return false
+		if not board.add_cell(coord, tile_data, revealed):
+			return false
 		board_prototype.call("_refresh_tile_view_from_state", coord)
-	if not board_prototype.place_trainer_at(P1_START): return false
+	if not board_prototype.place_trainer_at(P1_START):
+		return false
 	player_2.set_board_position(P2_START)
-	if not board.set_unit_occupant(P2_START, P2_UNIT_ID): return false
+	if not board.set_unit_occupant(P2_START, P2_UNIT_ID):
+		return false
 	return true
 
 
 func _configure_decks_and_market() -> bool:
-	var resonance_cards: Array[KarmanyResonanceData] = [R02, R03, R04, R13, R22, R01, R05, R06, R07, R37, R08]
-	if not resonance_deck.setup(resonance_cards, false): return false
-	if not resonance_deck.deal_initial_hand(player_1): return false
-	if not resonance_deck.deal_initial_hand(player_2): return false
-	var equipment_cards: Array[KarmanyEquipmentData] = [EQ02, EQ01, EQ05, EQ08, EQ03]
-	if not equipment_market.setup(equipment_cards, false): return false
+	var resonance_cards: Array[KarmanyResonanceData] = [
+		R02, R03, R04, R13, R22,
+		R01, R05, R06, R07, R37,
+		R08
+	]
+	if not resonance_deck.setup(resonance_cards, false):
+		return false
+	if not resonance_deck.deal_initial_hand(player_1):
+		return false
+	if not resonance_deck.deal_initial_hand(player_2):
+		return false
+
+	var equipment_cards: Array[KarmanyEquipmentData] = [
+		EQ02, EQ01, EQ05, EQ08, EQ03
+	]
+	if not equipment_market.setup(equipment_cards, false):
+		return false
 	var beasts: Array[KarmanyBeastData] = [B01]
 	return beast_deck.setup(beasts, false)
 
 
 func _configure_progress_and_points() -> bool:
 	var mode := KarmanyLegacyModeConfig.new()
-	if not mode.configure_legacy_race(KarmanyLegacyModeConfig.MapFormat.MAP_22, DEMO_RACE_TARGET): return false
+	if not mode.configure_legacy_race(
+		KarmanyLegacyModeConfig.MapFormat.MAP_22,
+		DEMO_RACE_TARGET
+	):
+		return false
 	var players: Array[KarmanyPlayerState] = [player_1, player_2]
-	if not legacy_points.configure(players, mode): return false
+	if not legacy_points.configure(players, mode):
+		return false
 	var objectives: Array[KarmanyObjectiveData] = [OP_E01, OP_D02, OP_C03]
-	if not objectives_missions.configure(turn_manager, objectives): return false
-	if not objectives_missions.assign_secret_mission(player_1, &"alderion", ME_A1): return false
-	if not objectives_missions.assign_secret_mission(player_2, &"dorian", ME_D1): return false
+	if not objectives_missions.configure(turn_manager, objectives):
+		return false
+	if not objectives_missions.assign_secret_mission(player_1, &"alderion", ME_A1):
+		return false
+	if not objectives_missions.assign_secret_mission(player_2, P2_TRAINER_ID, ME_D1):
+		return false
 	return true
 
 
 func _record_initial_visit(player: KarmanyPlayerState) -> void:
-	objectives_missions.record_event(player, KarmanyMatchCoordinator.EVENT_TILE_VISITED, {"coord_key": "%d,%d" % [player.current_coord.x, player.current_coord.y]})
+	objectives_missions.record_event(
+		player,
+		KarmanyMatchCoordinator.EVENT_TILE_VISITED,
+		{"coord_key": "%d,%d" % [player.current_coord.x, player.current_coord.y]}
+	)
 
 
 func _add_starter(player: KarmanyPlayerState, instance_id: StringName) -> bool:
 	var runtime := KarmanyRuntimeState.new()
-	if not runtime.configure(TERRAKOR, instance_id): return false
+	if not runtime.configure(TERRAKOR, instance_id):
+		return false
 	runtime.set_owner_player_id(player.player_id)
-	if not runtime.set_bond_state(KarmanyRuntimeState.BondState.LINKED): return false
+	if not runtime.set_bond_state(KarmanyRuntimeState.BondState.LINKED):
+		return false
 	return player.add_linked_karmany(runtime)
 
 
 func _move_executor(player: KarmanyPlayerState, target_coord: Vector2i) -> bool:
-	if player != player_1: return false
+	if player != player_1:
+		return false
 	return bool(board_prototype.call("try_move_trainer_to", target_coord))
 
 
 func _explore_executor(player: KarmanyPlayerState, target_coord: Vector2i) -> bool:
-	if player != player_1: return false
+	if player != player_1:
+		return false
 	return bool(board_prototype.call("try_explore_trainer_to", target_coord))
 
 
 func _retreat_executor(player: KarmanyPlayerState, target_coord: Vector2i) -> bool:
-	if player == null or not board_prototype.board_state.has_coord(target_coord): return false
-	if player == player_1: return bool(board_prototype.call("place_trainer_at", target_coord))
+	if player == null or not board_prototype.board_state.has_coord(target_coord):
+		return false
+	if player == player_1:
+		return bool(board_prototype.call("place_trainer_at", target_coord))
 	var origin: Vector2i = player.current_coord
 	if board_prototype.board_state.get_occupying_unit_id(origin) == P2_UNIT_ID:
 		board_prototype.board_state.clear_unit_occupant(origin)
-	if board_prototype.board_state.is_occupied(target_coord): return false
-	if not board_prototype.board_state.set_unit_occupant(target_coord, P2_UNIT_ID): return false
+	if board_prototype.board_state.is_occupied(target_coord):
+		return false
+	if not board_prototype.board_state.set_unit_occupant(target_coord, P2_UNIT_ID):
+		return false
 	player.set_board_position(target_coord)
 	return true
 
 
 func _require_turn(round_number: int, player: KarmanyPlayerState) -> bool:
-	if not turn_manager.is_running: return _step_error("La partida se detuvo antes de la ronda %d." % round_number)
-	if turn_manager.current_round != round_number: return _step_error("Ronda esperada %d, actual %d." % [round_number, turn_manager.current_round])
-	if turn_manager.get_active_player() != player: return _step_error("Jugador activo incorrecto en ronda %d." % round_number)
-	if turn_manager.actions_remaining != KarmanyTurnManager.ACTIONS_PER_TURN: return _step_error("El turno no inicio con 2 acciones en ronda %d." % round_number)
+	if not turn_manager.is_running:
+		return _step_error("La partida se detuvo antes de la ronda %d." % round_number)
+	if turn_manager.current_round != round_number:
+		return _step_error("Ronda esperada %d, actual %d." % [round_number, turn_manager.current_round])
+	if turn_manager.get_active_player() != player:
+		return _step_error("Jugador activo incorrecto en ronda %d." % round_number)
+	if turn_manager.actions_remaining != KarmanyTurnManager.ACTIONS_PER_TURN:
+		return _step_error("El turno no inicio con 2 acciones en ronda %d." % round_number)
 	return true
 
 
 func _on_match_finished(evaluation: KarmanyLegacyMatchEvaluation) -> void:
-	if turn_manager != null and turn_manager.is_running: turn_manager.stop_match()
+	if turn_manager != null and turn_manager.is_running:
+		turn_manager.stop_match()
 	_log("MATCH FINISHED — lideres %s, %d PL." % [str(evaluation.leader_player_ids), evaluation.leading_score])
 	_update_status()
 
@@ -494,7 +636,8 @@ func _on_run_button_pressed() -> void:
 
 
 func _update_status() -> void:
-	if status_label == null or player_1 == null or player_2 == null: return
+	if status_label == null or player_1 == null or player_2 == null:
+		return
 	var active_text: String = "FINALIZADA"
 	if turn_manager != null and turn_manager.is_running and turn_manager.get_active_player() != null:
 		active_text = String(turn_manager.get_active_player().player_id)
@@ -502,14 +645,24 @@ func _update_status() -> void:
 	var p2_state := coordinator.get_book_state(player_2.player_id)
 	var p1_book: int = p1_state.level if p1_state != null else 0
 	var p2_book: int = p2_state.level if p2_state != null else 0
-	status_label.text = "FASE 24 · PARTIDA INTEGRADA\nRonda: %d | Activo: %s | Acciones: %d\nP1: %d PL | Libro %d | %s\nP2: %d PL | Libro %d | %s\nAeterna: %s | Meta demo: %d PL" % [turn_manager.current_round, active_text, turn_manager.actions_remaining, legacy_points.get_points(player_1.player_id), p1_book, str(player_1.current_coord), legacy_points.get_points(player_2.player_id), p2_book, str(player_2.current_coord), "DERROTADA" if coordinator.aeterna_state.defeated else "activa", DEMO_RACE_TARGET]
+	status_label.text = (
+		"FASE 24 · PARTIDA INTEGRADA\n"
+		+ "Ronda: %d | Activo: %s | Acciones: %d\n" % [turn_manager.current_round, active_text, turn_manager.actions_remaining]
+		+ "P1: %d PL | Libro %d | %s\n" % [legacy_points.get_points(player_1.player_id), p1_book, str(player_1.current_coord)]
+		+ "P2: %d PL | Libro %d | %s\n" % [legacy_points.get_points(player_2.player_id), p2_book, str(player_2.current_coord)]
+		+ "Aeterna: %s | Meta demo: %d PL" % ["DERROTADA" if coordinator.aeterna_state.defeated else "activa", DEMO_RACE_TARGET]
+	)
 
 
 func _log(message: String) -> void:
-	if message.is_empty(): return
-	if _log_lines.is_empty() or _log_lines.back() != message: _log_lines.append(message)
-	while _log_lines.size() > 16: _log_lines.pop_front()
-	if log_label != null: log_label.text = "\n".join(_log_lines)
+	if message.is_empty():
+		return
+	if _log_lines.is_empty() or _log_lines.back() != message:
+		_log_lines.append(message)
+	while _log_lines.size() > 16:
+		_log_lines.pop_front()
+	if log_label != null:
+		log_label.text = "\n".join(_log_lines)
 	print("FASE 24 UI: ", message)
 
 
