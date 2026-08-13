@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/progress_condition_data.gd" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="Condition_reveal_3"]
+script = ExtResource("2_cond")
+condition_type = 0
+event_id = &"tile_revealed"
+threshold = 3
+description = "Revelar 3 losetas."
+
+[sub_resource type="Resource" id="Condition_enter_n2"]
+script = ExtResource("2_cond")
+condition_type = 3
+event_id = &"entered_n2_or_higher"
+threshold = 1
+description = "Entrar al menos una vez en Nivel 2 o superior."
+
+[sub_resource type="Resource" id="Reward_fa"]
+script = ExtResource("3_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Mision completada: +1 FA."
+
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-A1"
+trainer_id = &"alderion"
+trainer_display_name = "Alderion"
+display_name = "Cartografo del Primer Eco"
+recommended_first_game = true
+condition_text = "Revela 3 losetas y entra al menos una vez en Nivel 2 o superior."
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("3_effect")]([SubResource("Reward_fa")])
+conditions = Array[ExtResource("2_cond")]([SubResource("Condition_reveal_3"), SubResource("Condition_enter_n2")])
