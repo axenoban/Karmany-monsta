@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-09"
+display_name = "Verdan"
+subtitle = "Brote de Vael"
+rank = 1
+compatible_ranks = PackedInt32Array(1)
+primary_type = 0
+power = 6
+encounter_defense = 9
+acquisition_text = "Derrota Defensa 9."
+can_acquire_by_defeat = true
