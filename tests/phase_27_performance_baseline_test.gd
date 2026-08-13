@@ -7,7 +7,7 @@ const LOGIC_ITERATIONS: int = 5000
 const VISUAL_REFRESH_ITERATIONS: int = 50
 const SNAPSHOT_ITERATIONS: int = 40
 
-var match: KarmanyPhase24FullMatchBridge = null
+var match_instance: KarmanyPhase24FullMatchBridge = null
 var report: Dictionary = {}
 
 
@@ -28,20 +28,20 @@ func _ready() -> void:
 
 func _measure_baseline() -> bool:
 	var instantiate_start: int = Time.get_ticks_usec()
-	match = PHASE_24_SCENE.instantiate() as KarmanyPhase24FullMatchBridge
+	match_instance = PHASE_24_SCENE.instantiate() as KarmanyPhase24FullMatchBridge
 	var instantiate_us: int = Time.get_ticks_usec() - instantiate_start
-	if match == null:
+	if match_instance == null:
 		return false
 
 	var ready_start: int = Time.get_ticks_usec()
-	add_child(match)
+	add_child(match_instance)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var ready_us: int = Time.get_ticks_usec() - ready_start
-	if not match.setup_ok:
+	if not match_instance.setup_ok:
 		return false
 
-	var debug_overlay := match.get_node_or_null("Phase24Overlay") as CanvasLayer
+	var debug_overlay := match_instance.get_node_or_null("Phase24Overlay") as CanvasLayer
 	if debug_overlay != null:
 		debug_overlay.visible = false
 
@@ -55,8 +55,8 @@ func _measure_baseline() -> bool:
 		},
 		"runtime_before_stress": KarmanyPerformanceMetrics.runtime_monitors(),
 		"scene_structure": _scene_structure(),
-		"tile_resources": KarmanyPerformanceMetrics.tile_resource_counts(match),
-		"signal_connections": KarmanyPerformanceMetrics.turn_signal_counts(match.turn_manager),
+		"tile_resources": KarmanyPerformanceMetrics.tile_resource_counts(match_instance),
+		"signal_connections": KarmanyPerformanceMetrics.turn_signal_counts(match_instance.turn_manager),
 		"benchmarks": {}
 	}
 
@@ -86,9 +86,9 @@ func _benchmark_movement() -> Dictionary:
 	var start: int = Time.get_ticks_usec()
 	for _index in range(LOGIC_ITERATIONS):
 		var validation := KarmanyMovementRules.validate_move(
-			match.board_prototype.board_state,
-			match.turn_manager,
-			match.player_1,
+			match_instance.board_prototype.board_state,
+			match_instance.turn_manager,
+			match_instance.player_1,
 			KarmanyPhase24FullMatchBridge.P2_START
 		)
 		if validation == KarmanyMovementRules.MoveValidation.OK:
@@ -103,9 +103,9 @@ func _benchmark_exploration() -> Dictionary:
 	var start: int = Time.get_ticks_usec()
 	for _index in range(LOGIC_ITERATIONS):
 		var validation := KarmanyExplorationRules.validate_exploration(
-			match.board_prototype.board_state,
-			match.turn_manager,
-			match.player_1,
+			match_instance.board_prototype.board_state,
+			match_instance.turn_manager,
+			match_instance.player_1,
 			KarmanyPhase24FullMatchBridge.TILE_MR
 		)
 		if validation == KarmanyExplorationRules.ExplorationValidation.OK:
@@ -117,19 +117,19 @@ func _benchmark_exploration() -> Dictionary:
 
 func _benchmark_snapshot_capture() -> Dictionary:
 	var context := KarmanySaveGameContext.new()
-	var players: Array[KarmanyPlayerState] = [match.player_1, match.player_2]
-	var beast_decks: Dictionary = {"basic": match.beast_deck, "complex": match.complex_beast_deck}
+	var players: Array[KarmanyPlayerState] = [match_instance.player_1, match_instance.player_2]
+	var beast_decks: Dictionary = {"basic": match_instance.beast_deck, "complex": match_instance.complex_beast_deck}
 	if not context.configure(
-		match.board_prototype.board_state,
-		match.turn_manager,
+		match_instance.board_prototype.board_state,
+		match_instance.turn_manager,
 		players,
-		match.resonance_deck,
-		match.equipment_market,
-		match.legacy_points,
-		match.objectives_missions,
-		match.coordinator,
+		match_instance.resonance_deck,
+		match_instance.equipment_market,
+		match_instance.legacy_points,
+		match_instance.objectives_missions,
+		match_instance.coordinator,
 		beast_decks,
-		match.dorian_pvp
+		match_instance.dorian_pvp
 	):
 		return {"error": "invalid_save_context"}
 	var non_empty: int = 0
@@ -148,7 +148,7 @@ func _benchmark_visual_refresh() -> Dictionary:
 	var memory_before: float = Performance.get_monitor(Performance.MEMORY_STATIC)
 	var start: int = Time.get_ticks_usec()
 	for _index in range(VISUAL_REFRESH_ITERATIONS):
-		match.phase_23.refresh_visual_direction()
+		match_instance.phase_23.refresh_visual_direction()
 	var elapsed: int = Time.get_ticks_usec() - start
 	await get_tree().create_timer(1.15).timeout
 	var result := KarmanyPerformanceMetrics.timing(elapsed, VISUAL_REFRESH_ITERATIONS)
@@ -173,7 +173,7 @@ func _scene_structure() -> Dictionary:
 		"unique_scripts": 0
 	}
 	var scripts: Dictionary = {}
-	_count_structure(match, result, scripts)
+	_count_structure(match_instance, result, scripts)
 	result["unique_scripts"] = scripts.size()
 	return result
 
