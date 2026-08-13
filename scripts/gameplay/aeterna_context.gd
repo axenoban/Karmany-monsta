@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const SANCTUARY_TILE_ID: String = "L-01"
+const BOOK_III_LEGENDARY_POWER: int = 2
 
 
 var board_state: KarmanyBoardState = null
@@ -36,6 +37,14 @@ func is_valid() -> bool:
 		return false
 	if book_level <= 0 or action_cost < 0:
 		return false
+
+	# v0.74: Libro III da +2 Poder contra Legendarias. Se garantiza el
+	# minimo sin duplicar el bono si un futuro sistema de Libro ya lo cargo.
+	if book_level >= 3:
+		modifiers.book_power = maxi(
+			modifiers.book_power,
+			BOOK_III_LEGENDARY_POWER
+		)
 	return true
 
 
