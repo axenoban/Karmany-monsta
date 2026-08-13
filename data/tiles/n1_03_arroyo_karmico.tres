@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_later_ek"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 2
+description = "Uso posterior N1-03: +2 EK."
+
+[sub_resource type="Resource" id="Effect_entry_ek"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 2
+description = "Entrada N1-03: +1 EK."
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-03"
+display_name = "Arroyo Karmico"
+level = 1
+function_tags = PackedStringArray("Recoleccion de EK")
+icon_tags = PackedStringArray("EK")
+on_explore_text = "Elige: recolecta 2 EK; o roba 2 Resonancias y descarta 1."
+entry_bonus_text = "Entrada: Obten 1 EK."
+later_use_text = "Recolectar 2 EK."
+limit_text = "-"
+entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_ek")])
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_ek")])
+starts_revealed = false
+can_rotate_visual = true
