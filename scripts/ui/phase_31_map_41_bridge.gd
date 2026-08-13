@@ -100,6 +100,9 @@ func _spawn_prototype_trainer() -> bool:
 	var start_tile := get_tile_view(start_coord)
 	if start_tile == null:
 		return false
+	var start_anchor := start_tile.get_node_or_null("UnitAnchor") as Marker3D
+	if start_anchor == null:
+		return false
 
 	player_state.setup_new_game(PROTOTYPE_PLAYER_ID, start_coord)
 	trainer_unit = TRAINER_UNIT_SCENE.instantiate() as KarmanyTrainerUnit3D
@@ -109,7 +112,7 @@ func _spawn_prototype_trainer() -> bool:
 	units.add_child(trainer_unit)
 	if not board_state.set_unit_occupant(start_coord, PROTOTYPE_UNIT_ID):
 		return false
-	return trainer_unit.place_at(start_tile.unit_anchor, start_coord)
+	return trainer_unit.place_at(start_anchor, start_coord)
 
 func get_tile_view(coord: Vector2i) -> KarmanyHexTile3D:
 	if not _tile_views.has(coord):
