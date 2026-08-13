@@ -17,6 +17,9 @@ var instinct_roll: int = 0
 var modifiers: KarmanyCombatPowerModifiers = KarmanyCombatPowerModifiers.new()
 var risk_authorized: bool = false
 var risk_roll: int = 0
+
+# 1 para Combatir/Interactuar normalmente. 0 cuando el enfrentamiento
+# forma parte de una accion que ya fue pagada, por ejemplo Al explorar L-01.
 var action_cost: int = 1
 
 
@@ -31,7 +34,7 @@ func is_valid() -> bool:
 		return false
 	if map_format > KarmanyLegacyModeConfig.MapFormat.MAP_41:
 		return false
-	if book_level <= 0 or action_cost <= 0:
+	if book_level <= 0 or action_cost < 0:
 		return false
 	return true
 
