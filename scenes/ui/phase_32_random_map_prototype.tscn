@@ -1,0 +1,85 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_32_random_map_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_31_map_41_prototype.tscn" id="2_phase31"]
+
+[node name="Phase32RandomMapPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase31Map41Prototype" parent="." instance=ExtResource("2_phase31")]
+
+[node name="Phase32Overlay" type="CanvasLayer" parent="."]
+layer = 11
+
+[node name="MainMargin" type="MarginContainer" parent="Phase32Overlay"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -174.0
+offset_right = -16.0
+offset_bottom = -16.0
+
+[node name="Panel" type="PanelContainer" parent="Phase32Overlay/MainMargin"]
+layout_mode = 2
+
+[node name="InnerMargin" type="MarginContainer" parent="Phase32Overlay/MainMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Phase32Overlay/MainMargin/Panel/InnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — FASE 32 · GENERADOR ALEATORIO DE MAPA"
+theme_override_font_sizes/font_size = 18
+
+[node name="SeedRow" type="HBoxContainer" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SeedLabel" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox/SeedRow"]
+layout_mode = 2
+text = "match_seed"
+
+[node name="SeedInput" type="LineEdit" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox/SeedRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "32001"
+
+[node name="RegenerateButton" type="Button" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox/SeedRow"]
+layout_mode = 2
+text = "Regenerar"
+
+[node name="NextSeedButton" type="Button" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox/SeedRow"]
+layout_mode = 2
+text = "Seed +1"
+
+[node name="RevealButton" type="Button" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox/SeedRow"]
+layout_mode = 2
+text = "Explorar seleccionada"
+
+[node name="StatusLabel" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Generando..."
+autowrap_mode = 2
+
+[node name="SelectionLabel" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Selecciona una loseta."
+autowrap_mode = 2
+
+[node name="FallbackLabel" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Fallback Alpha"
+autowrap_mode = 2
+
+[node name="HelpLabel" type="Label" parent="Phase32Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Los colores muestran solo I/N1/N2/N3/L. La identidad N1/N2/N3 permanece oculta hasta Explorar seleccionada. La geometria no cambia entre seeds."
+autowrap_mode = 2
