@@ -17,7 +17,8 @@ enum MoveValidation {
 	TARGET_HIDDEN,
 	NOT_ADJACENT,
 	TARGET_BLOCKED_BY_BEAST,
-	ORIGIN_BLOCKED_BY_BEAST
+	ORIGIN_BLOCKED_BY_BEAST,
+	TARGET_OCCUPIED
 }
 
 
@@ -68,6 +69,9 @@ static func validate_move(
 	if board_state.is_blocked_by_beast(target_coord):
 		return MoveValidation.TARGET_BLOCKED_BY_BEAST
 
+	if board_state.is_occupied(target_coord):
+		return MoveValidation.TARGET_OCCUPIED
+
 	return MoveValidation.OK
 
 
@@ -111,5 +115,7 @@ static func get_validation_message(validation: int) -> String:
 			return "La loseta esta bloqueada por una Bestia; debes declarar Combate para entrar."
 		MoveValidation.ORIGIN_BLOCKED_BY_BEAST:
 			return "Hay una Bestia sin resolver en tu loseta; debes resolver ese combate antes de moverte."
+		MoveValidation.TARGET_OCCUPIED:
+			return "La loseta destino ya esta ocupada por otra unidad."
 
 	return "Movimiento invalido."
