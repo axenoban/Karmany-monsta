@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="AbilityAeterna"]
+script = ExtResource("2_ability")
+ability_id = &"aeterna_repeat_resonance_once"
+display_name = "Memoria Estructural"
+trigger_id = &"repeat_resonance_used_in_combat"
+usage_limit = 4
+rules_text = "Una vez por partida, puedes repetir una carta de Resonancia usada en combate."
+effect_tags = PackedStringArray("resonance", "repeat", "once_per_match")
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-24"
+display_name = "Aeterna Draconis"
+subtitle = "Guardian de Memoria"
+rank = 4
+compatible_ranks = PackedInt32Array(4)
+primary_type = 5
+type_tags = PackedStringArray("Ancestral", "Legendario")
+power = 18
+encounter_defense = 26
+legacy_points = 8
+acquisition_text = "Solo en Santuario de Aeterna. Requiere Libro III, 1 FA disponible, ronda habilitada y Karmany activo."
+is_starting_karmany = false
+can_acquire_by_payment = false
+can_acquire_by_defeat = true
+can_acquire_by_condition = false
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityAeterna")])
+resonance_affinity_id = &""
+resonance_affinity_tags = PackedStringArray()
