@@ -35,6 +35,13 @@ static func play_from_hand(
 			KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED,
 			"La Resonancia no puede jugarse en esta ventana."
 		)
+	# Algunas cartas comparten la ventana tecnica de combate, pero su texto
+	# restringe el contexto. R-05, por ejemplo, es exclusivamente PvP.
+	if card.tags.has("pvp") and not context.context_tags.has("pvp"):
+		return _result(
+			KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED,
+			"Esta Resonancia solo puede jugarse en un PvP legal."
+		)
 
 	if context.is_combat_window():
 		if not context.usage_tracker.can_use_in_combat(
