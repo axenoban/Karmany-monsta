@@ -50,7 +50,7 @@ func reveal_into_board_state(
 ) -> bool:
 	if not configured or board_state == null or not board_state.has_coord(coord):
 		return false
-	var structural_level: int = KarmanyCanonicalMap41Layout.build_level_map().get(coord, -1)
+	var structural_level: int = int(KarmanyCanonicalMap41Layout.build_level_map().get(coord, -1))
 	if (
 		structural_level != KarmanyTileData.TileLevel.N1
 		and structural_level != KarmanyTileData.TileLevel.N2
@@ -90,7 +90,8 @@ func get_assignment_fingerprint() -> String:
 			if tile == null:
 				return ""
 			parts.append("%d,%d=%s" % [coord.x, coord.y, tile.tile_id])
-	return "|".join(parts)
+	var signature: String = "|".join(parts)
+	return signature.sha256_text()
 
 func get_fallback_report() -> Dictionary:
 	return _fallback_reports.duplicate(true)
