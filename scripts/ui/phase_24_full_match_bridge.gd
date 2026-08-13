@@ -178,14 +178,14 @@ func _validate_initial_guardrails() -> bool:
 	var out_of_turn_move: bool = coordinator.move_player(player_2, P1_START)
 	if out_of_turn_move or turn_manager.actions_remaining != actions_before:
 		return _step_error("Una accion fuera de turno fue aceptada o consumio acciones.")
-	var occupied_validation: int = KarmanyMovementRules.validate_move(
-		board_prototype.board_state, turn_manager, player_1, P2_START
-	)
-	if occupied_validation != KarmanyMovementRules.MoveValidation.TARGET_OCCUPIED:
-		return _step_error("Movimiento hacia unidad rival no fue marcado TARGET_OCCUPIED.")
-	if turn_manager.actions_remaining != KarmanyTurnManager.ACTIONS_PER_TURN:
-		return _step_error("Las validaciones iniciales alteraron el presupuesto de acciones.")
-	_log("Guardrails OK — fuera de turno y ocupacion rechazados sin coste.")
+	var hidden_move: bool = coordinator.move_player(player_1, TILE_MR)
+	if hidden_move or turn_manager.actions_remaining != actions_before:
+		return _step_error("Mover hacia una loseta oculta fue aceptado o consumio acciones.")
+	if board_prototype.board_state.get_occupying_unit_id(P1_START) == &"":
+		return _step_error("La ocupacion inicial de player_1 no coincide con su posicion.")
+	if board_prototype.board_state.get_occupying_unit_id(P2_START) != P2_UNIT_ID:
+		return _step_error("La ocupacion inicial de player_2 no coincide con su posicion.")
+	_log("Guardrails OK — fuera de turno, Mover a oculta y ocupacion inicial consistentes sin coste.")
 	return true
 
 
