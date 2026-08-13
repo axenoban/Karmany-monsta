@@ -1,7 +1,8 @@
 extends Node3D
 
 
-@onready var board_prototype: Node3D = $Board3DPrototype
+@onready var board_prototype: Node = $Board3DPrototype
+@onready var board_root_3d: Node3D = $Board3DPrototype
 @onready var board_camera: Camera3D = $Board3DPrototype/Camera3D
 @onready var board_tiles_root: Node3D = $Board3DPrototype/Board
 @onready var hud: KarmanyGameHUD = $GameHUD
@@ -11,14 +12,20 @@ var legacy_points_controller: KarmanyLegacyPointsController = KarmanyLegacyPoint
 
 
 func _ready() -> void:
-	if board_prototype == null or board_camera == null or board_tiles_root == null or hud == null:
+	if (
+		board_prototype == null
+		or board_root_3d == null
+		or board_camera == null
+		or board_tiles_root == null
+		or hud == null
+	):
 		push_error("FASE 19 ERROR: No se pudo conectar tablero, camara y HUD.")
 		return
 
 	# La escena compuesta debe conservar un contexto 3D explicito. El tablero
 	# genera sus losetas en su propio _ready(); aqui solo garantizamos que su
 	# rama 3D siga visible y que su camara sea la activa del viewport.
-	board_prototype.visible = true
+	board_root_3d.visible = true
 	board_tiles_root.visible = true
 	board_camera.make_current()
 	board_camera.look_at(Vector3.ZERO, Vector3.UP)
