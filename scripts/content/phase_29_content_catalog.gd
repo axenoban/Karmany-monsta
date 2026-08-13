@@ -89,7 +89,7 @@ const EXECUTABLE_IDS: Dictionary = {
 	"karmanys": ["K-09"],
 	"beasts": [],
 	"equipment": [],
-	"resonances": ["R-09", "R-20"],
+	"resonances": ["R-09"],
 	"objectives": ["OP-E02", "OP-D01", "OP-D03", "OP-C01"],
 	"missions": ["ME-A2", "ME-L1", "ME-L2", "ME-D2"]
 }
@@ -186,5 +186,5 @@ static func get_coverage_label(state_value: int) -> String:
 	if state_value == CoverageState.EXECUTABLE:
 		return "ejecutable"
 	if state_value == CoverageState.INTEGRATION_PENDING:
-		return "datos completos / integracion pendiente"
+		return "materializado / integracion pendiente"
 	return "diferido"
