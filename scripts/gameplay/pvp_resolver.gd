@@ -29,6 +29,7 @@ static func resolve(
 	var attacker_active := attacker.get_active_karmany()
 	var defender_active := defender.get_active_karmany()
 
+	result.combat_id = context.combat_id
 	result.attacker_player_id = attacker.player_id
 	result.defender_player_id = defender.player_id
 	result.attacker_karmany_id = attacker_active.karmany_data.karmany_id
