@@ -5,6 +5,7 @@ extends RefCounted
 var coord: Vector2i
 var tile_data: KarmanyTileData
 var revealed: bool
+var structural_level: int = -1
 var occupying_unit_id: StringName = &""
 var beast_state: KarmanyBeastRuntimeState = null
 
@@ -12,11 +13,15 @@ var beast_state: KarmanyBeastRuntimeState = null
 func _init(
 	p_coord: Vector2i,
 	p_tile_data: KarmanyTileData = null,
-	p_revealed: bool = false
+	p_revealed: bool = false,
+	p_structural_level: int = -1
 ) -> void:
 	coord = p_coord
 	tile_data = p_tile_data
 	revealed = p_revealed
+	structural_level = p_structural_level
+	if structural_level < 0 and tile_data != null:
+		structural_level = int(tile_data.level)
 
 
 func is_occupied() -> bool:
