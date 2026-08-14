@@ -26,5 +26,6 @@ on_explore_text = "Elige: recolecta 2 MN; o roba 2 Resonancias y descarta 1."
 entry_bonus_text = "Obtén 1 MN."
 later_use_text = "Recolectar 2 MN."
 limit_text = "Sin límite especial."
+interaction_profile_id = &"effect"
 entry_effects = Array[ExtResource("2_effect")]([SubResource("EntryEffect")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("LaterUseEffect")])
