@@ -27,6 +27,7 @@ on_explore_text = "No otorga recurso automático al comenzar. El jugador inicia 
 entry_bonus_text = "Obtén 1 MN."
 later_use_text = "Recolectar 2 Material Natural."
 limit_text = "Sin límite especial."
+interaction_profile_id = &"effect"
 entry_effects = Array[ExtResource("1_tbdy6")]([SubResource("Resource_fqtb4")])
 later_use_effects = Array[ExtResource("1_tbdy6")]([SubResource("Resource_ob6gp")])
 starts_revealed = true
