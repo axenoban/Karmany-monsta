@@ -13,6 +13,7 @@ on_explore_text = "Si no cumples requisitos, roba 2 Resonancias y descarta 1. Si
 entry_bonus_text = "Si ya usaste Sintonia del Santuario, roba 1 Resonancia y descarta 1; si no, Sintonia reemplaza esta bonificacion."
 later_use_text = "Intentar Legendario si cumples requisitos; Sintonizar con Aeterna una vez por partida; o, si Aeterna ya fue derrotada, recolectar 2 EK una vez por ronda."
 limit_text = "Requiere Libro III, 1 FA disponible, ronda habilitada y Karmany activo. Aeterna solo puede derrotarse una vez por partida."
+interaction_profile_id = &"aeterna"
 on_explore_effects = []
 entry_effects = []
 later_use_effects = []
