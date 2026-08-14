@@ -106,6 +106,70 @@ func get_setup_summary() -> Dictionary:
 	}
 
 
+func get_human_supported_combat_resonances() -> Array[KarmanyResonanceData]:
+	var result: Array[KarmanyResonanceData] = []
+	if runtime == null or runtime.local_session == null:
+		return result
+	var player := runtime.local_session.turn_manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return result
+	for card in player.get_resonance_hand():
+		if card == null:
+			continue
+		if not KarmanyV074CanonicalRuntimeCatalog.is_resonance_automated(card.resonance_id):
+			continue
+		if not card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
+			continue
+		result.append(card)
+	return result
+
+
+func execute_human_combat_with_resonance(
+	resonance_id: StringName = &""
+) -> bool:
+	if not configured or match_state != MatchState.PLAYING:
+		return false
+	var manager := runtime.local_session.turn_manager
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return false
+	if resonance_id != &"":
+		var allowed: bool = false
+		for card in get_human_supported_combat_resonances():
+			if card.resonance_id == resonance_id:
+				allowed = true
+				break
+		if not allowed:
+			return false
+
+	var candidates := build_full_legal_actions(player)
+	var preferred_types: Array[int] = [
+		KarmanyAiActionCandidate.ActionType.FIGHT_BEAST,
+		KarmanyAiActionCandidate.ActionType.BOND_COMBAT,
+		KarmanyAiActionCandidate.ActionType.PVP,
+		KarmanyAiActionCandidate.ActionType.AETERNA
+	]
+	for preferred_type in preferred_types:
+		for candidate in candidates:
+			if candidate == null or candidate.action_type != preferred_type:
+				continue
+			candidate.payload.erase("resonance_id")
+			candidate.payload.erase("attacker_resonance_id")
+			if resonance_id != &"":
+				if preferred_type == KarmanyAiActionCandidate.ActionType.PVP:
+					candidate.payload["attacker_resonance_id"] = resonance_id
+				else:
+					candidate.payload["resonance_id"] = resonance_id
+			var success: bool = _execute_candidate(player, candidate)
+			full_action_resolved.emit(player.player_id, candidate.debug_label, success)
+			if success:
+				statistics["actions"] = int(statistics.get("actions", 0)) + 1
+				if manager.actions_remaining == 0 and manager.get_active_player() == player:
+					_end_turn_with_hand_limit(player)
+			return success
+	return false
+
+
 func _choose_first_game_mission(
 	missions: Array[KarmanyMissionData],
 	trainer_id: StringName
