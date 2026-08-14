@@ -57,10 +57,12 @@ func _validate_resolution(requested_size: Vector2i) -> bool:
 	prototype.refresh_for_test()
 	await _wait_layout_frames(2)
 
-	var ok: bool = true
 	if not prototype.setup_ok:
-		ok = _fail("F36 no completo setup en %s." % str(requested_size)) and ok
+		prototype.queue_free()
+		await _wait_layout_frames(2)
+		return _fail("F36 no completo setup en %s." % str(requested_size))
 
+	var ok: bool = true
 	if prototype.phase_35.phase_34.trainer_units.size() != 4:
 		ok = _fail("No siguen presentes los cuatro jugadores visuales en %s." % str(requested_size)) and ok
 
@@ -85,6 +87,20 @@ func _validate_resolution(requested_size: Vector2i) -> bool:
 		ok = _fail("Barra inferior fuera del viewport en %s." % str(requested_size)) and ok
 	if not _control_fully_inside(prototype.right_panel, viewport_rect):
 		ok = _fail("Panel derecho fuera del viewport en %s." % str(requested_size)) and ok
+
+	# Fuerza una seleccion real para validar el caso de mayor altura del panel,
+	# no solo el texto corto "SELECCION: ninguna".
+	var runtime := prototype.get_runtime()
+	var p1 := runtime.local_session.get_player_by_id(&"player_1")
+	var phase_31 := prototype.phase_35.phase_34.phase_32.phase_31
+	var selected_tile := phase_31.get_tile_view(p1.current_coord)
+	if selected_tile == null:
+		ok = _fail("No se pudo seleccionar la loseta actual de P1 en %s." % str(requested_size)) and ok
+	else:
+		selected_tile.tile_clicked.emit(selected_tile)
+		await _wait_layout_frames(2)
+		prototype.refresh_for_test()
+		await _wait_layout_frames(2)
 
 	prototype.right_scroll.scroll_vertical = 0
 	prototype.set_alpha_tools_expanded(false)
