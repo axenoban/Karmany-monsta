@@ -17,11 +17,7 @@ func _ready() -> void:
 	var finished_count: int = 0
 
 	for seed_value in TEST_SEEDS:
-		var seed_ok: bool = _run_seed(
-			seed_value,
-			map_fingerprints,
-			result_signatures
-		)
+		var seed_ok: bool = _run_seed(seed_value, map_fingerprints, result_signatures)
 		ok = seed_ok and ok
 		if seed_ok:
 			finished_count += 1
@@ -59,7 +55,7 @@ func _run_seed(
 		return _fail("Seed %d: layout canonico no esta conectado." % seed_value)
 	if runtime.local_session.get_player_count() != 4:
 		return _fail("Seed %d: no hay 4 participantes." % seed_value)
-	if runtime.local_session.legacy_mode_config.get_standard_round_limit() != 8:
+	if runtime.local_session.legacy_mode_config.standard_round_limit != 8:
 		return _fail("Seed %d: MAP41 principal no usa 8 rondas." % seed_value)
 	if session.selected_public_objectives.size() != 4:
 		return _fail("Seed %d: setup no selecciono 4 Objetivos Publicos." % seed_value)
@@ -140,7 +136,6 @@ func _run_seed(
 		return _fail("Seed %d: no pudo pasar SETUP -> PLAYING." % seed_value)
 	if session.get_state_label() != "PLAYING":
 		return _fail("Seed %d: estado no es PLAYING." % seed_value)
-
 	if not session.auto_complete_match(WATCHDOG_TURNS):
 		return _fail("Seed %d: %s" % [seed_value, session.last_error])
 	if session.get_state_label() != "FINISHED":
