@@ -26,6 +26,14 @@ enum TileLevel {
 @export_multiline var later_use_text: String = ""
 @export_multiline var limit_text: String = ""
 
+@export_group("Universal Interaction F39")
+
+# Canonical gameplay profile for Uso posterior == Interactuar.
+# The profile is content metadata: presentation, legality, AI and execution all
+# resolve it through KarmanyUniversalTileInteractionService. An empty profile
+# is an invalid Phase 39 content definition even when later_use_text exists.
+@export var interaction_profile_id: StringName = &""
+
 @export_group("Executable Effects")
 
 @export var on_explore_effects: Array[KarmanyEffectData] = []
@@ -36,3 +44,10 @@ enum TileLevel {
 
 @export var starts_revealed: bool = false
 @export var can_rotate_visual: bool = true
+
+
+func has_universal_interaction_definition() -> bool:
+	return (
+		not later_use_text.strip_edges().is_empty()
+		and interaction_profile_id != &""
+	)
