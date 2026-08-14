@@ -12,7 +12,9 @@ enum ActionType {
 	FORGE,
 	FIGHT_BEAST,
 	PVP,
-	AETERNA
+	AETERNA,
+	CALL_KARMANY,
+	BOND_COMBAT
 }
 
 
@@ -36,7 +38,7 @@ var base_utility: float = 0.0
 func is_valid() -> bool:
 	return (
 		action_type >= ActionType.MOVE
-		and action_type <= ActionType.AETERNA
+		and action_type <= ActionType.BOND_COMBAT
 		and not debug_label.is_empty()
 	)
 
@@ -63,4 +65,8 @@ func get_action_name() -> String:
 			return "PvP"
 		ActionType.AETERNA:
 			return "Aeterna"
+		ActionType.CALL_KARMANY:
+			return "Llamar Karmany"
+		ActionType.BOND_COMBAT:
+			return "Vincular por combate"
 	return "Accion IA"
