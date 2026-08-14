@@ -29,6 +29,8 @@ func apply_public_state(board_state: KarmanyBoardState) -> bool:
 		if not board_state.has_coord(coord):
 			return false
 		var level: int = int(levels[coord])
+		if not board_state.set_structural_level(coord, level):
+			return false
 		if level == KarmanyTileData.TileLevel.START or level == KarmanyTileData.TileLevel.SANCTUARY:
 			var fixed_tile := _fixed_content.get(coord) as KarmanyTileData
 			if fixed_tile == null:
