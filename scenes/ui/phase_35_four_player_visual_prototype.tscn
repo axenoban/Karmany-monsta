@@ -1,0 +1,150 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_35_four_player_visual_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_34_multi_ai_prototype.tscn" id="2_phase34"]
+[ext_resource type="Script" path="res://scripts/ui/presentation_feedback_controller.gd" id="3_feedback"]
+
+[node name="Phase35FourPlayerVisualPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase34MultiAiPrototype" parent="." instance=ExtResource("2_phase34")]
+
+[node name="FeedbackRoot" type="Node3D" parent="."]
+
+[node name="PresentationFeedbackController" type="Node" parent="."]
+script = ExtResource("3_feedback")
+movement_duration = 0.32
+reveal_duration = 0.34
+
+[node name="PresentationOverlay" type="CanvasLayer" parent="."]
+layer = 13
+
+[node name="TransitionRect" type="ColorRect" parent="PresentationOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.035, 0.045, 0.065, 0)
+
+[node name="TransitionLabel" type="Label" parent="PresentationOverlay"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -24.0
+offset_right = 220.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="Phase35Overlay" type="CanvasLayer" parent="."]
+layer = 15
+
+[node name="MainMargin" type="MarginContainer" parent="Phase35Overlay"]
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 238.0
+
+[node name="MainRow" type="HBoxContainer" parent="Phase35Overlay/MainMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PublicPanel" type="PanelContainer" parent="Phase35Overlay/MainMargin/MainRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PublicMargin" type="MarginContainer" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="PublicVBox" type="VBoxContainer" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel/PublicMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel/PublicMargin/PublicVBox"]
+layout_mode = 2
+text = "FASE 35 · CUATRO JUGADORES VISIBLES"
+theme_override_font_sizes/font_size = 17
+
+[node name="ActiveTurnLabel" type="Label" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel/PublicMargin/PublicVBox"]
+layout_mode = 2
+text = "P1 HUMANO — TURNO | Ronda 1 | acciones 2/2"
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 2
+
+[node name="ParticipantsTitle" type="Label" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel/PublicMargin/PublicVBox"]
+layout_mode = 2
+text = "PARTICIPANTES · solo informacion publica"
+
+[node name="ParticipantsLabel" type="Label" parent="Phase35Overlay/MainMargin/MainRow/PublicPanel/PublicMargin/PublicVBox"]
+layout_mode = 2
+text = "P1 / P2 / P3 / P4"
+autowrap_mode = 2
+
+[node name="ContextPanel" type="PanelContainer" parent="Phase35Overlay/MainMargin/MainRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ContextMargin" type="MarginContainer" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ContextVBox" type="VBoxContainer" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="LocationTitle" type="Label" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "UBICACION ACTUAL · P1"
+
+[node name="LocationLabel" type="Label" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "Cargando ubicacion publica..."
+autowrap_mode = 2
+
+[node name="ActionFeedbackLabel" type="Label" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "Esperando accion."
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 2
+
+[node name="Controls" type="HBoxContainer" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="PassHumanButton" type="Button" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox/Controls"]
+layout_mode = 2
+text = "Cerrar P1"
+
+[node name="RunAiButton" type="Button" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox/Controls"]
+layout_mode = 2
+text = "IA actual"
+
+[node name="RunAllAiButton" type="Button" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox/Controls"]
+layout_mode = 2
+text = "P2→P4"
+
+[node name="CenterHumanButton" type="Button" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox/Controls"]
+layout_mode = 2
+text = "Centrar P1"
+
+[node name="StatusLabel" type="Label" parent="Phase35Overlay/MainMargin/MainRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "Presentacion Alpha 1.0x"
+autowrap_mode = 2
