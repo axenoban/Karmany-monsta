@@ -1,6 +1,6 @@
 # Fase 39 — Auditoría de Uso posterior / Interactuar
 
-Base inspeccionada antes de modificar F39: `feature/phase-39-universal-tile-interactions` y `dev/karmany-core` apuntaban al mismo commit aprobado de F38 (`78fc67dd1cf0afffa9306f9a5113559c406fe1b9`). La rama `backup/local-content-before-phase39` **no fue mezclada**.
+Base real de F38 inspeccionada antes de la primera modificación F39: `82f0f3ad28fef491ab154bbc83eb744da59f76b8`. El primer commit de F39 tiene ese SHA como padre y `dev/karmany-core` continúa apuntando a ese mismo contenido aprobado. La rama `backup/local-content-before-phase39` **no fue mezclada**.
 
 ## Hallazgo principal
 
@@ -62,4 +62,4 @@ El servicio vuelve a evaluar la misma opción inmediatamente antes de ejecutar. 
 - No se cambia la política de ocupación de F38.
 - La conversión de Forja sigue siendo una vez por jugador por partida.
 - Los resolvers de Equipo, Bestias, Libro, Forja y Aeterna siguen siendo los resolvers de gameplay existentes; F39 solo unifica la puerta de entrada `Interactuar`.
-- La presentación F39 observa/ejectua candidatos legales; no mantiene un estado de gameplay paralelo.
+- La presentación F39 observa/ejecuta candidatos legales; no mantiene un estado de gameplay paralelo.
