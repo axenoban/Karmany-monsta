@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tests/phase_37_playable_visual_probe.gd" id="1_probe"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_37_content_preview_prototype.tscn" id="2_phase37"]
+
+[node name="Phase37PlayableVisualProbe" type="Node3D"]
+script = ExtResource("1_probe")
+
+[node name="Phase37ContentPreviewPrototype" parent="." instance=ExtResource("2_phase37")]
