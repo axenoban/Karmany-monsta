@@ -66,11 +66,16 @@ static func _append_move_and_explore(
 			explore.debug_label = "Explorar %s" % str(coord)
 			explore.base_utility = 1.0
 			explore.exploration_value = 3.0
-			explore.progress_value = 1.0
 			explore.opportunity_value = 0.75
-			# Importante: no se consulta tile_data para puntuar una loseta oculta.
-			# El motor conoce su contenido, pero la IA no debe obtener informacion
-			# que un jugador humano todavia no ha revelado.
+
+			# La IA recibe solo el nivel estructural publico. No se consulta
+			# KarmanyTileData mientras la posicion permanezca oculta.
+			var public_level: int = coordinator.board_state.get_structural_level(coord)
+			if public_level >= 0:
+				explore.payload["public_level"] = public_level
+				explore.progress_value = 1.0 + maxf(float(public_level), 0.0) * 0.20
+			else:
+				explore.progress_value = 1.0
 			result.append(explore)
 
 
