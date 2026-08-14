@@ -17,7 +17,7 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func setup(
 	deck: Array[KarmanyEquipmentData],
 	shuffle_deck: bool = false,
-	seed: int = 0
+	seed_value: int = 0
 ) -> bool:
 	if deck.size() < MARKET_SIZE:
 		return false
@@ -37,8 +37,8 @@ func setup(
 	for equipment in deck:
 		_draw_pile.append(equipment)
 
-	if seed != 0:
-		_rng.seed = seed
+	if seed_value != 0:
+		_rng.seed = seed_value
 	else:
 		_rng.randomize()
 
