@@ -1,0 +1,93 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_33_multiplayer_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_32_random_map_prototype.tscn" id="2_phase32"]
+
+[node name="Phase33MultiplayerPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase32RandomMapPrototype" parent="." instance=ExtResource("2_phase32")]
+
+[node name="Phase33Overlay" type="CanvasLayer" parent="."]
+layer = 12
+
+[node name="MainMargin" type="MarginContainer" parent="Phase33Overlay"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 620.0
+offset_bottom = 304.0
+
+[node name="Panel" type="PanelContainer" parent="Phase33Overlay/MainMargin"]
+layout_mode = 2
+
+[node name="InnerMargin" type="MarginContainer" parent="Phase33Overlay/MainMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Phase33Overlay/MainMargin/Panel/InnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — FASE 33 · MULTIJUGADOR LOCAL 2–4"
+theme_override_font_sizes/font_size = 18
+
+[node name="SetupRow" type="HBoxContainer" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SetupLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/SetupRow"]
+layout_mode = 2
+text = "Setup:"
+
+[node name="TwoPlayerButton" type="Button" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/SetupRow"]
+layout_mode = 2
+text = "2P"
+
+[node name="ThreePlayerButton" type="Button" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/SetupRow"]
+layout_mode = 2
+text = "3P"
+
+[node name="FourPlayerButton" type="Button" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/SetupRow"]
+layout_mode = 2
+text = "4P"
+
+[node name="TurnRow" type="HBoxContainer" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TurnControlsLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/TurnRow"]
+layout_mode = 2
+text = "Turno:"
+
+[node name="SpendActionButton" type="Button" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/TurnRow"]
+layout_mode = 2
+text = "Usar acción"
+
+[node name="EndTurnButton" type="Button" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox/TurnRow"]
+layout_mode = 2
+text = "Finalizar turno"
+
+[node name="StatusLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Preparando infraestructura multijugador..."
+autowrap_mode = 2
+
+[node name="ParticipantsLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Participantes"
+autowrap_mode = 2
+
+[node name="TurnLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Ronda / turno / acciones"
+autowrap_mode = 2
+
+[node name="HelpLabel" type="Label" parent="Phase33Overlay/MainMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Selecciona 2P/3P/4P. Usa exactamente 2 acciones y luego Finalizar turno para comprobar P1→P2→P3→P4. Los colores de entrenadores son placeholders de Fase 33."
+autowrap_mode = 2
