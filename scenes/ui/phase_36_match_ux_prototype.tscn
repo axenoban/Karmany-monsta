@@ -1,0 +1,159 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_36_match_ux_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_35_four_player_visual_prototype.tscn" id="2_phase35"]
+
+[node name="Phase36MatchUxPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase35FourPlayerVisualPrototype" parent="." instance=ExtResource("2_phase35")]
+
+[node name="Phase36Overlay" type="CanvasLayer" parent="."]
+layer = 18
+
+[node name="TopBar" type="PanelContainer" parent="Phase36Overlay"]
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = 62.0
+
+[node name="TopMargin" type="MarginContainer" parent="Phase36Overlay/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 7
+
+[node name="TopRow" type="HBoxContainer" parent="Phase36Overlay/TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TurnLabel" type="Label" parent="Phase36Overlay/TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "RONDA 1 · P1 HUMANO · ACCIONES 2/2"
+theme_override_font_sizes/font_size = 19
+
+[node name="ActivityLabel" type="Label" parent="Phase36Overlay/TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Actividad: esperando accion"
+horizontal_alignment = 2
+autowrap_mode = 2
+
+[node name="RightPanel" type="PanelContainer" parent="Phase36Overlay"]
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = 74.0
+offset_right = -12.0
+offset_bottom = -12.0
+
+[node name="RightMargin" type="MarginContainer" parent="Phase36Overlay/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="RightVBox" type="VBoxContainer" parent="Phase36Overlay/RightPanel/RightMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ParticipantsTitle" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "PARTICIPANTES · PUBLICO"
+theme_override_font_sizes/font_size = 15
+
+[node name="ParticipantsLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "P1 HUMANO\nP2 EXPLORADORA\nP3 OPORTUNISTA\nP4 AGRESIVA"
+autowrap_mode = 2
+
+[node name="Divider1" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+
+[node name="LocationTitle" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "UBICACION DEL JUGADOR ACTIVO"
+
+[node name="LocationLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "Cargando..."
+autowrap_mode = 2
+
+[node name="SelectedLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "SELECCION: ninguna"
+autowrap_mode = 2
+
+[node name="Divider2" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+
+[node name="ActionsLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "LEGALES AHORA: cargando..."
+autowrap_mode = 2
+
+[node name="ActionReasonLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "Selecciona una loseta."
+autowrap_mode = 2
+
+[node name="ActionGrid" type="GridContainer" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="MoveButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
+layout_mode = 2
+text = "Mover seleccion"
+
+[node name="ExploreButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
+layout_mode = 2
+text = "Explorar seleccion"
+
+[node name="InteractButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
+layout_mode = 2
+text = "Interactuar"
+
+[node name="ImproveButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
+layout_mode = 2
+text = "Mejorar Libro"
+
+[node name="FlowButtons" type="GridContainer" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="PassButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
+layout_mode = 2
+text = "Pasar resto P1"
+
+[node name="AiButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
+layout_mode = 2
+text = "IA actual"
+
+[node name="AllAiButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
+layout_mode = 2
+text = "P2 → P4"
+
+[node name="CenterButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
+layout_mode = 2
+text = "Centrar P1"
+
+[node name="Divider3" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+
+[node name="P3DebugLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "DEBUG P3 OPORTUNISTA\nSin decision registrada todavia."
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 13
+
+[node name="HelpLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+layout_mode = 2
+text = "Alpha: selecciona una loseta para Mover/Explorar. Las acciones deshabilitadas siguen las reglas existentes. El debug P3 muestra score y MR solo para diagnostico."
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
