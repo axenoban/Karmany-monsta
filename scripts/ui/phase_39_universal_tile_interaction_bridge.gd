@@ -4,14 +4,13 @@ extends Node3D
 
 @onready var phase_38: KarmanyPhase38FullMatchBridge = $Phase38FullMatchPrototype
 
-var panel: PanelContainer = null
-var selected_label: Label = null
-var requirements_label: Label = null
+var interaction_state_label: Label = null
 var option_selector: OptionButton = null
 var status_label: Label = null
 
 var _current_candidates: Array[KarmanyAiActionCandidate] = []
 var _last_signature: String = ""
+var _requirements_text: String = ""
 var setup_ok: bool = false
 
 
@@ -23,7 +22,9 @@ func _ready() -> void:
 	if service == null or not service.is_configured():
 		push_error("FASE 39 ERROR: fuente universal de Interactuar no configurada.")
 		return
-	_build_panel()
+	if not _integrate_controls_into_phase37():
+		push_error("FASE 39 ERROR: no se pudo integrar Interactuar en el preview F37.")
+		return
 	_take_over_interact_button()
 	_refresh(true)
 	setup_ok = true
@@ -36,61 +37,63 @@ func _process(_delta: float) -> void:
 
 
 func get_selected_interaction_text() -> String:
-	return selected_label.text if selected_label != null else ""
+	return interaction_state_label.text if interaction_state_label != null else ""
 
 
 func get_requirements_text() -> String:
-	return requirements_label.text if requirements_label != null else ""
+	return _requirements_text
 
 
-func _build_panel() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "Phase39InteractionLayer"
-	layer.layer = 38
-	add_child(layer)
+func _integrate_controls_into_phase37() -> bool:
+	var phase_37 := phase_38.phase_37
+	if phase_37 == null or phase_37.preview_section == null:
+		return false
 
-	panel = PanelContainer.new()
-	panel.name = "Phase39InteractionPanel"
-	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	panel.position = Vector2(-390, 96)
-	panel.size = Vector2(370, 260)
-	layer.add_child(panel)
+	# F37 conserva el preview canonico completo (ENTRADA / INTERACTUAR /
+	# REQUISITOS). F39 reemplaza solo su bloque de estado de Interactuar para
+	# que legalidad, razon y opcion elegible provengan del servicio universal.
+	if phase_37.interact_preview_label != null:
+		phase_37.interact_preview_label.visible = false
 
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 10)
-	panel.add_child(margin)
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 7)
-	margin.add_child(column)
+	var separator := HSeparator.new()
+	separator.name = "Phase39InteractionSeparator"
+	phase_37.preview_section.add_child(separator)
 
 	var title := Label.new()
-	title.text = "FASE 39 · INTERACCION UNIVERSAL"
-	title.add_theme_font_size_override("font_size", 16)
-	column.add_child(title)
+	title.name = "Phase39InteractionTitle"
+	title.text = "INTERACTUAR · ESTADO ACTUAL"
+	title.add_theme_font_size_override("font_size", 12)
+	phase_37.preview_section.add_child(title)
 
-	selected_label = Label.new()
-	selected_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	selected_label.custom_minimum_size = Vector2(340, 70)
-	column.add_child(selected_label)
-
-	requirements_label = Label.new()
-	requirements_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	requirements_label.custom_minimum_size = Vector2(340, 70)
-	column.add_child(requirements_label)
+	interaction_state_label = Label.new()
+	interaction_state_label.name = "Phase39InteractionState"
+	interaction_state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	interaction_state_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	interaction_state_label.add_theme_font_size_override("font_size", 11)
+	phase_37.preview_section.add_child(interaction_state_label)
 
 	option_selector = OptionButton.new()
+	option_selector.name = "Phase39InteractionOptions"
 	option_selector.tooltip_text = "Opciones legales de Uso posterior en la loseta donde se encuentra P1."
 	option_selector.item_selected.connect(_on_option_selected)
-	column.add_child(option_selector)
+	phase_37.preview_section.add_child(option_selector)
 
 	status_label = Label.new()
+	status_label.name = "Phase39InteractionStatus"
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.add_theme_font_size_override("font_size", 11)
-	column.add_child(status_label)
+	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	status_label.add_theme_font_size_override("font_size", 10)
+	phase_37.preview_section.add_child(status_label)
+
+	var content_status := phase_37.content_status_label
+	if content_status != null:
+		var content_index: int = content_status.get_index()
+		phase_37.preview_section.move_child(separator, content_index)
+		phase_37.preview_section.move_child(title, content_index + 1)
+		phase_37.preview_section.move_child(interaction_state_label, content_index + 2)
+		phase_37.preview_section.move_child(option_selector, content_index + 3)
+		phase_37.preview_section.move_child(status_label, content_index + 4)
+	return true
 
 
 func _take_over_interact_button() -> void:
@@ -121,12 +124,13 @@ func _refresh(force: bool) -> void:
 	)
 	if selected == KarmanyPhase37ContentPreviewBridge.INVALID_COORD and active != null:
 		selected = active.current_coord
-	var signature := "%s|%d|%d|%s|%s" % [
+	var signature := "%s|%d|%d|%s|%s|%s" % [
 		String(active.player_id) if active != null else "-",
 		manager.current_round if manager != null else 0,
 		manager.actions_remaining if manager != null else 0,
+		str(active.current_coord) if active != null else "-",
 		str(selected),
-		String(session.match_state)
+		str(session.match_state)
 	]
 	if not force and signature == _last_signature:
 		return
@@ -143,25 +147,21 @@ func _refresh(force: bool) -> void:
 		active if human_active else null,
 		selected
 	)
+	_requirements_text = String(preview.get("requirements_text", ""))
 	if not bool(preview.get("visible", false)):
-		selected_label.text = "INTERACTUAR\nOCULTA"
-		requirements_label.text = "REQUISITOS / LIMITACIONES\nLa identidad y el Uso posterior permanecen ocultos."
+		interaction_state_label.text = "INTERACTUAR\nOCULTA\nREQUISITOS / LIMITACIONES\nLa identidad y el Uso posterior permanecen ocultos."
 	else:
-		selected_label.text = "INTERACTUAR\n%s" % String(
-			preview.get("interaction_text", "")
-		)
-		requirements_label.text = "REQUISITOS / LIMITACIONES\n%s" % String(
-			preview.get("requirements_text", "")
-		)
+		interaction_state_label.text = "INTERACTUAR\n%s\nREQUISITOS / LIMITACIONES\n%s" % [
+			String(preview.get("interaction_text", "")),
+			_requirements_text
+		]
 
 	_refresh_current_options(active if human_active else null)
-	if phase_37 != null and phase_37.interact_preview_label != null:
-		phase_37.interact_preview_label.text = "%s\n\n%s" % [
-			selected_label.text,
-			requirements_label.text
-		]
 	if phase_36 != null and phase_36.interact_button != null:
-		phase_36.interact_button.disabled = not human_active or _current_candidates.is_empty()
+		phase_36.interact_button.disabled = (
+			not human_active
+			or _current_candidates.is_empty()
+		)
 
 
 func _refresh_current_options(player: KarmanyPlayerState) -> void:
@@ -182,7 +182,7 @@ func _refresh_current_options(player: KarmanyPlayerState) -> void:
 	if _current_candidates.is_empty():
 		option_selector.add_item("Sin opciones legales")
 		option_selector.disabled = true
-		status_label.text = "No se ofrece una accion que el executor conozca de antemano que sera rechazada."
+		status_label.text = "TU LOSETA ACTUAL · ninguna opcion legal. El preview conserva el efecto y explica el bloqueo."
 		return
 	option_selector.disabled = false
 	var selected_index: int = 0
@@ -197,7 +197,7 @@ func _refresh_current_options(player: KarmanyPlayerState) -> void:
 			selected_index = index
 			break
 	option_selector.select(selected_index)
-	status_label.text = "%d opcion(es) legal(es) en la loseta actual." % _current_candidates.size()
+	status_label.text = "TU LOSETA ACTUAL · %d opcion(es) legal(es)." % _current_candidates.size()
 
 
 func _selected_key() -> StringName:
@@ -252,4 +252,5 @@ func _on_interact_pressed() -> void:
 			candidate.debug_label,
 			true
 		)
+		phase_38.phase_37.refresh_preview()
 	_refresh(true)
