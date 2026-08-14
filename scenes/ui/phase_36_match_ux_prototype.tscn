@@ -19,149 +19,264 @@ script = ExtResource("4_debug")
 [node name="Phase36Overlay" type="CanvasLayer" parent="."]
 layer = 18
 
-[node name="TopBar" type="PanelContainer" parent="Phase36Overlay"]
+[node name="RootUI" type="Control" parent="Phase36Overlay"]
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = 12.0
-offset_top = 10.0
-offset_right = -12.0
-offset_bottom = 62.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="TopMargin" type="MarginContainer" parent="Phase36Overlay/TopBar"]
+[node name="RootMargin" type="MarginContainer" parent="Phase36Overlay/RootUI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="Phase36Overlay/RootUI/RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="TopBar" type="PanelContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="TopMargin" type="MarginContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/TopBar"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 7
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 7
+theme_override_constants/margin_bottom = 6
 
-[node name="TopRow" type="HBoxContainer" parent="Phase36Overlay/TopBar/TopMargin"]
+[node name="TopRow" type="HBoxContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/TopBar/TopMargin"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 12
 
-[node name="TurnLabel" type="Label" parent="Phase36Overlay/TopBar/TopMargin/TopRow"]
+[node name="TurnLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/TopBar/TopMargin/TopRow"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "RONDA 1 · P1 HUMANO · ACCIONES 2/2"
-theme_override_font_sizes/font_size = 19
+clip_text = true
+theme_override_font_sizes/font_size = 17
 
-[node name="ActivityLabel" type="Label" parent="Phase36Overlay/TopBar/TopMargin/TopRow"]
+[node name="ActivityLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/TopBar/TopMargin/TopRow"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Actividad: esperando accion"
 horizontal_alignment = 2
-autowrap_mode = 2
+clip_text = true
+theme_override_font_sizes/font_size = 13
 
-[node name="RightPanel" type="PanelContainer" parent="Phase36Overlay"]
-anchor_left = 1.0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -360.0
-offset_top = 74.0
-offset_right = -12.0
-offset_bottom = -12.0
-
-[node name="RightMargin" type="MarginContainer" parent="Phase36Overlay/RightPanel"]
+[node name="CenterRow" type="HBoxContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+mouse_filter = 2
 
-[node name="RightVBox" type="VBoxContainer" parent="Phase36Overlay/RightPanel/RightMargin"]
+[node name="BoardSpace" type="Control" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 6
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
 
-[node name="ParticipantsTitle" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="RightPanel" type="PanelContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(318, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RightMargin" type="MarginContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="RightScroll" type="ScrollContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RightVBox" type="VBoxContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="ParticipantsTitle" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 text = "PARTICIPANTES · PUBLICO"
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 13
 
-[node name="ParticipantsLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="ParticipantsLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "P1 HUMANO\nP2 EXPLORADORA\nP3 OPORTUNISTA\nP4 AGRESIVA"
 autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
 
-[node name="Divider1" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="Divider1" type="HSeparator" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 
-[node name="LocationTitle" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="LocationTitle" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "UBICACION DEL JUGADOR ACTIVO"
+text = "UBICACION ACTUAL"
+theme_override_font_sizes/font_size = 13
 
-[node name="LocationLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="LocationLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Cargando..."
 autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
 
-[node name="SelectedLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="Divider2" type="HSeparator" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+
+[node name="SelectedTitle" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "SELECCION ACTUAL"
+theme_override_font_sizes/font_size = 13
+
+[node name="SelectedLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "SELECCION: ninguna"
 autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
 
-[node name="Divider2" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="Divider3" type="HSeparator" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 
-[node name="ActionsLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="ActionsTitle" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "ACCIONES LEGALES"
+theme_override_font_sizes/font_size = 13
+
+[node name="ActionsLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "LEGALES AHORA: cargando..."
 autowrap_mode = 2
+theme_override_font_sizes/font_size = 12
 
-[node name="ActionReasonLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="ActionReasonLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Selecciona una loseta."
 autowrap_mode = 2
+theme_override_font_sizes/font_size = 11
 
-[node name="ActionGrid" type="GridContainer" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
-layout_mode = 2
-columns = 2
-
-[node name="MoveButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
-layout_mode = 2
-text = "Mover seleccion"
-
-[node name="ExploreButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
-layout_mode = 2
-text = "Explorar seleccion"
-
-[node name="InteractButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
-layout_mode = 2
-text = "Interactuar"
-
-[node name="ImproveButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid"]
-layout_mode = 2
-text = "Mejorar Libro"
-
-[node name="FlowButtons" type="GridContainer" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
-layout_mode = 2
-columns = 2
-
-[node name="PassButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
-layout_mode = 2
-text = "Pasar resto P1"
-
-[node name="AiButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
-layout_mode = 2
-text = "IA actual"
-
-[node name="AllAiButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
-layout_mode = 2
-text = "P2 → P4"
-
-[node name="CenterButton" type="Button" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons"]
-layout_mode = 2
-text = "Centrar P1"
-
-[node name="Divider3" type="HSeparator" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="DividerAlpha" type="HSeparator" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 
-[node name="P3DebugLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="AlphaToolsToggle" type="CheckButton" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Herramientas Alpha"
+
+[node name="AlphaToolsContent" type="VBoxContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="P3DebugLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox/AlphaToolsContent"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "DEBUG P3 OPORTUNISTA\nSin decision registrada todavia."
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 11
 
-[node name="HelpLabel" type="Label" parent="Phase36Overlay/RightPanel/RightMargin/RightVBox"]
+[node name="HelpLabel" type="Label" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/CenterRow/RightPanel/RightMargin/RightScroll/RightVBox/AlphaToolsContent"]
 layout_mode = 2
-text = "Alpha: selecciona una loseta para Mover/Explorar. Las acciones deshabilitadas siguen las reglas existentes. El debug P3 muestra score y MR solo para diagnostico."
+text = "Alpha: selecciona una loseta para Mover/Explorar. El debug P3 muestra score, penalizacion y MR para diagnostico."
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 10
+
+[node name="BottomBar" type="PanelContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+
+[node name="BottomMargin" type="MarginContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="CriticalGrid" type="GridContainer" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 5
+
+[node name="MoveButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mover"
+
+[node name="ExploreButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Explorar"
+
+[node name="InteractButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Interactuar"
+
+[node name="ImproveButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mejorar Libro"
+
+[node name="PassButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cerrar P1"
+tooltip_text = "Control Alpha: consume el presupuesto restante del humano y entrega el turno."
+
+[node name="AiButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "IA actual"
+
+[node name="AllAiButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "P2 -> P4"
+
+[node name="CenterButton" type="Button" parent="Phase36Overlay/RootUI/RootMargin/MainVBox/BottomBar/BottomMargin/CriticalGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Centrar P1"
