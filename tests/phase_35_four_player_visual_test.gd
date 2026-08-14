@@ -6,7 +6,12 @@ const PHASE_35_SCENE: PackedScene = preload(
 )
 const TEST_SEED: int = 34001
 const VISUAL_POSITION_TOLERANCE: float = 0.05
+const CAMERA_FOCUS_TOLERANCE: float = 0.05
 const TEST_PASS_ACTION_ID: StringName = &"phase35_test_pass"
+
+
+var _visual_action_mismatches: int = 0
+var _visual_action_seen_by_player: Dictionary = {}
 
 
 func _ready() -> void:
@@ -108,6 +113,9 @@ func _test_four_player_visual_sync() -> bool:
 	if prototype.get_display_active_player_id() != &"player_1":
 		prototype.queue_free()
 		return _fail("HUD visual no identifica P1 como turno inicial.")
+	if prototype.get_display_round_number() != 1 or prototype.get_display_actions_remaining() != 2:
+		prototype.queue_free()
+		return _fail("HUD visual no inicia en ronda 1 / acciones 2 de P1.")
 	if not prototype.is_player_halo_visible(&"player_1"):
 		prototype.queue_free()
 		return _fail("P1 no muestra indicador visual de turno activo.")
@@ -156,9 +164,9 @@ func _test_four_player_visual_sync() -> bool:
 			if not manager.spend_action_for(TEST_PASS_ACTION_ID, 1):
 				prototype.queue_free()
 				return _fail("No se pudo consumir presupuesto restante del test para P%d." % (expected_index + 1))
-		if actions_after_visual < 0 or actions_after_visual > 1:
+		if actions_after_visual != 1:
 			prototype.queue_free()
-			return _fail("La accion legal no consumio exactamente una accion antes de animar.")
+			return _fail("La accion legal no dejo exactamente 1 accion antes de animar.")
 		if not runtime.coordinator.end_turn():
 			prototype.queue_free()
 			return _fail("Coordinator no pudo cerrar turno de P%d." % (expected_index + 1))
@@ -180,9 +188,12 @@ func _test_four_player_visual_sync() -> bool:
 		return _fail("Centrar en P1 no reutiliza StrategicCameraController.")
 	var camera_controller := prototype.phase_34.phase_32.phase_31.camera_controller
 	var p1_unit := prototype.get_trainer_unit(&"player_1")
-	if camera_controller.get_target().distance_to(p1_unit.global_position) > 0.10:
+	var camera_target: Vector3 = camera_controller.get_target()
+	var camera_xz := Vector2(camera_target.x, camera_target.z)
+	var p1_xz := Vector2(p1_unit.global_position.x, p1_unit.global_position.z)
+	if camera_xz.distance_to(p1_xz) > CAMERA_FOCUS_TOLERANCE:
 		prototype.queue_free()
-		return _fail("StrategicCameraController no enfoco al humano.")
+		return _fail("StrategicCameraController no enfoco al humano en el plano del tablero.")
 
 	print("Sync visual P1-P4: PlayerState, TrainerUnit3D, UnitAnchor y acciones: OK")
 	prototype.queue_free()
@@ -201,6 +212,11 @@ func _test_visible_ai_turn_sequence() -> bool:
 		prototype.queue_free()
 		return _fail("Probe IA F35 no completo setup.")
 	prototype.set_presentation_speed_multiplier(100.0)
+	_visual_action_mismatches = 0
+	_visual_action_seen_by_player.clear()
+	prototype.visual_action_started.connect(
+		_on_visual_action_started.bind(prototype)
+	)
 
 	var runtime := prototype.phase_34.runtime
 	var manager := runtime.local_session.turn_manager
@@ -232,9 +248,13 @@ func _test_visible_ai_turn_sequence() -> bool:
 		if runtime.ai_match_controller.last_turn_player_id != expected_id:
 			prototype.queue_free()
 			return _fail("El replay visual se asocio a una IA distinta de la que actuo.")
-		if runtime.ai_match_controller.last_turn_executions.size() > KarmanyTurnManager.ACTIONS_PER_TURN:
+		var successful_executions: int = 0
+		for execution in runtime.ai_match_controller.last_turn_executions:
+			if execution != null and execution.was_executed():
+				successful_executions += 1
+		if successful_executions > KarmanyTurnManager.ACTIONS_PER_TURN:
 			prototype.queue_free()
-			return _fail("%s ejecuto mas de 2 acciones reales." % expected_id)
+			return _fail("%s gasto mas de 2 acciones reales." % expected_id)
 		if runtime.ai_match_controller.last_turn_decision_attempts > 6:
 			prototype.queue_free()
 			return _fail("%s excedio el limite preventivo de decisiones F34." % expected_id)
@@ -259,6 +279,16 @@ func _test_visible_ai_turn_sequence() -> bool:
 	if prototype.get_display_active_player_id() != &"player_1" or not prototype.is_player_halo_visible(&"player_1"):
 		prototype.queue_free()
 		return _fail("Representacion activa no regreso visualmente a P1.")
+	if prototype.get_display_round_number() != 2 or prototype.get_display_actions_remaining() != 2:
+		prototype.queue_free()
+		return _fail("HUD visual no regreso a ronda 2 / acciones 2 de P1.")
+	if _visual_action_mismatches != 0:
+		prototype.queue_free()
+		return _fail("Durante un replay IA, HUD/halo mostraron un jugador o presupuesto incorrecto.")
+	for expected_id in expected_ai_ids:
+		if not _visual_action_seen_by_player.has(expected_id):
+			prototype.queue_free()
+			return _fail("No se observo ninguna accion presentada para %s." % expected_id)
 
 	var events := prototype.get_presentation_events()
 	for expected_id in expected_ai_ids:
@@ -387,6 +417,21 @@ func _history_has_kind_for_player(
 		if String(event.get("kind", "")) == kind:
 			return true
 	return false
+
+
+func _on_visual_action_started(
+	player_id: StringName,
+	_action_text: String,
+	prototype: KarmanyPhase35FourPlayerVisualBridge
+) -> void:
+	_visual_action_seen_by_player[player_id] = true
+	if prototype.get_display_active_player_id() != player_id:
+		_visual_action_mismatches += 1
+	var visible_actions: int = prototype.get_display_actions_remaining()
+	if visible_actions < 0 or visible_actions > KarmanyTurnManager.ACTIONS_PER_TURN - 1:
+		_visual_action_mismatches += 1
+	if not prototype.is_player_halo_visible(player_id):
+		_visual_action_mismatches += 1
 
 
 func _fail(message: String) -> bool:
