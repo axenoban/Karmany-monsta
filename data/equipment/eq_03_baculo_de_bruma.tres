@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyEquipmentData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3 uid="uid://bjcp0yjbujy0j"]
 
-[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
+[ext_resource type="Script" uid="uid://dyj2tkmnx4pys" path="res://scripts/data/equipment_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://b8c1xygk8ph37" path="res://scripts/data/equipment_modifier_data.gd" id="2_modifier"]
 
 [sub_resource type="Resource" id="EQ03Power"]
 script = ExtResource("2_modifier")
@@ -9,7 +9,6 @@ modifier_id = &"eq03_after_explore_next_combat"
 amount = 2
 target_tags = PackedStringArray("any_pve")
 trigger_id = &"after_explore_next_combat"
-automatic_in_combat = false
 rules_text = "Despues de Explorar, gana +2 Poder en tu proximo combate de ese turno."
 
 [resource]

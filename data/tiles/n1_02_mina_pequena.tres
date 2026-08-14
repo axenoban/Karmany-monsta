@@ -1,14 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3 uid="uid://df43ctnukg0vq"]
 
-[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
-
-[sub_resource type="Resource" id="Effect_later_mr"]
-script = ExtResource("2_effect")
-effect_type = 1
-amount = 2
-resource_type = 1
-description = "Uso posterior N1-02: +2 MR."
+[ext_resource type="Script" uid="uid://blidw0bgnkn2r" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="Effect_entry_mr"]
 script = ExtResource("2_effect")
@@ -16,6 +9,13 @@ effect_type = 1
 amount = 1
 resource_type = 1
 description = "Entrada N1-02: +1 MR."
+
+[sub_resource type="Resource" id="Effect_later_mr"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 1
+description = "Uso posterior N1-02: +2 MR."
 
 [resource]
 script = ExtResource("1_tile")
@@ -30,5 +30,3 @@ later_use_text = "Recolectar 2 MR."
 limit_text = "-"
 entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_mr")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mr")])
-starts_revealed = false
-can_rotate_visual = true

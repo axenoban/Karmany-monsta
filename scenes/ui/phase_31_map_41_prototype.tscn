@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://br0k6ydx8tj82"]
 
-[ext_resource type="Script" path="res://scripts/ui/phase_31_map_41_bridge.gd" id="1_bridge"]
-[ext_resource type="Script" path="res://scripts/ui/strategic_camera_controller.gd" id="2_camera"]
+[ext_resource type="Script" uid="uid://cqlrhukg1j6hl" path="res://scripts/ui/phase_31_map_41_bridge.gd" id="1_bridge"]
+[ext_resource type="Script" uid="uid://bjoqhga3o2bsf" path="res://scripts/ui/strategic_camera_controller.gd" id="2_camera"]
 
 [sub_resource type="StandardMaterial3D" id="GroundMaterial"]
 albedo_color = Color(0.12, 0.14, 0.16, 1)
@@ -12,36 +12,37 @@ material = SubResource("GroundMaterial")
 size = Vector2(20, 20)
 center_offset = Vector3(0, -0.13, 0)
 
-[node name="Phase31Map41Prototype" type="Node3D"]
+[node name="Phase31Map41Prototype" type="Node3D" unique_id=1411062077]
 script = ExtResource("1_bridge")
 
-[node name="Board" type="Node3D" parent="."]
+[node name="Board" type="Node3D" parent="." unique_id=1312874126]
 
-[node name="Units" type="Node3D" parent="."]
+[node name="Units" type="Node3D" parent="." unique_id=821166788]
 
-[node name="Ground" type="MeshInstance3D" parent="."]
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1151781983]
 mesh = SubResource("GroundMesh")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1562878020]
 transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
 shadow_enabled = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(0, 16, 16)
+[node name="Camera3D" type="Camera3D" parent="." unique_id=483848175]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 16)
 current = true
 fov = 50.0
 
-[node name="StrategicCameraController" type="Node" parent="."]
+[node name="StrategicCameraController" type="Node" parent="." unique_id=787480490]
 script = ExtResource("2_camera")
 zoom_step = 1.25
 min_distance = 5.0
 max_distance = 24.0
 bounds_padding = 2.0
 
-[node name="Phase31Overlay" type="CanvasLayer" parent="."]
+[node name="Phase31Overlay" type="CanvasLayer" parent="." unique_id=1113795262]
 layer = 10
 
-[node name="MainMargin" type="MarginContainer" parent="Phase31Overlay"]
+[node name="MainMargin" type="MarginContainer" parent="Phase31Overlay" unique_id=1143492152]
+anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
 offset_top = 16.0
@@ -49,39 +50,39 @@ offset_right = -16.0
 offset_bottom = 128.0
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Phase31Overlay/MainMargin"]
+[node name="Panel" type="PanelContainer" parent="Phase31Overlay/MainMargin" unique_id=1744736149]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="InnerMargin" type="MarginContainer" parent="Phase31Overlay/MainMargin/Panel"]
+[node name="InnerMargin" type="MarginContainer" parent="Phase31Overlay/MainMargin/Panel" unique_id=217353592]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 10
-mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Phase31Overlay/MainMargin/Panel/InnerMargin"]
+[node name="VBox" type="VBoxContainer" parent="Phase31Overlay/MainMargin/Panel/InnerMargin" unique_id=39292939]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 4
-mouse_filter = 2
 
-[node name="Title" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+[node name="Title" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox" unique_id=208268125]
 layout_mode = 2
-text = "KARMANY MONSTA — FASE 31 · MAPA CANONICO DE 41"
 theme_override_font_sizes/font_size = 18
+text = "KARMANY MONSTA — FASE 31 · MAPA CANONICO DE 41"
 
-[node name="StatusLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+[node name="StatusLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox" unique_id=872172599]
 layout_mode = 2
 text = "Construyendo geometria..."
 autowrap_mode = 2
 
-[node name="SelectionLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+[node name="SelectionLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox" unique_id=1456710386]
 layout_mode = 2
 text = "Selecciona una posicion para inspeccionar su nivel estructural."
 autowrap_mode = 2
 
-[node name="HelpLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox"]
+[node name="HelpLabel" type="Label" parent="Phase31Overlay/MainMargin/Panel/InnerMargin/VBox" unique_id=1170060976]
 layout_mode = 2
 text = "WASD/flechas: pan · rueda: zoom · Q/E: rotar · F: enfocar seleccion · C: jugador · Home: vista general"
 autowrap_mode = 2

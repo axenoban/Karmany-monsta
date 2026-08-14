@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://c2jobno6yjhtr"]
 
-[ext_resource type="Script" path="res://tests/phase_32_random_map_test.gd" id="1_test"]
+[ext_resource type="Script" uid="uid://cywdsxj3tnox" path="res://tests/phase_32_random_map_test.gd" id="1_test"]
 
-[node name="Phase32RandomMapTest" type="Node"]
+[node name="Phase32RandomMapTest" type="Node" unique_id=1019980246]
 script = ExtResource("1_test")

@@ -1,14 +1,7 @@
-[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3 uid="uid://dbp5ip2k2q2aq"]
 
-[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
-[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
-
-[sub_resource type="Resource" id="Effect_later_ek"]
-script = ExtResource("2_effect")
-effect_type = 1
-amount = 2
-resource_type = 2
-description = "Uso posterior I-02: +2 EK."
+[ext_resource type="Script" uid="uid://blidw0bgnkn2r" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" uid="uid://di4wfememaqxn" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="Effect_entry_ek"]
 script = ExtResource("2_effect")
@@ -17,11 +10,17 @@ amount = 1
 resource_type = 2
 description = "Entrada I-02: +1 EK."
 
+[sub_resource type="Resource" id="Effect_later_ek"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 2
+description = "Uso posterior I-02: +2 EK."
+
 [resource]
 script = ExtResource("1_tile")
 tile_id = "I-02"
 display_name = "Campamento del Rio Bruma"
-level = 0
 function_tags = PackedStringArray("Inicio tactico", "Recoleccion")
 icon_tags = PackedStringArray("EK")
 on_explore_text = "No otorga recurso automatico al comenzar."
@@ -31,4 +30,3 @@ limit_text = "-"
 entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_ek")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_ek")])
 starts_revealed = true
-can_rotate_visual = true
