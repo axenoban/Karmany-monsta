@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_34_multi_ai_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_32_random_map_prototype.tscn" id="2_phase32"]
+
+[node name="Phase34MultiAiPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase32RandomMapPrototype" parent="." instance=ExtResource("2_phase32")]
+
+[node name="Phase34Overlay" type="CanvasLayer" parent="."]
+layer = 14
+
+[node name="RootMargin" type="MarginContainer" parent="Phase34Overlay"]
+anchors_preset = 0
+anchor_right = 0.44
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -8.0
+offset_bottom = -16.0
+
+[node name="Panel" type="PanelContainer" parent="Phase34Overlay/RootMargin"]
+layout_mode = 2
+
+[node name="InnerMargin" type="MarginContainer" parent="Phase34Overlay/RootMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Phase34Overlay/RootMargin/Panel/InnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Title" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "KARMANY MONSTA — FASE 34 · 1 HUMANO + HASTA 3 IA"
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 2
+
+[node name="StatusLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Preparando mapa 41 y controladores..."
+autowrap_mode = 2
+
+[node name="ParticipantsLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Participantes"
+autowrap_mode = 2
+
+[node name="ActiveLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Ronda / jugador activo / acciones"
+autowrap_mode = 2
+
+[node name="LastActionLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Ultima decision IA"
+autowrap_mode = 2
+
+[node name="Controls" type="HBoxContainer" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PassHumanButton" type="Button" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox/Controls"]
+layout_mode = 2
+text = "Cerrar P1 prueba"
+
+[node name="RunAiButton" type="Button" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox/Controls"]
+layout_mode = 2
+text = "Ejecutar IA actual"
+
+[node name="RunAllAiButton" type="Button" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox/Controls"]
+layout_mode = 2
+text = "P2→P4"
+
+[node name="HelpLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "1) Cerrar P1 prueba consume el presupuesto humano simulado. 2) Ejecuta una IA por vez o P2→P4. Las IA recalculan después de cada acción y TurnManager conserva la autoridad."
+autowrap_mode = 2
+
+[node name="EventTitle" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Eventos IA"
+
+[node name="EventLabel" type="Label" parent="Phase34Overlay/RootMargin/Panel/InnerMargin/VBox"]
+layout_mode = 2
+text = "Sin eventos."
+autowrap_mode = 2
