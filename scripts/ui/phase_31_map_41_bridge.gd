@@ -63,7 +63,7 @@ func _setup_map_41() -> bool:
 			level == KarmanyTileData.TileLevel.START
 			or level == KarmanyTileData.TileLevel.SANCTUARY
 		)
-		if not board_state.add_cell(coord, null, structurally_revealed):
+		if not board_state.add_cell(coord, null, structurally_revealed, level):
 			return false
 		if not _spawn_tile(coord, level):
 			return false
