@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_38_full_match_prototype.tscn" id="1_phase38"]
+[ext_resource type="Script" uid="uid://d39tileintuxb" path="res://scripts/ui/phase_39_universal_tile_interaction_bridge.gd" id="2_bridge"]
+
+[node name="Phase39UniversalTileInteractionPrototype" type="Node3D"]
+script = ExtResource("2_bridge")
+
+[node name="Phase38FullMatchPrototype" parent="." instance=ExtResource("1_phase38")]
