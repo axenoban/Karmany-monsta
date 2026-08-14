@@ -17,7 +17,7 @@ var _shuffle_on_recycle: bool = true
 func setup(
 	cards: Array[KarmanyResonanceData],
 	shuffle_deck: bool = false,
-	seed: int = 0
+	seed_value: int = 0
 ) -> bool:
 	if cards.is_empty():
 		return false
@@ -36,8 +36,8 @@ func setup(
 	for card in cards:
 		_draw_pile.append(card)
 
-	if seed != 0:
-		_rng.seed = seed
+	if seed_value != 0:
+		_rng.seed = seed_value
 	else:
 		_rng.randomize()
 
