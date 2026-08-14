@@ -48,10 +48,16 @@ static func _append_move_and_explore(
 			move.exploration_value = 0.25
 			var tile: KarmanyTileData = coordinator.board_state.get_tile_data(coord)
 			if tile != null:
-				var entry_value: float = _estimate_effect_value(tile.entry_effects)
+				var entry_estimate := KarmanyAiResourceUtility.estimate_effects(
+					tile.entry_effects,
+					player,
+					coordinator
+				)
+				var entry_value: float = float(entry_estimate.get("value", 0.0))
 				move.economy_value = entry_value
 				move.opportunity_value = 0.5 + entry_value
 				move.progress_value = float(tile.level) * 0.25
+				move.payload["resource_utility"] = entry_estimate
 			result.append(move)
 
 		if KarmanyExplorationRules.is_exploration_valid(
@@ -103,10 +109,20 @@ static func _append_interactions(
 		var candidate := KarmanyAiActionCandidate.new()
 		candidate.action_type = KarmanyAiActionCandidate.ActionType.INTERACT
 		candidate.option_index = option_index
+		candidate.target_coord = player.current_coord
 		candidate.debug_label = "Interactuar %s opcion %d" % [tile.tile_id, option_index]
 		candidate.base_utility = 1.0
-		candidate.economy_value = _estimate_effect_value([effect])
-		candidate.opportunity_value = candidate.economy_value + 0.75
+
+		var estimate := KarmanyAiResourceUtility.estimate_effects(
+			[effect],
+			player,
+			coordinator
+		)
+		candidate.economy_value = float(estimate.get("value", 0.0))
+		candidate.opportunity_value = candidate.economy_value + 0.5
+		candidate.payload["resource_utility"] = estimate
+		candidate.payload["public_tile_id"] = String(tile.tile_id)
+
 		if effect.effect_type == KarmanyEffectData.EffectType.MODIFY_STATE:
 			candidate.progress_value = maxf(float(effect.amount), 1.0)
 		result.append(candidate)
@@ -134,6 +150,7 @@ static func _append_book_upgrade(
 	candidate.progress_value = 5.0 if next_level == 3 else 3.0
 	candidate.opportunity_value = 2.0 if next_level == 3 else 1.0
 	candidate.economy_value = 0.5
+	candidate.payload["resource_cost"] = cost.duplicate()
 	result.append(candidate)
 
 
@@ -153,25 +170,3 @@ static func _append_valid_special_candidates(
 		var check_result: Variant = legal_check.call()
 		if check_result is bool and bool(check_result):
 			result.append(candidate)
-
-
-static func _estimate_effect_value(effects: Array) -> float:
-	var total: float = 0.0
-	for value in effects:
-		if not (value is KarmanyEffectData):
-			continue
-		var effect := value as KarmanyEffectData
-		match effect.effect_type:
-			KarmanyEffectData.EffectType.ADD_RESOURCE:
-				total += maxf(float(effect.amount), 0.0)
-			KarmanyEffectData.EffectType.DRAW_CARDS:
-				total += maxf(float(effect.amount), 0.0) * 0.8
-			KarmanyEffectData.EffectType.ACTIVATE_CONDITION:
-				total += 1.5
-			KarmanyEffectData.EffectType.TRIGGER_ENCOUNTER:
-				total += 1.0
-			KarmanyEffectData.EffectType.REMOVE_RESOURCE:
-				total -= maxf(float(effect.amount), 0.0)
-			KarmanyEffectData.EffectType.DISCARD_CARDS:
-				total -= maxf(float(effect.amount), 0.0) * 0.8
-	return total
