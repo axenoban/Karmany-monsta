@@ -2,10 +2,6 @@ class_name KarmanyFullMatchSession
 extends KarmanyFullMatchResultSession
 
 
-# F38 keeps the inherited setup implementation but resolves the round limit
-# through the canonical public property exposed by KarmanyLegacyModeConfig.
-# This override avoids requiring a new API in the already validated F31-F37
-# baseline solely for the Alpha full-match orchestration.
 func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	last_error = ""
 	if p_runtime == null or not p_runtime.configured:
@@ -33,7 +29,6 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 		_derive_seed(match_seed, 380131)
 	):
 		return _fail("No se pudo configurar el controlador Alpha legal de P1.")
-
 	if not _apply_complete_setup():
 		return false
 
@@ -109,3 +104,25 @@ func get_setup_summary() -> Dictionary:
 			else 0
 		)
 	}
+
+
+func _choose_first_game_mission(
+	missions: Array[KarmanyMissionData],
+	trainer_id: StringName
+) -> KarmanyMissionData:
+	var alternatives: Array[KarmanyMissionData] = []
+	for mission in missions:
+		if mission == null or mission.trainer_id != trainer_id or not mission.is_valid_definition():
+			continue
+		if mission.mission_id == &"ME-M1":
+			mission.display_name = "Resonancia Decisiva"
+			mission.condition_text = "Gana 2 combates en los que hayas jugado una Resonancia."
+		elif mission.mission_id == &"ME-S1":
+			mission.display_name = "Cartografia Viva"
+			mission.condition_text = "Visita 5 losetas distintas e incluye al menos una N2 y una N3."
+		if mission.recommended_first_game:
+			return mission
+		alternatives.append(mission)
+	if alternatives.is_empty():
+		return null
+	return alternatives[_setup_rng.randi_range(0, alternatives.size() - 1)]
