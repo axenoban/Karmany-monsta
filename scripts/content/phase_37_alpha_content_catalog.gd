@@ -17,13 +17,13 @@ const CATEGORY_DIRS: Dictionary = {
 static func build_inventory() -> Dictionary:
 	var result: Dictionary = {}
 	for category_value in CATEGORY_DIRS.keys():
-		var category: StringName = category_value
+		var category: StringName = StringName(category_value)
 		var all_resources: Array[Resource] = load_category(category)
 		var executable_count: int = 0
 		for resource_value in all_resources:
 			if is_runtime_safe(category, resource_value):
 				executable_count += 1
-		result[String(category)] = {
+		var row: Dictionary = {
 			"existing": all_resources.size(),
 			"runtime_safe": executable_count,
 			"canonical": int(KarmanyPhase29ContentCatalog.CANONICAL_COUNTS.get(String(category), 0)),
@@ -32,7 +32,43 @@ static func build_inventory() -> Dictionary:
 				0
 			)
 		}
+		if category == &"tiles":
+			var tile_report: Dictionary = build_tile_automation_report()
+			row["structured_entry"] = int(tile_report.get("structured_entry", 0))
+			row["structured_interaction"] = int(tile_report.get("structured_interaction", 0))
+			row["fully_structured"] = int(tile_report.get("fully_structured", 0))
+			row["text_only_rules"] = int(tile_report.get("text_only_rules", 0))
+		result[String(category)] = row
 	return result
+
+
+static func build_tile_automation_report() -> Dictionary:
+	var structured_entry: int = 0
+	var structured_interaction: int = 0
+	var fully_structured: int = 0
+	var text_only_rules: int = 0
+	for tile in get_tiles():
+		var has_entry_data: bool = not tile.entry_effects.is_empty()
+		var has_interaction_data: bool = not tile.later_use_effects.is_empty()
+		var has_entry_text: bool = not tile.entry_bonus_text.strip_edges().is_empty()
+		var has_interaction_text: bool = not tile.later_use_text.strip_edges().is_empty()
+		if has_entry_data:
+			structured_entry += 1
+		if has_interaction_data:
+			structured_interaction += 1
+		if has_entry_data and has_interaction_data:
+			fully_structured += 1
+		if (
+			(has_entry_text and not has_entry_data)
+			or (has_interaction_text and not has_interaction_data)
+		):
+			text_only_rules += 1
+	return {
+		"structured_entry": structured_entry,
+		"structured_interaction": structured_interaction,
+		"fully_structured": fully_structured,
+		"text_only_rules": text_only_rules
+	}
 
 
 static func load_category(category: StringName) -> Array[Resource]:
@@ -139,10 +175,9 @@ static func is_runtime_safe(category: StringName, resource_value: Resource) -> b
 	if not KarmanyPhase29ContentCatalog.is_resource_valid(category, resource_value):
 		return false
 
-	# F31/F32 already use every materialized tile as map data. The safety
-	# distinction here applies to systems that execute automated card/beast/
-	# Karmany rules. A tile may still be public data with a textual specialized
-	# effect that remains pending automation.
+	# Every materialized tile can safely exist as public/map data. Individual
+	# tile effects can still be text-only; build_tile_automation_report() keeps
+	# that limitation explicit instead of pretending it is automated.
 	if category == &"tiles":
 		return true
 
