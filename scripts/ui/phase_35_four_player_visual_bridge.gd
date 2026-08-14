@@ -24,7 +24,7 @@ const VISUAL_SLOT_OFFSETS: Array[Vector3] = [
 	Vector3(-0.22, 0.0, 0.16),
 	Vector3(0.22, 0.0, 0.16)
 ]
-const EVENT_HISTORY_LIMIT: int = 12
+const EVENT_HISTORY_LIMIT: int = 32
 
 
 @export_group("Alpha presentation pacing")
@@ -63,6 +63,8 @@ var _captured_ai_steps: Array[Dictionary] = []
 var _queued_external_steps: Array[Dictionary] = []
 var _presentation_events: Array[Dictionary] = []
 var _display_active_player_id: StringName = &""
+var _display_round_number: int = 0
+var _display_actions_remaining: int = 0
 var _capturing_ai_logic: bool = false
 var _presentation_busy: bool = false
 var _external_drain_scheduled: bool = false
@@ -92,9 +94,7 @@ func _ready() -> void:
 	_connect_gameplay_observers()
 	_connect_controls()
 
-	var active := phase_34.runtime.local_session.turn_manager.get_active_player()
-	if active != null:
-		_set_display_active_player(active.player_id)
+	_sync_display_to_logical_active()
 	_refresh_public_hud()
 	setup_ok = true
 	print("FASE 35 VISUAL OK - cuatro TrainerUnit3D, movimiento interpolado y HUD publico activos.")
@@ -113,12 +113,21 @@ func get_trainer_unit(player_id: StringName) -> KarmanyTrainerUnit3D:
 func get_visual_coord(player_id: StringName) -> Vector2i:
 	var value: Variant = _visual_coord_by_player.get(player_id, Vector2i.ZERO)
 	if value is Vector2i:
-		return value as Vector2i
+		var coord: Vector2i = value
+		return coord
 	return Vector2i.ZERO
 
 
 func get_display_active_player_id() -> StringName:
 	return _display_active_player_id
+
+
+func get_display_actions_remaining() -> int:
+	return _display_actions_remaining
+
+
+func get_display_round_number() -> int:
+	return _display_round_number
 
 
 func get_public_participants_text() -> String:
@@ -186,6 +195,8 @@ func run_current_ai_turn_presented() -> bool:
 	_capturing_ai_logic = true
 	var acting_player_id: StringName = active.player_id
 	var acting_profile: String = ai_control.get_ai_profile_name(acting_player_id)
+	var acting_round: int = manager.current_round
+	var acting_actions: int = manager.actions_remaining
 
 	# Gameplay resolves first through the already validated F34 controller.
 	# F35 records the emitted events and replays only their presentation.
@@ -198,7 +209,7 @@ func run_current_ai_turn_presented() -> bool:
 		_refresh_public_hud()
 		return false
 
-	_set_display_active_player(acting_player_id)
+	_set_display_active_player(acting_player_id, acting_round, acting_actions)
 	action_feedback_label.text = "%s comienza turno." % _short_player_role(acting_player_id)
 	_append_event(acting_player_id, "turn_started", "%s comienza turno" % acting_profile)
 	_focus_player_visual(acting_player_id)
@@ -217,6 +228,8 @@ func run_current_ai_turn_presented() -> bool:
 	_refresh_public_hud()
 	if _is_human_logically_active():
 		center_on_human()
+	if not _queued_external_steps.is_empty():
+		_schedule_external_step_drain()
 	return true
 
 
@@ -233,7 +246,8 @@ func run_all_ai_until_human_presented() -> bool:
 			return true
 		if not phase_34.runtime.ai_match_controller.is_ai_player(active.player_id):
 			return false
-		if not await run_current_ai_turn_presented():
+		var turn_ok: bool = await run_current_ai_turn_presented()
+		if not turn_ok:
 			return false
 		resolved += 1
 	return _is_human_logically_active()
@@ -422,7 +436,7 @@ func _on_ai_action_executed(
 	var origin: Vector2i = player.current_coord
 	var origin_value: Variant = _pending_ai_origin.get(player_id, player.current_coord)
 	if origin_value is Vector2i:
-		origin = origin_value as Vector2i
+		origin = origin_value
 	var reveals: Array[Vector2i] = _collect_new_logical_reveals()
 	_logic_coord_snapshot[player_id] = player.current_coord
 	if success:
@@ -449,7 +463,7 @@ func _on_action_spent(
 	var previous: Vector2i = player.current_coord
 	var previous_value: Variant = _logic_coord_snapshot.get(player.player_id, player.current_coord)
 	if previous_value is Vector2i:
-		previous = previous_value as Vector2i
+		previous = previous_value
 	var reveals: Array[Vector2i] = _collect_new_logical_reveals()
 	_logic_coord_snapshot[player.player_id] = player.current_coord
 
@@ -471,13 +485,13 @@ func _on_action_spent(
 
 func _on_turn_started(
 	player: KarmanyPlayerState,
-	_round_number: int,
-	_actions_available: int
+	round_number: int,
+	actions_available: int
 ) -> void:
 	if player == null:
 		return
 	if not _capturing_ai_logic and not _presentation_busy:
-		_set_display_active_player(player.player_id)
+		_set_display_active_player(player.player_id, round_number, actions_available)
 		_refresh_public_hud()
 
 
@@ -499,7 +513,6 @@ func _schedule_external_step_drain() -> void:
 func _drain_external_steps() -> void:
 	_external_drain_scheduled = false
 	if _presentation_busy:
-		_schedule_external_step_drain()
 		return
 	if _queued_external_steps.is_empty():
 		return
@@ -530,10 +543,21 @@ func _present_step(step: Dictionary) -> void:
 	if player_id == &"" or unit == null:
 		return
 
-	var origin: Vector2i = step.get("origin", get_visual_coord(player_id)) as Vector2i
-	var destination: Vector2i = step.get("destination", origin) as Vector2i
+	var origin: Vector2i = get_visual_coord(player_id)
+	var origin_value: Variant = step.get("origin", origin)
+	if origin_value is Vector2i:
+		origin = origin_value
+	var destination: Vector2i = origin
+	var destination_value: Variant = step.get("destination", origin)
+	if destination_value is Vector2i:
+		destination = destination_value
 	var action_label: String = String(step.get("action_label", "Accion"))
-	_set_display_active_player(player_id)
+	_display_actions_remaining = int(step.get("actions_remaining", _display_actions_remaining))
+	_set_display_active_player(
+		player_id,
+		_display_round_number,
+		_display_actions_remaining
+	)
 	var feedback_text: String = _build_feedback_text(player_id, action_label, destination)
 	action_feedback_label.text = feedback_text
 	visual_action_started.emit(player_id, feedback_text)
@@ -552,7 +576,8 @@ func _present_step(step: Dictionary) -> void:
 	if revealed_value is Array:
 		for coord_value in revealed_value:
 			if coord_value is Vector2i:
-				await _present_tile_reveal(coord_value as Vector2i)
+				var revealed_coord: Vector2i = coord_value
+				await _present_tile_reveal(revealed_coord)
 
 	_refresh_public_hud()
 	await _wait_presentation_delay(ai_action_pause)
@@ -654,8 +679,16 @@ func _focus_coord(coord: Vector2i) -> void:
 		controller.focus_world_position(tile.global_position)
 
 
-func _set_display_active_player(player_id: StringName) -> void:
+func _set_display_active_player(
+	player_id: StringName,
+	round_number: int = -1,
+	actions_remaining: int = -1
+) -> void:
 	_display_active_player_id = player_id
+	if round_number >= 0:
+		_display_round_number = round_number
+	if actions_remaining >= 0:
+		_display_actions_remaining = actions_remaining
 	for key in _halo_by_player.keys():
 		var halo := _halo_by_player.get(key, null) as MeshInstance3D
 		if halo != null:
@@ -664,20 +697,24 @@ func _set_display_active_player(player_id: StringName) -> void:
 
 
 func _sync_display_to_logical_active() -> void:
-	var active := phase_34.runtime.local_session.turn_manager.get_active_player()
+	var manager := phase_34.runtime.local_session.turn_manager
+	var active := manager.get_active_player()
 	if active != null:
-		_set_display_active_player(active.player_id)
+		_set_display_active_player(
+			active.player_id,
+			manager.current_round,
+			manager.actions_remaining
+		)
 
 
 func _refresh_active_label() -> void:
 	if active_turn_label == null or phase_34 == null or phase_34.runtime == null:
 		return
-	var manager := phase_34.runtime.local_session.turn_manager
 	var role: String = _long_player_role(_display_active_player_id)
 	active_turn_label.text = "%s — TURNO | Ronda %d | acciones %d/2" % [
 		role,
-		manager.current_round,
-		manager.actions_remaining
+		_display_round_number,
+		_display_actions_remaining
 	]
 
 
@@ -713,7 +750,9 @@ func _refresh_public_hud() -> void:
 func _set_controls_disabled(value: bool) -> void:
 	if pass_human_button == null:
 		return
-	var active := phase_34.runtime.local_session.turn_manager.get_active_player() if phase_34 != null and phase_34.runtime != null else null
+	var active: KarmanyPlayerState = null
+	if phase_34 != null and phase_34.runtime != null:
+		active = phase_34.runtime.local_session.turn_manager.get_active_player()
 	var human_active: bool = active != null and phase_34.runtime.ai_match_controller.is_human_player(active.player_id)
 	var ai_active: bool = active != null and phase_34.runtime.ai_match_controller.is_ai_player(active.player_id)
 	pass_human_button.disabled = value or not human_active
@@ -800,7 +839,7 @@ func _wait_presentation_delay(base_seconds: float) -> void:
 
 
 func _on_pass_human_pressed() -> void:
-	await pass_human_turn_presented()
+	pass_human_turn_presented()
 
 
 func _on_run_ai_pressed() -> void:
