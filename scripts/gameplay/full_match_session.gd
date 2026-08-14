@@ -47,6 +47,10 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 		Callable(self, "_execute_candidate")
 	):
 		return _fail("F39 no pudo configurar la fuente universal de Interactuar.")
+	if not _phase39_validate_active_tile_catalog():
+		return _fail(
+			"F39 rechazo el catalogo activo: toda identidad usada por el mapa debe tener Uso posterior ejecutable."
+		)
 	runtime.coordinator.set_meta(
 		KarmanyUniversalTileInteractionService.META_KEY,
 		universal_tile_interactions
@@ -62,6 +66,38 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	_log("FASE 39 | Uso posterior e Interactuar comparten una fuente de verdad.")
 	setup_completed.emit(get_setup_summary())
 	state_changed.emit(match_state)
+	return true
+
+
+func _phase39_validate_active_tile_catalog() -> bool:
+	if universal_tile_interactions == null or runtime == null:
+		return false
+
+	# START y L-01 ya son publicas en F32, por lo que pueden validarse sin
+	# inspeccionar el almacenamiento oculto.
+	for coord in runtime.board_state.get_coords():
+		if not runtime.board_state.is_revealed(coord):
+			continue
+		var fixed_tile := runtime.get_public_tile_data(coord)
+		if fixed_tile == null:
+			return false
+		if not universal_tile_interactions.is_tile_definition_valid(fixed_tile):
+			return false
+
+	# Las identidades N1/N2/N3 se auditan desde los pools de contenido, nunca
+	# desde _hidden_content. Asi la validacion de contenido no filtra la
+	# asignacion secreta de la seed actual.
+	var pools := KarmanyMap41TilePools.new()
+	if not pools.load_from_project():
+		return false
+	for level in [
+		KarmanyTileData.TileLevel.N1,
+		KarmanyTileData.TileLevel.N2,
+		KarmanyTileData.TileLevel.N3
+	]:
+		for tile in pools.get_pool(level):
+			if not universal_tile_interactions.is_tile_definition_valid(tile):
+				return false
 	return true
 
 
