@@ -47,4 +47,7 @@ Ninguno.
 - Los sistemas digitales continúan usando `Karmany*Data`, resolvers y controladores existentes.
 - F38 no marca como ejecutable un efecto secundario que solo existe como texto.
 - El mazo inicial 4P sí requiere 20 cartas distintas; por eso F38 importa la identidad/poder/ventana/texto de las 40 Resonancias canónicas en el catálogo runtime, manteniendo una lista explícita de las Resonancias cuya automatización ya estaba materializada.
+- Las Resonancias con restricciones contextuales que el resolver todavía no puede demostrar de forma genérica no se eligen automáticamente desde un combate incompatible.
+- El setup Alpha aplica directamente las bonificaciones de Dorian/Oryn (+1 Resonancia) y el filtro inicial de Maelis. Las bonificaciones de mirar/reordenar mazos de Alderion, Lyra, Nara, Kael y Saira permanecen como datos canónicos hasta disponer de una API privada de peek/reorder que no filtre información.
+- La elección de Karmany inicial sigue la regla de revelar 3 y conservar 1, pero el controlador Alpha elige de forma determinista durante el setup automático; la selección visual manual de esos tres candidatos no se finge como implementada.
 - La materialización completa de Karmanys, Bestias, Equipos, losetas y cartas restantes queda separada de la lógica de partida para no mezclar expansión de contenido con invención de comportamiento.
