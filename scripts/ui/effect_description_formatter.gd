@@ -43,12 +43,7 @@ static func describe_effect(effect: KarmanyEffectData) -> String:
 				"Activa la condicion %s." % String(effect.condition_id)
 			)
 		KarmanyEffectData.EffectType.TRIGGER_ENCOUNTER:
-			# La descripcion comunica la regla conocida, no el resultado que
-			# posteriormente determine un mazo o RNG.
-			return _description_or(
-				effect,
-				"Activa un encuentro."
-			)
+			return _description_or(effect, "Activa un encuentro.")
 	return _description_or(effect, "Efecto publico.")
 
 
@@ -77,13 +72,18 @@ static func describe_entry(tile: KarmanyTileData) -> String:
 static func describe_interaction(tile: KarmanyTileData) -> String:
 	if tile == null:
 		return "Sin informacion publica."
+	# F39: the canonical later_use_text is the player-facing source of truth.
+	# Structured effects and specialized handlers implement that text; they do
+	# not replace it in the preview, especially on tiles with multiple choices.
+	var public_text: String = tile.later_use_text.strip_edges()
+	if not public_text.is_empty():
+		if tile.has_universal_interaction_definition():
+			return public_text
+		return PENDING_AUTOMATION_PREFIX + public_text
 	var executable_text: String = describe_effects(tile.later_use_effects)
 	if not executable_text.is_empty():
 		return executable_text
-	var public_text: String = tile.later_use_text.strip_edges()
-	if not public_text.is_empty():
-		return PENDING_AUTOMATION_PREFIX + public_text
-	return "Sin Uso posterior."
+	return "Definicion de Uso posterior ausente."
 
 
 static func describe_limit(tile: KarmanyTileData) -> String:
@@ -91,14 +91,14 @@ static func describe_limit(tile: KarmanyTileData) -> String:
 		return ""
 	var value: String = tile.limit_text.strip_edges()
 	if value.is_empty() or value == "-":
-		return "Sin limitacion publica adicional."
+		return "Sin requisitos o limitaciones publicas adicionales."
 	return value
 
 
 static func build_revealed_tile_preview(tile: KarmanyTileData) -> String:
 	if tile == null:
 		return "OCULTA"
-	return "%s\nNivel %s\n\nENTRADA\n%s\n\nINTERACTUAR\n%s\n\nLIMITACION\n%s" % [
+	return "%s\nNivel %s\n\nENTRADA\n%s\n\nINTERACTUAR\n%s\n\nREQUISITOS / LIMITACIONES\n%s" % [
 		tile.display_name,
 		tile_level_label(tile.level),
 		describe_entry(tile),
