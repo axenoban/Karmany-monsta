@@ -7,10 +7,10 @@ var last_turn_ended: bool = false
 var last_choice_label: String = ""
 
 
-func configure(profile_type: int, seed: int = 0) -> bool:
+func configure(profile_type: int, seed_value: int = 0) -> bool:
 	last_turn_ended = false
 	last_choice_label = ""
-	return brain.configure(profile_type, seed)
+	return brain.configure(profile_type, seed_value)
 
 
 func choose_current_action(
