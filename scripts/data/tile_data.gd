@@ -47,7 +47,10 @@ enum TileLevel {
 
 
 func has_universal_interaction_definition() -> bool:
-	return (
-		not later_use_text.strip_edges().is_empty()
-		and interaction_profile_id != &""
-	)
+	if later_use_text.strip_edges().is_empty() or interaction_profile_id == &"":
+		return false
+	# The generic profile has no specialized resolver to fall back to: at
+	# least one structured later-use effect is therefore mandatory.
+	if interaction_profile_id == &"effect" and later_use_effects.is_empty():
+		return false
+	return true
