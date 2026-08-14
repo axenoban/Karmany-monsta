@@ -37,7 +37,10 @@ func execute_one_action(
 		empty.message = "La IA no encontro acciones legales."
 		return empty
 	last_choice_label = candidate.debug_label
-	return KarmanyAiActionExecutor.execute(coordinator, player, candidate)
+	var execution := KarmanyAiActionExecutor.execute(coordinator, player, candidate)
+	if execution != null and execution.was_executed():
+		brain.record_executed_action(candidate)
+	return execution
 
 
 func play_turn(
