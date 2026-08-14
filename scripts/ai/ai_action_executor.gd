@@ -37,9 +37,17 @@ static func execute(
 			raw = success
 
 		KarmanyAiActionCandidate.ActionType.INTERACT:
-			var interaction := coordinator.interact_effect_option(player, candidate.option_index)
-			raw = interaction
-			success = interaction != null and interaction.is_success()
+			var service := KarmanyAiLegalActionGenerator.get_universal_interaction_service(
+				coordinator
+			)
+			if service != null:
+				var universal_result := service.execute_candidate(player, candidate)
+				raw = universal_result
+				success = universal_result != null and universal_result.is_success()
+			else:
+				var interaction := coordinator.interact_effect_option(player, candidate.option_index)
+				raw = interaction
+				success = interaction != null and interaction.is_success()
 
 		KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK:
 			var book_result := coordinator.improve_book(player)
