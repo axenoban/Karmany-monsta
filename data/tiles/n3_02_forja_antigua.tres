@@ -13,5 +13,6 @@ on_explore_text = "Elige una preparacion de Forja segun v0.74."
 entry_bonus_text = "Entrada: preparacion de Forja."
 later_use_text = "Craftear Equipo Avanzado/Ancestral; mejorar Libro si puedes pagar; o convertir 2 recursos comunes en 1 FA una vez por jugador."
 limit_text = "Conversion a FA maximo una vez por jugador por partida."
+interaction_profile_id = &"forge"
 starts_revealed = false
 can_rotate_visual = true
