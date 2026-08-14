@@ -13,13 +13,13 @@ var _last_executed_signature: String = ""
 var _same_action_streak: int = 0
 
 
-func configure(profile_type: int, seed: int = 0) -> bool:
+func configure(profile_type: int, seed_value: int = 0) -> bool:
 	if not profile.configure(profile_type):
 		return false
-	if seed == 0:
+	if seed_value == 0:
 		rng.randomize()
 	else:
-		rng.seed = seed
+		rng.seed = seed_value
 	clear_recent_action_memory()
 	return true
 
