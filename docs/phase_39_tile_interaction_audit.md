@@ -24,9 +24,9 @@ El mapa de 41 posiciones sigue usando el mecanismo de fallback validado en F32: 
 | N1-01 | Recolectar 2 MN | `effect` | `KarmanyEffectResolver` |
 | N1-02 | Recolectar 2 MR | `effect` | `KarmanyEffectResolver` |
 | N1-03 | Recolectar 2 EK | `effect` | `KarmanyEffectResolver` |
-| N1-04 | Craftear Equipo básico o recolectar 2 MN | `camp_basic` | efecto + `EquipmentCraftResolver` existente |
+| N1-04 | Craftear Equipo básico o recolectar 2 MN | `camp_basic` | efecto + `MatchCoordinator.craft_from_market()` |
 | N2-01 | Enfrentar Bestia Media o recolectar 2 EK | `beast_medium` | efecto + sistema de Bestias existente |
-| N2-05 | Recolectar 2 MR o craftear Básico/Avanzado | `crystal_pass` | efecto + `EquipmentCraftResolver` existente |
+| N2-05 | Recolectar 2 MR o craftear Básico/Avanzado | `crystal_pass` | efecto + `MatchCoordinator.craft_from_market()` |
 | N3-02 | Craftear Avanzado/Ancestral, mejorar Libro o convertir 2 comunes → 1 FA | `forge` | sistemas de Equipo, Libro y `ForgeInteractionController` existentes |
 | N3-03 | Bestia Compleja, 2 MR o 1 FA | `crystal_cave` | sistema de Bestias + efectos; FA limitado a 1/jugador/ronda |
 | L-01 | Aeterna, Sintonizar o +2 EK post-Aeterna | `aeterna` | `AeternaResolver` existente |
@@ -41,7 +41,7 @@ El repositorio aprobado de F38 todavía no contiene `.tres` para estas identidad
 - N2: `N2-02`, `N2-03`, `N2-04`, `N2-06`, `N2-07`, `N2-08`, `N2-09`, `N2-10`, `N2-11`, `N2-12`.
 - N3: `N3-01`, `N3-04`, `N3-05`, `N3-06`.
 
-F39 **no asigna Uso posterior inventado** a esas identidades porque no están presentes en los pools activos de esta rama. Cuando se materialicen, `KarmanyTileData.has_universal_interaction_definition()` y la prueba F39 exigirán `later_use_text` + `interaction_profile_id` antes de que puedan entrar al pool sin romper la validación.
+F39 **no asigna Uso posterior inventado** a esas identidades porque no están presentes en los pools activos de esta rama. Cuando se materialicen, `KarmanyTileData.has_universal_interaction_definition()` y la prueba F39 exigirán `later_use_text` + `interaction_profile_id` antes de que puedan entrar al pool sin romper la validación. Además, `KarmanyFullMatchSession.configure()` rechaza el catálogo activo si alguna identidad START/L-01 o algún Resource N1/N2/N3 del pool carece de una definición universal válida; esta auditoría usa los pools públicos y nunca `_hidden_content`.
 
 ## Fuente de verdad F39
 
@@ -50,6 +50,8 @@ Flujo objetivo:
 `KarmanyTileData` → `KarmanyUniversalTileInteractionService` → preview/requisitos → candidatos `INTERACT` → `KarmanyAiActionExecutor` → resolver existente → resultado.
 
 El servicio vuelve a evaluar la misma opción inmediatamente antes de ejecutar. De este modo, una condición conocida (sin acciones, Bestia bloqueando, conversión de Forja ya usada, límite FA por ronda, coste/crafteo no disponible, etc.) no se ofrece como legal para luego ser rechazada por una comprobación que ya podía hacerse.
+
+Los resolvers siguen haciendo validaciones defensivas al ejecutar. Para las dos subacciones heredadas de L-01 (`Sintonizar con Aeterna` y recolección post-Aeterna), el resolver existente todavía no expone un método de preflight no mutante; F39 mantiene una comprobación mínima equivalente antes de ofrecerlas y vuelve a resolver con `KarmanyAeternaResolver`. No se creó un segundo estado de Aeterna ni se modificó su regla histórica. El contexto local F39 usa explícitamente MAP_41 para no heredar el `MAP_22` histórico del constructor interno del coordinador.
 
 ## Privacidad
 
