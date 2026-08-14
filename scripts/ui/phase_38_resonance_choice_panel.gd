@@ -22,6 +22,11 @@ func _build_panel() -> void:
 		push_error("FASE 38 ERROR: controles de combate no disponibles para selector de Resonancias.")
 		return
 
+	# F38 agrega dos controles al bar Alpha de F36/F37. En la escena de prueba
+	# objetivo 1152x648, 1100 px deja margen lateral sin crear un segundo HUD.
+	phase_38.controls_panel.position = Vector2(-550.0, -78.0)
+	phase_38.controls_panel.size = Vector2(1100.0, 70.0)
+
 	selector = OptionButton.new()
 	selector.name = "Phase38ResonanceSelector"
 	selector.custom_minimum_size = Vector2(154, 0)
