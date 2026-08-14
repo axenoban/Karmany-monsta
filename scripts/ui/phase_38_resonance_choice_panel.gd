@@ -91,6 +91,28 @@ func _refresh() -> void:
 
 	selector.disabled = not human_turn
 	resolve_button.disabled = not human_turn
+	_guard_base_controls_during_automation()
+
+
+func _guard_base_controls_during_automation() -> void:
+	if phase_38 == null or not phase_38._auto_match_busy:
+		return
+	var phase_36 := phase_38.phase_37.phase_36
+	if phase_36 == null:
+		return
+	phase_36.move_button.disabled = true
+	phase_36.explore_button.disabled = true
+	phase_36.interact_button.disabled = true
+	phase_36.improve_button.disabled = true
+	phase_36.pass_button.disabled = true
+	if phase_38.link_call_button != null:
+		phase_38.link_call_button.disabled = true
+	if phase_38.combat_button != null:
+		phase_38.combat_button.disabled = true
+	if phase_38.equipment_button != null:
+		phase_38.equipment_button.disabled = true
+	if phase_38.auto_p1_button != null:
+		phase_38.auto_p1_button.disabled = true
 
 
 func get_selected_resonance_id() -> StringName:
