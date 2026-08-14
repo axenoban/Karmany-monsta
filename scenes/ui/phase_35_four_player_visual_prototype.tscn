@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/phase_35_four_player_visual_bridge.gd" id="1_bridge"]
 [ext_resource type="PackedScene" path="res://scenes/ui/phase_34_multi_ai_prototype.tscn" id="2_phase34"]
 [ext_resource type="Script" path="res://scripts/ui/presentation_feedback_controller.gd" id="3_feedback"]
+[ext_resource type="Script" path="res://scripts/ui/phase_35_reveal_identity_feedback.gd" id="4_identity"]
 
 [node name="Phase35FourPlayerVisualPrototype" type="Node3D"]
 script = ExtResource("1_bridge")
@@ -15,6 +16,9 @@ script = ExtResource("1_bridge")
 script = ExtResource("3_feedback")
 movement_duration = 0.32
 reveal_duration = 0.34
+
+[node name="RevealIdentityFeedback" type="Node" parent="."]
+script = ExtResource("4_identity")
 
 [node name="PresentationOverlay" type="CanvasLayer" parent="."]
 layer = 13
