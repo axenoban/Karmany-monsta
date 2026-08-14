@@ -1,12 +1,16 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/phase_36_match_ux_bridge.gd" id="1_bridge"]
 [ext_resource type="PackedScene" path="res://scenes/ui/phase_35_four_player_visual_prototype.tscn" id="2_phase35"]
+[ext_resource type="Script" path="res://scripts/ui/phase_36_presentation_input_guard.gd" id="3_guard"]
 
 [node name="Phase36MatchUxPrototype" type="Node3D"]
 script = ExtResource("1_bridge")
 
 [node name="Phase35FourPlayerVisualPrototype" parent="." instance=ExtResource("2_phase35")]
+
+[node name="PresentationInputGuard" type="Node" parent="."]
+script = ExtResource("3_guard")
 
 [node name="Phase36Overlay" type="CanvasLayer" parent="."]
 layer = 18
