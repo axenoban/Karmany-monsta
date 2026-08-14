@@ -42,8 +42,12 @@ func _render(diagnostics: Array[Dictionary]) -> void:
 			continue
 		var before_value: Variant = diagnostic.get("resources_before", {})
 		var after_value: Variant = diagnostic.get("resources_after", {})
-		var before: Dictionary = before_value if before_value is Dictionary else {}
-		var after: Dictionary = after_value if after_value is Dictionary else {}
+		var before: Dictionary = {}
+		var after: Dictionary = {}
+		if before_value is Dictionary:
+			before = before_value
+		if after_value is Dictionary:
+			after = after_value
 		var mr_before: int = int(before.get(KarmanyEffectData.ResourceType.MR, 0))
 		var mr_after: int = int(after.get(KarmanyEffectData.ResourceType.MR, 0))
 		var marginal_text: String = "-"
