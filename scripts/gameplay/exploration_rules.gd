@@ -60,7 +60,12 @@ static func validate_exploration(
 	if board_state.is_revealed(target_coord):
 		return ExplorationValidation.TARGET_ALREADY_REVEALED
 
-	if board_state.get_tile_data(target_coord) == null:
+	# Fase 32 oculta deliberadamente KarmanyTileData. Una posicion canonica
+	# sigue siendo explorable si expone su nivel estructural publico.
+	if (
+		board_state.get_tile_data(target_coord) == null
+		and not board_state.has_structural_level(target_coord)
+	):
 		return ExplorationValidation.TARGET_HAS_NO_TILE_DATA
 
 	if board_state.is_occupied(target_coord):
@@ -132,7 +137,7 @@ static func get_validation_message(validation: int) -> String:
 		ExplorationValidation.TARGET_ALREADY_REVEALED:
 			return "La loseta ya esta revelada; para entrar usa Mover."
 		ExplorationValidation.TARGET_HAS_NO_TILE_DATA:
-			return "La posicion oculta aun no tiene una loseta asignada."
+			return "La posicion oculta no tiene contenido ni nivel estructural asignado."
 		ExplorationValidation.TARGET_OCCUPIED:
 			return "La loseta destino esta ocupada."
 		ExplorationValidation.NOT_ADJACENT:
