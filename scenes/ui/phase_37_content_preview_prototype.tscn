@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/phase_37_content_preview_bridge.gd" id="1_bridge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/phase_36_match_ux_prototype.tscn" id="2_phase36"]
+
+[node name="Phase37ContentPreviewPrototype" type="Node3D"]
+script = ExtResource("1_bridge")
+
+[node name="Phase36MatchUxPrototype" parent="." instance=ExtResource("2_phase36")]
