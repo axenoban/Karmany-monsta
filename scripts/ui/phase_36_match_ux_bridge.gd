@@ -2,6 +2,8 @@ class_name KarmanyPhase36MatchUxBridge
 extends Node3D
 
 
+const INVALID_COORD: Vector2i = Vector2i(999, 999)
+
 @onready var phase_35: KarmanyPhase35FourPlayerVisualBridge = $Phase35FourPlayerVisualPrototype
 @onready var turn_label: Label = $Phase36Overlay/TopBar/TopMargin/TopRow/TurnLabel
 @onready var activity_label: Label = $Phase36Overlay/TopBar/TopMargin/TopRow/ActivityLabel
@@ -21,10 +23,8 @@ extends Node3D
 @onready var all_ai_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/AllAiButton
 @onready var center_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/CenterButton
 
-
 var setup_ok: bool = false
 var _latest_p3_diagnostic: Dictionary = {}
-var _last_action_reason: String = "Selecciona una loseta o una accion disponible."
 var _human_action_busy: bool = false
 
 
@@ -32,11 +32,9 @@ func _ready() -> void:
 	if phase_35 == null or not phase_35.setup_ok or phase_35.phase_34 == null:
 		push_error("FASE 36 ERROR: Fase 35 no esta disponible.")
 		return
-
 	var old_overlay := phase_35.get_node_or_null("Phase35Overlay") as CanvasLayer
 	if old_overlay != null:
 		old_overlay.visible = false
-
 	_connect_runtime_signals()
 	_connect_tile_selection()
 	_connect_controls()
@@ -54,7 +52,7 @@ func get_runtime() -> KarmanyMultiAiAlphaRuntime:
 func get_selected_coord() -> Vector2i:
 	var phase_31 := _get_phase_31()
 	if phase_31 == null or phase_31.selected_tile == null:
-		return Vector2i(999, 999)
+		return INVALID_COORD
 	return phase_31.selected_tile.coord
 
 
@@ -62,7 +60,6 @@ func get_location_summary(coord: Vector2i) -> String:
 	var runtime := get_runtime()
 	if runtime == null or not runtime.board_state.has_coord(coord):
 		return "Sin ubicacion valida."
-
 	var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(
 		runtime.get_public_level(coord)
 	)
@@ -72,14 +69,13 @@ func get_location_summary(coord: Vector2i) -> String:
 			occupants.append(_short_player_id(player.player_id))
 	var occupants_text: String = "ninguno" if occupants.is_empty() else ", ".join(occupants)
 
+	# F35 mantiene una compuerta visual separada de la revelacion logica.
+	# Se usa esa vista publica para no adelantar identidad durante un replay.
+	var presentation_text: String = phase_35.get_public_location_text_for_coord(coord)
 	var identity: String = "OCULTA"
-	var visually_public: bool = phase_35.get_public_location_text_for_coord(coord).find("OCULTA") < 0
-	if visually_public:
+	if not presentation_text.contains("OCULTA"):
 		var tile: KarmanyTileData = runtime.get_public_tile_data(coord)
-		if tile != null:
-			identity = tile.display_name
-		else:
-			identity = "Revelada"
+		identity = tile.display_name if tile != null else "Revelada"
 
 	var public_elements: PackedStringArray = PackedStringArray()
 	if runtime.board_state.has_beast(coord):
@@ -138,7 +134,8 @@ func _connect_tile_selection() -> void:
 	var phase_31 := _get_phase_31()
 	if phase_31 == null:
 		return
-	for coord in phase_31.get_level_map().keys():
+	for coord_value in phase_31.get_level_map().keys():
+		var coord: Vector2i = coord_value
 		var tile := phase_31.get_tile_view(coord)
 		if tile != null and not tile.tile_clicked.is_connected(_on_tile_clicked):
 			tile.tile_clicked.connect(_on_tile_clicked)
@@ -176,16 +173,17 @@ func _refresh_turn() -> void:
 	var runtime := get_runtime()
 	if runtime == null:
 		return
-	var manager := runtime.local_session.turn_manager
-	var active := manager.get_active_player()
-	if active == null:
-		turn_label.text = "Partida sin jugador activo"
-		return
-	var role: String = _player_role(active.player_id)
+	var display_id: StringName = phase_35.get_display_active_player_id()
+	if display_id == &"":
+		var logical_active := runtime.local_session.turn_manager.get_active_player()
+		if logical_active == null:
+			turn_label.text = "Partida sin jugador activo"
+			return
+		display_id = logical_active.player_id
 	turn_label.text = "RONDA %d  ·  %s  ·  ACCIONES %d/%d" % [
-		manager.current_round,
-		role,
-		manager.actions_remaining,
+		phase_35.get_display_round_number(),
+		_player_role(display_id),
+		phase_35.get_display_actions_remaining(),
 		KarmanyTurnManager.ACTIONS_PER_TURN
 	]
 
@@ -194,24 +192,16 @@ func _refresh_participants() -> void:
 	var runtime := get_runtime()
 	if runtime == null:
 		return
-	var manager := runtime.local_session.turn_manager
-	var active := manager.get_active_player()
+	var display_id: StringName = phase_35.get_display_active_player_id()
 	var lines: PackedStringArray = PackedStringArray()
 	for player in runtime.local_session.players:
 		if player == null:
 			continue
-		var marker: String = "▶" if active == player else " "
+		var marker: String = "▶" if player.player_id == display_id else " "
 		var coord: Vector2i = phase_35.get_visual_coord(player.player_id)
-		var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(
-			runtime.get_public_level(coord)
-		)
+		var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(runtime.get_public_level(coord))
 		var points: int = runtime.local_session.get_player_legacy_points(player.player_id)
-		lines.append("%s %s | %d PL | %s" % [
-			marker,
-			_player_role(player.player_id),
-			points,
-			level_name
-		])
+		lines.append("%s %s | %d PL | %s" % [marker, _player_role(player.player_id), points, level_name])
 	participants_label.text = "\n".join(lines)
 
 
@@ -219,19 +209,20 @@ func _refresh_location() -> void:
 	var runtime := get_runtime()
 	if runtime == null:
 		return
-	var active := runtime.local_session.turn_manager.get_active_player()
-	if active == null:
-		location_label.text = "Sin jugador activo."
+	var display_id: StringName = phase_35.get_display_active_player_id()
+	var display_player := runtime.local_session.get_player_by_id(display_id)
+	if display_player == null:
+		location_label.text = "Sin jugador presentado."
 		return
 	location_label.text = "%s\n%s" % [
-		_player_role(active.player_id),
-		get_location_summary(phase_35.get_visual_coord(active.player_id))
+		_player_role(display_id),
+		get_location_summary(phase_35.get_visual_coord(display_id))
 	]
 
 
 func _refresh_selected() -> void:
 	var selected: Vector2i = get_selected_coord()
-	if selected == Vector2i(999, 999):
+	if selected == INVALID_COORD:
 		selected_label.text = "SELECCION: ninguna"
 		return
 	selected_label.text = "SELECCION\n%s" % get_location_summary(selected)
@@ -243,15 +234,8 @@ func _refresh_actions() -> void:
 		return
 	var manager := runtime.local_session.turn_manager
 	var active := manager.get_active_player()
-	var human_active: bool = (
-		active != null
-		and runtime.ai_match_controller.is_human_player(active.player_id)
-		and not _human_action_busy
-	)
-	var ai_active: bool = (
-		active != null
-		and runtime.ai_match_controller.is_ai_player(active.player_id)
-	)
+	var human_active: bool = active != null and runtime.ai_match_controller.is_human_player(active.player_id) and not _human_action_busy
+	var ai_active: bool = active != null and runtime.ai_match_controller.is_ai_player(active.player_id)
 
 	move_button.disabled = true
 	explore_button.disabled = true
@@ -264,35 +248,15 @@ func _refresh_actions() -> void:
 
 	if not human_active:
 		actions_label.text = "ACCIONES HUMANAS: esperando turno P1"
-		action_reason_label.text = (
-			"Turno IA: usa IA actual o P2→P4 para observar sus decisiones."
-			if ai_active else "Esperando estado de partida."
-		)
+		action_reason_label.text = "Turno IA: usa IA actual o P2→P4 para observar sus decisiones." if ai_active else "Esperando estado de partida."
 		return
 
-	var candidates := KarmanyAiLegalActionGenerator.build_legal_actions(
-		runtime.coordinator,
-		active
-	)
+	var candidates := KarmanyAiLegalActionGenerator.build_legal_actions(runtime.coordinator, active)
 	var selected: Vector2i = get_selected_coord()
-	var move_candidate := _find_target_candidate(
-		candidates,
-		KarmanyAiActionCandidate.ActionType.MOVE,
-		selected
-	)
-	var explore_candidate := _find_target_candidate(
-		candidates,
-		KarmanyAiActionCandidate.ActionType.EXPLORE,
-		selected
-	)
-	var interact_candidate := _find_first_candidate(
-		candidates,
-		KarmanyAiActionCandidate.ActionType.INTERACT
-	)
-	var improve_candidate := _find_first_candidate(
-		candidates,
-		KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK
-	)
+	var move_candidate := _find_target_candidate(candidates, KarmanyAiActionCandidate.ActionType.MOVE, selected)
+	var explore_candidate := _find_target_candidate(candidates, KarmanyAiActionCandidate.ActionType.EXPLORE, selected)
+	var interact_candidate := _find_first_candidate(candidates, KarmanyAiActionCandidate.ActionType.INTERACT)
+	var improve_candidate := _find_first_candidate(candidates, KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK)
 
 	move_button.disabled = move_candidate == null
 	explore_button.disabled = explore_candidate == null
@@ -308,17 +272,23 @@ func _refresh_actions() -> void:
 		available.append("Interactuar")
 	if improve_candidate != null:
 		available.append("Mejorar Libro")
-	actions_label.text = "LEGALES AHORA: %s" % (
-		", ".join(available) if not available.is_empty() else "ninguna"
-	)
+	actions_label.text = "LEGALES AHORA: %s" % (", ".join(available) if not available.is_empty() else "ninguna")
 
-	if selected == Vector2i(999, 999):
-		_last_action_reason = "Mover/Explorar: selecciona una loseta resaltada del mapa."
-	elif move_candidate == null and explore_candidate == null:
-		_last_action_reason = "La seleccion actual no es un destino legal para Mover ni Explorar."
+	var reasons: PackedStringArray = PackedStringArray()
+	if selected == INVALID_COORD:
+		reasons.append("Mover/Explorar: selecciona una loseta.")
 	else:
-		_last_action_reason = "Seleccion valida: elige la accion habilitada."
-	action_reason_label.text = _last_action_reason
+		if move_candidate == null:
+			reasons.append("Mover: destino seleccionado no legal.")
+		if explore_candidate == null:
+			reasons.append("Explorar: destino seleccionado no legal.")
+	if interact_candidate == null:
+		reasons.append("Interactuar: no hay Uso posterior legal aqui.")
+	if improve_candidate == null:
+		reasons.append("Libro: nivel/coste actual no permite mejorar.")
+	if reasons.is_empty():
+		reasons.append("Seleccion valida: elige una accion habilitada.")
+	action_reason_label.text = " ".join(reasons)
 
 
 func _refresh_p3_debug() -> void:
@@ -336,14 +306,11 @@ func _refresh_p3_debug() -> void:
 	if utility_value is Dictionary:
 		var utility: Dictionary = utility_value
 		var details_value: Variant = utility.get("resource_details", [])
-		if details_value is Array and not details_value.is_empty():
-			var detail_value: Variant = details_value[0]
-			if detail_value is Dictionary:
-				var detail: Dictionary = detail_value
-				marginal_text = "%.2f (objetivo %d)" % [
-					float(detail.get("value", 0.0)),
-					int(detail.get("target", 0))
-				]
+		if details_value is Array:
+			var details: Array = details_value
+			if not details.is_empty() and details[0] is Dictionary:
+				var detail: Dictionary = details[0]
+				marginal_text = "%.2f (objetivo %d)" % [float(detail.get("value", 0.0)), int(detail.get("target", 0))]
 	p3_debug_label.text = "DEBUG P3 OPORTUNISTA\n%s\nscore %.2f | penalizacion %.2f\nMR %d → %d | valor marginal %s" % [
 		String(_latest_p3_diagnostic.get("action_label", "sin accion")),
 		score,
@@ -370,7 +337,6 @@ func _execute_human_candidate(action_type: int) -> bool:
 	else:
 		candidate = _find_first_candidate(candidates, action_type)
 	if candidate == null:
-		_last_action_reason = "La accion solicitada no es legal en el estado actual."
 		_refresh_actions()
 		return false
 
@@ -435,17 +401,12 @@ func _player_role(player_id: StringName) -> String:
 		return String(player_id)
 	if runtime.ai_match_controller.is_human_player(player_id):
 		return "%s HUMANO" % _short_player_id(player_id)
-	return "%s %s" % [
-		_short_player_id(player_id),
-		runtime.ai_match_controller.get_ai_profile_name(player_id).to_upper()
-	]
+	return "%s %s" % [_short_player_id(player_id), runtime.ai_match_controller.get_ai_profile_name(player_id).to_upper()]
 
 
 func _short_player_id(player_id: StringName) -> String:
 	var text: String = String(player_id)
-	if text.begins_with("player_"):
-		return "P%s" % text.trim_prefix("player_")
-	return text
+	return "P%s" % text.trim_prefix("player_") if text.begins_with("player_") else text
 
 
 func _on_tile_clicked(_tile: KarmanyHexTile3D) -> void:
@@ -469,8 +430,10 @@ func _on_action_spent(
 
 
 func _on_visual_action_started(player_id: StringName, action_text: String) -> void:
-	activity_label.text = "%s · %s" % [_short_player_id(player_id), action_text]
+	activity_label.text = action_text if action_text.begins_with(_short_player_id(player_id)) else "%s · %s" % [_short_player_id(player_id), action_text]
 	_refresh_turn()
+	_refresh_participants()
+	_refresh_location()
 
 
 func _on_visual_action_finished(_player_id: StringName, _action_text: String) -> void:
