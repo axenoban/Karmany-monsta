@@ -28,6 +28,7 @@ on_explore_text = "Elige: recolecta 2 MR; o mira 2 cartas de Equipo, deja 1 visi
 entry_bonus_text = "Entrada: Obten 1 MR."
 later_use_text = "Recolectar 2 MR."
 limit_text = "-"
+interaction_profile_id = &"effect"
 entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_mr")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mr")])
 starts_revealed = false
