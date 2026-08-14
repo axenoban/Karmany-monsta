@@ -2,6 +2,8 @@ class_name KarmanyUniversalTileInteractionService
 extends RefCounted
 
 
+const META_KEY: StringName = &"phase39_universal_tile_interactions"
+
 const PROFILE_EFFECT: StringName = &"effect"
 const PROFILE_CAMP_BASIC: StringName = &"camp_basic"
 const PROFILE_BEAST_MEDIUM: StringName = &"beast_medium"
@@ -12,7 +14,6 @@ const PROFILE_AETERNA: StringName = &"aeterna"
 
 const PAYLOAD_KIND: StringName = &"phase39_interaction_kind"
 const PAYLOAD_KEY: StringName = &"phase39_interaction_key"
-const PAYLOAD_UNDERLYING: StringName = &"phase39_underlying_candidate"
 const PAYLOAD_EFFECT_INDEX: StringName = &"phase39_effect_index"
 
 const KIND_EFFECT: StringName = &"effect"
@@ -91,7 +92,6 @@ func execute_candidate(
 			KarmanyTileInteractionResult.Status.INVALID_REQUEST,
 			"El candidato no corresponde a Interactuar."
 		)
-
 	var requested_key: StringName = StringName(candidate.payload.get(PAYLOAD_KEY, ""))
 	if requested_key == &"":
 		return _result(
@@ -99,9 +99,6 @@ func execute_candidate(
 			"El candidato no identifica una opcion universal."
 		)
 
-	# Re-evaluate immediately before execution. The exact same service that
-	# offered the candidate is authoritative for the preflight, so a known
-	# blocked condition never reaches an executor as a supposedly legal action.
 	var resolved_option: Dictionary = {}
 	for option in _build_current_options(player):
 		if StringName(option.get("key", "")) == requested_key:
@@ -133,7 +130,10 @@ func execute_candidate(
 			option_index,
 			runtime.coordinator.effect_context
 		)
-		success = raw_result is KarmanyTileInteractionResult and (raw_result as KarmanyTileInteractionResult).is_success()
+		success = (
+			raw_result is KarmanyTileInteractionResult
+			and (raw_result as KarmanyTileInteractionResult).is_success()
+		)
 	elif kind == KIND_UNDERLYING:
 		var underlying_value: Variant = resolved_option.get("underlying", null)
 		if underlying_value is KarmanyAiActionCandidate:
@@ -143,11 +143,19 @@ func execute_candidate(
 			)
 			success = raw_result is bool and bool(raw_result)
 	elif kind == KIND_AETERNA_SYNC:
-		raw_result = runtime.coordinator.resolve_aeterna_sync(player)
-		success = raw_result is KarmanyAeternaResult and (raw_result as KarmanyAeternaResult).is_resolved()
+		var sync_context := _build_aeterna_context(player)
+		raw_result = KarmanyAeternaResolver.resolve_aeterna_sync(player, sync_context)
+		success = (
+			raw_result is KarmanyAeternaResult
+			and (raw_result as KarmanyAeternaResult).is_resolved()
+		)
 	elif kind == KIND_AETERNA_POST_EK:
-		raw_result = runtime.coordinator.collect_aeterna_post_defeat_ek(player)
-		success = raw_result is KarmanyAeternaResult and (raw_result as KarmanyAeternaResult).is_resolved()
+		var post_context := _build_aeterna_context(player)
+		raw_result = KarmanyAeternaResolver.collect_post_defeat_ek(player, post_context)
+		success = (
+			raw_result is KarmanyAeternaResult
+			and (raw_result as KarmanyAeternaResult).is_resolved()
+		)
 
 	if not success:
 		return _result(
@@ -156,9 +164,19 @@ func execute_candidate(
 		)
 
 	var tile := runtime.get_public_tile_data(player.current_coord)
-	if tile != null and tile.interaction_profile_id == PROFILE_CRYSTAL_CAVE and kind == KIND_EFFECT:
+	if (
+		tile != null
+		and tile.interaction_profile_id == PROFILE_CRYSTAL_CAVE
+		and kind == KIND_EFFECT
+		and option_index >= 0
+		and option_index < tile.later_use_effects.size()
+	):
 		var effect: KarmanyEffectData = tile.later_use_effects[option_index]
-		if effect != null and effect.effect_type == KarmanyEffectData.EffectType.ADD_RESOURCE and effect.resource_type == KarmanyEffectData.ResourceType.FA:
+		if (
+			effect != null
+			and effect.effect_type == KarmanyEffectData.EffectType.ADD_RESOURCE
+			and effect.resource_type == KarmanyEffectData.ResourceType.FA
+		):
 			_mark_crystal_fa_used(player.player_id, manager.current_round)
 
 	var result := KarmanyTileInteractionResult.new()
@@ -168,7 +186,9 @@ func execute_candidate(
 	result.option_index = option_index
 	result.action_consumed = manager.actions_remaining < actions_before
 	if raw_result is KarmanyTileInteractionResult:
-		result.effect_result = (raw_result as KarmanyTileInteractionResult).effect_result
+		result.effect_result = (
+			raw_result as KarmanyTileInteractionResult
+		).effect_result
 	return result
 
 
@@ -188,7 +208,6 @@ func get_public_preview(
 		return result
 	if not runtime.board_state.is_revealed(coord):
 		return result
-
 	var tile := runtime.get_public_tile_data(coord)
 	if tile == null:
 		return result
@@ -197,11 +216,16 @@ func get_public_preview(
 	result["tile_id"] = String(tile.tile_id)
 	result["interaction_text"] = tile.later_use_text
 	var requirements: PackedStringArray = PackedStringArray()
-	if not tile.limit_text.strip_edges().is_empty() and tile.limit_text.strip_edges() != "-":
+	if (
+		not tile.limit_text.strip_edges().is_empty()
+		and tile.limit_text.strip_edges() != "-"
+	):
 		requirements.append(tile.limit_text.strip_edges())
 
 	if not is_tile_definition_valid(tile):
-		requirements.append("Definicion F39 invalida: falta un perfil canónico de Uso posterior.")
+		requirements.append(
+			"Definicion F39 invalida: falta un perfil canonico de Uso posterior."
+		)
 		result["requirements_text"] = " ".join(requirements)
 		return result
 	if player == null:
@@ -230,7 +254,7 @@ func get_public_preview(
 	elif not blocked_reasons.is_empty():
 		requirements.append("Bloqueado ahora: %s" % " / ".join(blocked_reasons))
 	else:
-		requirements.append(_profile_block_reason(player, tile))
+		requirements.append(_profile_block_reason(tile))
 	result["requirements_text"] = " ".join(requirements)
 	return result
 
@@ -291,7 +315,10 @@ func _build_current_options(player: KarmanyPlayerState) -> Array[Dictionary]:
 				if not (value is KarmanyAiActionCandidate):
 					continue
 				var underlying := value as KarmanyAiActionCandidate
-				if not _candidate_matches_profile(underlying, tile.interaction_profile_id):
+				if not _candidate_matches_profile(
+					underlying,
+					tile.interaction_profile_id
+				):
 					continue
 				if (
 					tile.interaction_profile_id == PROFILE_CRYSTAL_PASS
@@ -309,7 +336,12 @@ func _build_current_options(player: KarmanyPlayerState) -> Array[Dictionary]:
 				})
 
 	if tile.interaction_profile_id == PROFILE_AETERNA:
-		_append_aeterna_direct_options(result, player, common_legal, common_reason)
+		_append_aeterna_direct_options(
+			result,
+			player,
+			common_legal,
+			common_reason
+		)
 	return result
 
 
@@ -319,22 +351,80 @@ func _append_aeterna_direct_options(
 	common_legal: bool,
 	common_reason: String
 ) -> void:
-	var sync_validation := runtime.coordinator.validate_aeterna_sync(player)
+	var sync_status := _aeterna_sync_preflight(player)
 	result.append({
 		"key": &"aeterna:sync",
 		"kind": KIND_AETERNA_SYNC,
 		"label": "Sintonizar con Aeterna",
-		"legal": common_legal and sync_validation.is_resolved(),
-		"reason": common_reason if not common_legal else sync_validation.message
+		"legal": common_legal and bool(sync_status.get("legal", false)),
+		"reason": common_reason if not common_legal else String(sync_status.get("reason", ""))
 	})
-	var post_validation := runtime.coordinator.validate_aeterna_post_defeat_ek(player)
+	var post_status := _aeterna_post_ek_preflight(player)
 	result.append({
 		"key": &"aeterna:post_ek",
 		"kind": KIND_AETERNA_POST_EK,
 		"label": "Recolectar 2 EK del Santuario",
-		"legal": common_legal and post_validation.is_resolved(),
-		"reason": common_reason if not common_legal else post_validation.message
+		"legal": common_legal and bool(post_status.get("legal", false)),
+		"reason": common_reason if not common_legal else String(post_status.get("reason", ""))
 	})
+
+
+func _aeterna_sync_preflight(player: KarmanyPlayerState) -> Dictionary:
+	var context := _build_aeterna_context(player)
+	if context == null or not context.is_valid():
+		return {"legal": false, "reason": "Contexto de Aeterna invalido."}
+	if context.aeterna_state.defeated:
+		return {"legal": false, "reason": "Aeterna ya fue derrotada."}
+	if context.aeterna_state.has_used_aeterna_sync(player.player_id):
+		return {"legal": false, "reason": "Sintonizar con Aeterna ya fue usado por este jugador."}
+	if _available_resonances() < 3:
+		return {"legal": false, "reason": "No hay 3 Resonancias disponibles para Sintonizar."}
+	if not context.turn_manager.can_spend_action(1):
+		return {"legal": false, "reason": "No quedan acciones para Sintonizar."}
+	return {"legal": true, "reason": ""}
+
+
+func _aeterna_post_ek_preflight(player: KarmanyPlayerState) -> Dictionary:
+	var context := _build_aeterna_context(player)
+	if context == null or not context.is_valid():
+		return {"legal": false, "reason": "Contexto de Aeterna invalido."}
+	if not context.aeterna_state.defeated:
+		return {"legal": false, "reason": "Aeterna aun no ha sido derrotada."}
+	var round_number: int = context.turn_manager.current_round
+	if not context.aeterna_state.can_collect_post_defeat_ek(
+		player.player_id,
+		round_number
+	):
+		return {"legal": false, "reason": "Ya recolectaste los 2 EK del Santuario esta ronda."}
+	if not context.turn_manager.can_spend_action(1):
+		return {"legal": false, "reason": "No quedan acciones para Interactuar con el Santuario."}
+	return {"legal": true, "reason": ""}
+
+
+func _build_aeterna_context(
+	player: KarmanyPlayerState
+) -> KarmanyAeternaContext:
+	if runtime == null or runtime.coordinator == null or player == null:
+		return null
+	var context := runtime.coordinator._build_aeterna_context(
+		player,
+		1,
+		KarmanyCombatPowerModifiers.new(),
+		false,
+		0
+	)
+	if context != null:
+		context.map_format = KarmanyLegacyModeConfig.MapFormat.MAP_41
+	return context
+
+
+func _available_resonances() -> int:
+	if runtime == null or runtime.resonance_deck == null:
+		return 0
+	return (
+		runtime.resonance_deck.get_draw_count()
+		+ runtime.resonance_deck.get_discard_count()
+	)
 
 
 func _wrap_option_as_candidate(
@@ -344,7 +434,9 @@ func _wrap_option_as_candidate(
 	var candidate := KarmanyAiActionCandidate.new()
 	candidate.action_type = KarmanyAiActionCandidate.ActionType.INTERACT
 	candidate.target_coord = player.current_coord
-	candidate.debug_label = "Interactuar · %s" % String(option.get("label", "Uso posterior"))
+	candidate.debug_label = "Interactuar · %s" % String(
+		option.get("label", "Uso posterior")
+	)
 	candidate.base_utility = 1.0
 	candidate.opportunity_value = 1.0
 	candidate.payload[PAYLOAD_KIND] = option.get("kind", &"")
@@ -353,7 +445,11 @@ func _wrap_option_as_candidate(
 		candidate.option_index = int(option.get("effect_index", -1))
 		candidate.payload[PAYLOAD_EFFECT_INDEX] = candidate.option_index
 		var tile := runtime.get_public_tile_data(player.current_coord)
-		if tile != null and candidate.option_index >= 0 and candidate.option_index < tile.later_use_effects.size():
+		if (
+			tile != null
+			and candidate.option_index >= 0
+			and candidate.option_index < tile.later_use_effects.size()
+		):
 			var effect := tile.later_use_effects[candidate.option_index]
 			var estimate := KarmanyAiResourceUtility.estimate_effects(
 				[effect],
@@ -373,7 +469,6 @@ func _wrap_option_as_candidate(
 			candidate.opportunity_value = underlying.opportunity_value
 			candidate.progress_value = underlying.progress_value
 			candidate.risk_value = underlying.risk_value
-			candidate.payload[PAYLOAD_UNDERLYING] = underlying
 	if StringName(option.get("kind", "")) == KIND_AETERNA_SYNC:
 		candidate.progress_value = 2.0
 		candidate.opportunity_value = 2.0
@@ -402,17 +497,14 @@ func _candidate_matches_profile(
 	return false
 
 
-func _profile_block_reason(
-	player: KarmanyPlayerState,
-	tile: KarmanyTileData
-) -> String:
+func _profile_block_reason(tile: KarmanyTileData) -> String:
 	match tile.interaction_profile_id:
 		PROFILE_CAMP_BASIC:
-			return "No hay un Equipo Basico legal y pagable; recolectar 2 MN sigue siendo la alternativa cuando el contexto comun lo permite."
+			return "No hay un Equipo Basico legal y pagable; recolectar 2 MN es la alternativa de la loseta."
 		PROFILE_CRYSTAL_PASS:
 			return "No hay un Equipo Basico/Avanzado legal y pagable o el crafteo de este turno ya fue usado."
 		PROFILE_BEAST_MEDIUM:
-			return "No hay un combate de Bestia Media legal; recolectar 2 EK sigue siendo la alternativa cuando el contexto comun lo permite."
+			return "No hay un combate de Bestia Media legal; recolectar 2 EK es la alternativa de la loseta."
 		PROFILE_FORGE:
 			return "Necesitas una opcion legal de crafteo, mejora de Libro o 2 recursos comunes; la conversion a FA solo puede usarse una vez por jugador."
 		PROFILE_CRYSTAL_CAVE:
