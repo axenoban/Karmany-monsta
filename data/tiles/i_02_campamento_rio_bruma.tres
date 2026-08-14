@@ -28,6 +28,7 @@ on_explore_text = "No otorga recurso automatico al comenzar."
 entry_bonus_text = "Entrada: Obten 1 EK."
 later_use_text = "Recolectar 2 EK."
 limit_text = "-"
+interaction_profile_id = &"effect"
 entry_effects = Array[ExtResource("2_effect")]([SubResource("Effect_entry_ek")])
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_ek")])
 starts_revealed = true
