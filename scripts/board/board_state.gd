@@ -12,7 +12,8 @@ func clear() -> void:
 func add_cell(
 	coord: Vector2i,
 	tile_data: KarmanyTileData = null,
-	revealed: bool = false
+	revealed: bool = false,
+	structural_level: int = -1
 ) -> bool:
 	if _cells.has(coord):
 		return false
@@ -20,7 +21,8 @@ func add_cell(
 	_cells[coord] = KarmanyBoardCellState.new(
 		coord,
 		tile_data,
-		revealed
+		revealed,
+		structural_level
 	)
 
 	return true
@@ -60,6 +62,8 @@ func set_tile_data(
 		return false
 
 	cell.tile_data = tile_data
+	if cell.structural_level < 0 and tile_data != null:
+		cell.structural_level = int(tile_data.level)
 	return true
 
 
@@ -70,6 +74,28 @@ func get_tile_data(coord: Vector2i) -> KarmanyTileData:
 		return null
 
 	return cell.tile_data
+
+
+func set_structural_level(
+	coord: Vector2i,
+	level: int
+) -> bool:
+	var cell := get_cell(coord)
+	if cell == null or level < -1:
+		return false
+	cell.structural_level = level
+	return true
+
+
+func get_structural_level(coord: Vector2i) -> int:
+	var cell := get_cell(coord)
+	if cell == null:
+		return -1
+	return cell.structural_level
+
+
+func has_structural_level(coord: Vector2i) -> bool:
+	return get_structural_level(coord) >= 0
 
 
 func set_revealed(
