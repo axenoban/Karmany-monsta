@@ -2,6 +2,12 @@ class_name KarmanyFullMatchSession
 extends KarmanyFullMatchResultSession
 
 
+const GENERIC_COMBAT_RESONANCE_EXCLUSIONS: PackedStringArray = PackedStringArray([
+	"R-05", # Solo PvP legal.
+	"R-37"  # Instinto de Caza: solo combate contra Bestia.
+])
+
+
 func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	last_error = ""
 	if p_runtime == null or not p_runtime.configured:
@@ -118,6 +124,8 @@ func get_human_supported_combat_resonances() -> Array[KarmanyResonanceData]:
 			continue
 		if not KarmanyV074CanonicalRuntimeCatalog.is_resonance_automated(card.resonance_id):
 			continue
+		if GENERIC_COMBAT_RESONANCE_EXCLUSIONS.has(String(card.resonance_id)):
+			continue
 		if not card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
 			continue
 		result.append(card)
@@ -168,6 +176,28 @@ func execute_human_combat_with_resonance(
 					_end_turn_with_hand_limit(player)
 			return success
 	return false
+
+
+func _choose_automated_combat_resonance(
+	player: KarmanyPlayerState
+) -> StringName:
+	if player == null:
+		return &""
+	var best_id: StringName = &""
+	var best_power: int = -1
+	for card in player.get_resonance_hand():
+		if card == null:
+			continue
+		if not KarmanyV074CanonicalRuntimeCatalog.is_resonance_automated(card.resonance_id):
+			continue
+		if GENERIC_COMBAT_RESONANCE_EXCLUSIONS.has(String(card.resonance_id)):
+			continue
+		if not card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
+			continue
+		if card.printed_power > best_power:
+			best_power = card.printed_power
+			best_id = card.resonance_id
+	return best_id
 
 
 func _choose_first_game_mission(
