@@ -1,6 +1,14 @@
-[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+[gd_resource type="Resource" script_class="KarmanyTileData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_later_mn"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 0
+description = "Uso posterior N1-04: recolectar 2 MN."
 
 [resource]
 script = ExtResource("1_tile")
@@ -13,3 +21,5 @@ on_explore_text = "Elige: craftea 1 Equipo basico pagando su costo normal; o rec
 entry_bonus_text = "Entrada: Mira 1 carta de Equipo del mazo; dejala arriba o abajo."
 later_use_text = "Craftear 1 Equipo basico o recolectar 2 MN."
 limit_text = "No permite craftear Equipo avanzado o ancestral."
+interaction_profile_id = &"camp_basic"
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mn")])
