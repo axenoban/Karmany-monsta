@@ -1,0 +1,523 @@
+class_name KarmanyPhase36MatchUxBridge
+extends Node3D
+
+
+@onready var phase_35: KarmanyPhase35FourPlayerVisualBridge = $Phase35FourPlayerVisualPrototype
+@onready var turn_label: Label = $Phase36Overlay/TopBar/TopMargin/TopRow/TurnLabel
+@onready var activity_label: Label = $Phase36Overlay/TopBar/TopMargin/TopRow/ActivityLabel
+@onready var participants_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ParticipantsLabel
+@onready var location_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/LocationLabel
+@onready var selected_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/SelectedLabel
+@onready var actions_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionsLabel
+@onready var action_reason_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionReasonLabel
+@onready var p3_debug_label: Label = $Phase36Overlay/RightPanel/RightMargin/RightVBox/P3DebugLabel
+
+@onready var move_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid/MoveButton
+@onready var explore_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid/ExploreButton
+@onready var interact_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid/InteractButton
+@onready var improve_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/ActionGrid/ImproveButton
+@onready var pass_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/PassButton
+@onready var ai_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/AiButton
+@onready var all_ai_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/AllAiButton
+@onready var center_button: Button = $Phase36Overlay/RightPanel/RightMargin/RightVBox/FlowButtons/CenterButton
+
+
+var setup_ok: bool = false
+var _latest_p3_diagnostic: Dictionary = {}
+var _last_action_reason: String = "Selecciona una loseta o una accion disponible."
+var _human_action_busy: bool = false
+
+
+func _ready() -> void:
+	if phase_35 == null or not phase_35.setup_ok or phase_35.phase_34 == null:
+		push_error("FASE 36 ERROR: Fase 35 no esta disponible.")
+		return
+
+	var old_overlay := phase_35.get_node_or_null("Phase35Overlay") as CanvasLayer
+	if old_overlay != null:
+		old_overlay.visible = false
+
+	_connect_runtime_signals()
+	_connect_tile_selection()
+	_connect_controls()
+	_refresh_all()
+	setup_ok = true
+	print("FASE 36 UX OK - tablero priorizado, acciones contextuales y diagnostico P3 activos.")
+
+
+func get_runtime() -> KarmanyMultiAiAlphaRuntime:
+	if phase_35 == null or phase_35.phase_34 == null:
+		return null
+	return phase_35.phase_34.runtime
+
+
+func get_selected_coord() -> Vector2i:
+	var phase_31 := _get_phase_31()
+	if phase_31 == null or phase_31.selected_tile == null:
+		return Vector2i(999, 999)
+	return phase_31.selected_tile.coord
+
+
+func get_location_summary(coord: Vector2i) -> String:
+	var runtime := get_runtime()
+	if runtime == null or not runtime.board_state.has_coord(coord):
+		return "Sin ubicacion valida."
+
+	var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(
+		runtime.get_public_level(coord)
+	)
+	var occupants: PackedStringArray = PackedStringArray()
+	for player in runtime.local_session.players:
+		if player != null and phase_35.get_visual_coord(player.player_id) == coord:
+			occupants.append(_short_player_id(player.player_id))
+	var occupants_text: String = "ninguno" if occupants.is_empty() else ", ".join(occupants)
+
+	var identity: String = "OCULTA"
+	var visually_public: bool = phase_35.get_public_location_text_for_coord(coord).find("OCULTA") < 0
+	if visually_public:
+		var tile: KarmanyTileData = runtime.get_public_tile_data(coord)
+		if tile != null:
+			identity = tile.display_name
+		else:
+			identity = "Revelada"
+
+	var public_elements: PackedStringArray = PackedStringArray()
+	if runtime.board_state.has_beast(coord):
+		var beast := runtime.board_state.get_beast(coord)
+		if beast != null and beast.beast_data != null:
+			public_elements.append("Bestia: %s" % beast.beast_data.display_name)
+	if not occupants.is_empty():
+		public_elements.append("Entrenadores: %s" % occupants_text)
+	if public_elements.is_empty():
+		public_elements.append("Sin elementos publicos adicionales")
+
+	return "%s\nNivel %s | %s\nOcupantes: %s\n%s" % [
+		identity,
+		level_name,
+		str(coord),
+		occupants_text,
+		" | ".join(public_elements)
+	]
+
+
+func get_p3_debug_text() -> String:
+	return p3_debug_label.text if p3_debug_label != null else ""
+
+
+func get_turn_text() -> String:
+	return turn_label.text if turn_label != null else ""
+
+
+func get_action_summary_text() -> String:
+	return actions_label.text if actions_label != null else ""
+
+
+func refresh_for_test() -> void:
+	_refresh_all()
+
+
+func _connect_runtime_signals() -> void:
+	var runtime := get_runtime()
+	if runtime == null:
+		return
+	var manager := runtime.local_session.turn_manager
+	if not manager.turn_started.is_connected(_on_turn_state_changed):
+		manager.turn_started.connect(_on_turn_state_changed)
+	if not manager.action_spent.is_connected(_on_action_spent):
+		manager.action_spent.connect(_on_action_spent)
+	if not phase_35.visual_action_started.is_connected(_on_visual_action_started):
+		phase_35.visual_action_started.connect(_on_visual_action_started)
+	if not phase_35.visual_action_finished.is_connected(_on_visual_action_finished):
+		phase_35.visual_action_finished.connect(_on_visual_action_finished)
+	var ai_control := runtime.ai_match_controller
+	if not ai_control.ai_decision_diagnostic.is_connected(_on_ai_decision_diagnostic):
+		ai_control.ai_decision_diagnostic.connect(_on_ai_decision_diagnostic)
+
+
+func _connect_tile_selection() -> void:
+	var phase_31 := _get_phase_31()
+	if phase_31 == null:
+		return
+	for coord in phase_31.get_level_map().keys():
+		var tile := phase_31.get_tile_view(coord)
+		if tile != null and not tile.tile_clicked.is_connected(_on_tile_clicked):
+			tile.tile_clicked.connect(_on_tile_clicked)
+
+
+func _connect_controls() -> void:
+	if not move_button.pressed.is_connected(_on_move_pressed):
+		move_button.pressed.connect(_on_move_pressed)
+	if not explore_button.pressed.is_connected(_on_explore_pressed):
+		explore_button.pressed.connect(_on_explore_pressed)
+	if not interact_button.pressed.is_connected(_on_interact_pressed):
+		interact_button.pressed.connect(_on_interact_pressed)
+	if not improve_button.pressed.is_connected(_on_improve_pressed):
+		improve_button.pressed.connect(_on_improve_pressed)
+	if not pass_button.pressed.is_connected(_on_pass_pressed):
+		pass_button.pressed.connect(_on_pass_pressed)
+	if not ai_button.pressed.is_connected(_on_ai_pressed):
+		ai_button.pressed.connect(_on_ai_pressed)
+	if not all_ai_button.pressed.is_connected(_on_all_ai_pressed):
+		all_ai_button.pressed.connect(_on_all_ai_pressed)
+	if not center_button.pressed.is_connected(_on_center_pressed):
+		center_button.pressed.connect(_on_center_pressed)
+
+
+func _refresh_all() -> void:
+	_refresh_turn()
+	_refresh_participants()
+	_refresh_location()
+	_refresh_selected()
+	_refresh_actions()
+	_refresh_p3_debug()
+
+
+func _refresh_turn() -> void:
+	var runtime := get_runtime()
+	if runtime == null:
+		return
+	var manager := runtime.local_session.turn_manager
+	var active := manager.get_active_player()
+	if active == null:
+		turn_label.text = "Partida sin jugador activo"
+		return
+	var role: String = _player_role(active.player_id)
+	turn_label.text = "RONDA %d  ·  %s  ·  ACCIONES %d/%d" % [
+		manager.current_round,
+		role,
+		manager.actions_remaining,
+		KarmanyTurnManager.ACTIONS_PER_TURN
+	]
+
+
+func _refresh_participants() -> void:
+	var runtime := get_runtime()
+	if runtime == null:
+		return
+	var manager := runtime.local_session.turn_manager
+	var active := manager.get_active_player()
+	var lines: PackedStringArray = PackedStringArray()
+	for player in runtime.local_session.players:
+		if player == null:
+			continue
+		var marker: String = "▶" if active == player else " "
+		var coord: Vector2i = phase_35.get_visual_coord(player.player_id)
+		var level_name: String = KarmanyCanonicalMap41Layout.get_level_short_name(
+			runtime.get_public_level(coord)
+		)
+		var points: int = runtime.local_session.get_player_legacy_points(player.player_id)
+		lines.append("%s %s | %d PL | %s" % [
+			marker,
+			_player_role(player.player_id),
+			points,
+			level_name
+		])
+	participants_label.text = "\n".join(lines)
+
+
+func _refresh_location() -> void:
+	var runtime := get_runtime()
+	if runtime == null:
+		return
+	var active := runtime.local_session.turn_manager.get_active_player()
+	if active == null:
+		location_label.text = "Sin jugador activo."
+		return
+	location_label.text = "%s\n%s" % [
+		_player_role(active.player_id),
+		get_location_summary(phase_35.get_visual_coord(active.player_id))
+	]
+
+
+func _refresh_selected() -> void:
+	var selected: Vector2i = get_selected_coord()
+	if selected == Vector2i(999, 999):
+		selected_label.text = "SELECCION: ninguna"
+		return
+	selected_label.text = "SELECCION\n%s" % get_location_summary(selected)
+
+
+func _refresh_actions() -> void:
+	var runtime := get_runtime()
+	if runtime == null:
+		return
+	var manager := runtime.local_session.turn_manager
+	var active := manager.get_active_player()
+	var human_active: bool = (
+		active != null
+		and runtime.ai_match_controller.is_human_player(active.player_id)
+		and not _human_action_busy
+	)
+	var ai_active: bool = (
+		active != null
+		and runtime.ai_match_controller.is_ai_player(active.player_id)
+	)
+
+	move_button.disabled = true
+	explore_button.disabled = true
+	interact_button.disabled = true
+	improve_button.disabled = true
+	pass_button.disabled = not human_active
+	ai_button.disabled = not ai_active
+	all_ai_button.disabled = not ai_active
+	center_button.disabled = false
+
+	if not human_active:
+		actions_label.text = "ACCIONES HUMANAS: esperando turno P1"
+		action_reason_label.text = (
+			"Turno IA: usa IA actual o P2→P4 para observar sus decisiones."
+			if ai_active else "Esperando estado de partida."
+		)
+		return
+
+	var candidates := KarmanyAiLegalActionGenerator.build_legal_actions(
+		runtime.coordinator,
+		active
+	)
+	var selected: Vector2i = get_selected_coord()
+	var move_candidate := _find_target_candidate(
+		candidates,
+		KarmanyAiActionCandidate.ActionType.MOVE,
+		selected
+	)
+	var explore_candidate := _find_target_candidate(
+		candidates,
+		KarmanyAiActionCandidate.ActionType.EXPLORE,
+		selected
+	)
+	var interact_candidate := _find_first_candidate(
+		candidates,
+		KarmanyAiActionCandidate.ActionType.INTERACT
+	)
+	var improve_candidate := _find_first_candidate(
+		candidates,
+		KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK
+	)
+
+	move_button.disabled = move_candidate == null
+	explore_button.disabled = explore_candidate == null
+	interact_button.disabled = interact_candidate == null
+	improve_button.disabled = improve_candidate == null
+
+	var available: PackedStringArray = PackedStringArray()
+	if _has_action_type(candidates, KarmanyAiActionCandidate.ActionType.MOVE):
+		available.append("Mover")
+	if _has_action_type(candidates, KarmanyAiActionCandidate.ActionType.EXPLORE):
+		available.append("Explorar")
+	if interact_candidate != null:
+		available.append("Interactuar")
+	if improve_candidate != null:
+		available.append("Mejorar Libro")
+	actions_label.text = "LEGALES AHORA: %s" % (
+		", ".join(available) if not available.is_empty() else "ninguna"
+	)
+
+	if selected == Vector2i(999, 999):
+		_last_action_reason = "Mover/Explorar: selecciona una loseta resaltada del mapa."
+	elif move_candidate == null and explore_candidate == null:
+		_last_action_reason = "La seleccion actual no es un destino legal para Mover ni Explorar."
+	else:
+		_last_action_reason = "Seleccion valida: elige la accion habilitada."
+	action_reason_label.text = _last_action_reason
+
+
+func _refresh_p3_debug() -> void:
+	if _latest_p3_diagnostic.is_empty():
+		p3_debug_label.text = "DEBUG P3 OPORTUNISTA\nSin decision registrada todavia."
+		return
+	var before: Dictionary = _latest_p3_diagnostic.get("resources_before", {})
+	var after: Dictionary = _latest_p3_diagnostic.get("resources_after", {})
+	var mr_before: int = int(before.get(KarmanyEffectData.ResourceType.MR, 0))
+	var mr_after: int = int(after.get(KarmanyEffectData.ResourceType.MR, 0))
+	var score: float = float(_latest_p3_diagnostic.get("score", 0.0))
+	var penalty: float = float(_latest_p3_diagnostic.get("repetition_penalty", 0.0))
+	var marginal_text: String = "n/a"
+	var utility_value: Variant = _latest_p3_diagnostic.get("resource_utility", {})
+	if utility_value is Dictionary:
+		var utility: Dictionary = utility_value
+		var details_value: Variant = utility.get("resource_details", [])
+		if details_value is Array and not details_value.is_empty():
+			var detail_value: Variant = details_value[0]
+			if detail_value is Dictionary:
+				var detail: Dictionary = detail_value
+				marginal_text = "%.2f (objetivo %d)" % [
+					float(detail.get("value", 0.0)),
+					int(detail.get("target", 0))
+				]
+	p3_debug_label.text = "DEBUG P3 OPORTUNISTA\n%s\nscore %.2f | penalizacion %.2f\nMR %d → %d | valor marginal %s" % [
+		String(_latest_p3_diagnostic.get("action_label", "sin accion")),
+		score,
+		penalty,
+		mr_before,
+		mr_after,
+		marginal_text
+	]
+
+
+func _execute_human_candidate(action_type: int) -> bool:
+	var runtime := get_runtime()
+	if runtime == null or _human_action_busy:
+		return false
+	var manager := runtime.local_session.turn_manager
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return false
+	var candidates := KarmanyAiLegalActionGenerator.build_legal_actions(runtime.coordinator, player)
+	var selected: Vector2i = get_selected_coord()
+	var candidate: KarmanyAiActionCandidate = null
+	if action_type == KarmanyAiActionCandidate.ActionType.MOVE or action_type == KarmanyAiActionCandidate.ActionType.EXPLORE:
+		candidate = _find_target_candidate(candidates, action_type, selected)
+	else:
+		candidate = _find_first_candidate(candidates, action_type)
+	if candidate == null:
+		_last_action_reason = "La accion solicitada no es legal en el estado actual."
+		_refresh_actions()
+		return false
+
+	_human_action_busy = true
+	var success: bool = false
+	match action_type:
+		KarmanyAiActionCandidate.ActionType.MOVE:
+			success = runtime.coordinator.move_player(player, candidate.target_coord)
+		KarmanyAiActionCandidate.ActionType.EXPLORE:
+			success = runtime.coordinator.explore_player(player, candidate.target_coord)
+		KarmanyAiActionCandidate.ActionType.INTERACT:
+			var interaction := runtime.coordinator.interact_effect_option(player, candidate.option_index)
+			success = interaction != null and interaction.is_success()
+		KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK:
+			var improvement := runtime.coordinator.improve_book(player)
+			success = improvement != null and improvement.is_success()
+
+	if success:
+		activity_label.text = "P1: %s" % candidate.debug_label
+		await phase_35.wait_for_presentation_idle()
+		if manager.actions_remaining == 0 and manager.get_active_player() == player:
+			runtime.coordinator.end_turn()
+	_human_action_busy = false
+	_refresh_all()
+	return success
+
+
+func _find_target_candidate(
+	candidates: Array[KarmanyAiActionCandidate],
+	action_type: int,
+	target: Vector2i
+) -> KarmanyAiActionCandidate:
+	for candidate in candidates:
+		if candidate != null and candidate.action_type == action_type and candidate.target_coord == target:
+			return candidate
+	return null
+
+
+func _find_first_candidate(
+	candidates: Array[KarmanyAiActionCandidate],
+	action_type: int
+) -> KarmanyAiActionCandidate:
+	for candidate in candidates:
+		if candidate != null and candidate.action_type == action_type:
+			return candidate
+	return null
+
+
+func _has_action_type(candidates: Array[KarmanyAiActionCandidate], action_type: int) -> bool:
+	return _find_first_candidate(candidates, action_type) != null
+
+
+func _get_phase_31() -> KarmanyPhase31Map41Bridge:
+	if phase_35 == null or phase_35.phase_34 == null:
+		return null
+	return phase_35.phase_34.phase_32.phase_31
+
+
+func _player_role(player_id: StringName) -> String:
+	var runtime := get_runtime()
+	if runtime == null:
+		return String(player_id)
+	if runtime.ai_match_controller.is_human_player(player_id):
+		return "%s HUMANO" % _short_player_id(player_id)
+	return "%s %s" % [
+		_short_player_id(player_id),
+		runtime.ai_match_controller.get_ai_profile_name(player_id).to_upper()
+	]
+
+
+func _short_player_id(player_id: StringName) -> String:
+	var text: String = String(player_id)
+	if text.begins_with("player_"):
+		return "P%s" % text.trim_prefix("player_")
+	return text
+
+
+func _on_tile_clicked(_tile: KarmanyHexTile3D) -> void:
+	call_deferred("_refresh_all")
+
+
+func _on_turn_state_changed(
+	_player: KarmanyPlayerState,
+	_round_number: int,
+	_actions_available: int
+) -> void:
+	call_deferred("_refresh_all")
+
+
+func _on_action_spent(
+	_player: KarmanyPlayerState,
+	_cost: int,
+	_actions_remaining: int
+) -> void:
+	call_deferred("_refresh_all")
+
+
+func _on_visual_action_started(player_id: StringName, action_text: String) -> void:
+	activity_label.text = "%s · %s" % [_short_player_id(player_id), action_text]
+	_refresh_turn()
+
+
+func _on_visual_action_finished(_player_id: StringName, _action_text: String) -> void:
+	_refresh_all()
+
+
+func _on_ai_decision_diagnostic(player_id: StringName, diagnostic: Dictionary) -> void:
+	if player_id == &"player_3":
+		_latest_p3_diagnostic = diagnostic.duplicate(true)
+		_refresh_p3_debug()
+
+
+func _on_move_pressed() -> void:
+	await _execute_human_candidate(KarmanyAiActionCandidate.ActionType.MOVE)
+
+
+func _on_explore_pressed() -> void:
+	await _execute_human_candidate(KarmanyAiActionCandidate.ActionType.EXPLORE)
+
+
+func _on_interact_pressed() -> void:
+	await _execute_human_candidate(KarmanyAiActionCandidate.ActionType.INTERACT)
+
+
+func _on_improve_pressed() -> void:
+	await _execute_human_candidate(KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK)
+
+
+func _on_pass_pressed() -> void:
+	if _human_action_busy:
+		return
+	_human_action_busy = true
+	await phase_35.wait_for_presentation_idle()
+	phase_35.pass_human_turn_presented()
+	_human_action_busy = false
+	_refresh_all()
+
+
+func _on_ai_pressed() -> void:
+	await phase_35.run_current_ai_turn_presented()
+	_refresh_all()
+
+
+func _on_all_ai_pressed() -> void:
+	await phase_35.run_all_ai_until_human_presented()
+	_refresh_all()
+
+
+func _on_center_pressed() -> void:
+	phase_35.center_on_human()
