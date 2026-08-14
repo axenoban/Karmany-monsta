@@ -2,6 +2,9 @@ class_name KarmanyEffectDescriptionFormatter
 extends RefCounted
 
 
+const PENDING_AUTOMATION_PREFIX: String = "Regla publica · automatizacion pendiente: "
+
+
 static func describe_effect(effect: KarmanyEffectData) -> String:
 	if effect == null:
 		return "Efecto no disponible."
@@ -65,8 +68,9 @@ static func describe_entry(tile: KarmanyTileData) -> String:
 	var executable_text: String = describe_effects(tile.entry_effects)
 	if not executable_text.is_empty():
 		return executable_text
-	if not tile.entry_bonus_text.strip_edges().is_empty():
-		return tile.entry_bonus_text.strip_edges()
+	var public_text: String = tile.entry_bonus_text.strip_edges()
+	if not public_text.is_empty():
+		return PENDING_AUTOMATION_PREFIX + public_text
 	return "Sin efecto de Entrada."
 
 
@@ -76,8 +80,9 @@ static func describe_interaction(tile: KarmanyTileData) -> String:
 	var executable_text: String = describe_effects(tile.later_use_effects)
 	if not executable_text.is_empty():
 		return executable_text
-	if not tile.later_use_text.strip_edges().is_empty():
-		return tile.later_use_text.strip_edges()
+	var public_text: String = tile.later_use_text.strip_edges()
+	if not public_text.is_empty():
+		return PENDING_AUTOMATION_PREFIX + public_text
 	return "Sin Uso posterior."
 
 
