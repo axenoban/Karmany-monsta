@@ -58,7 +58,7 @@ static func get_level_counts() -> Dictionary:
 		counts[level] = int(counts.get(level, 0)) + 1
 	return counts
 
-static func is_connected() -> bool:
+static func _compute_full_connectivity() -> bool:
 	var levels := build_level_map()
 	var pending: Array[Vector2i] = [LEGENDARY_COORD]
 	var visited: Dictionary = {}
@@ -73,7 +73,7 @@ static func is_connected() -> bool:
 	return visited.size() == levels.size()
 
 static func is_fully_connected() -> bool:
-	return is_connected()
+	return _compute_full_connectivity()
 
 static func get_level_short_name(level: int) -> String:
 	match level:

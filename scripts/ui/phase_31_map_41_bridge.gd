@@ -51,7 +51,7 @@ func _setup_map_41() -> bool:
 	_level_map = KarmanyCanonicalMap41Layout.build_level_map()
 	if _level_map.size() != KarmanyCanonicalMap41Layout.TOTAL_CELL_COUNT:
 		return false
-	if not KarmanyCanonicalMap41Layout.is_connected():
+	if not KarmanyCanonicalMap41Layout.is_fully_connected():
 		return false
 
 	board_state.clear()

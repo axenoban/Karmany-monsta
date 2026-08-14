@@ -46,7 +46,7 @@ func _test_total_and_level_counts() -> bool:
 	return true
 
 func _test_connectivity() -> bool:
-	if not KarmanyCanonicalMap41Layout.is_connected():
+	if not KarmanyCanonicalMap41Layout.is_fully_connected():
 		return _fail("La geometria no forma un unico mapa conectado.")
 	print("Conectividad por lados completos desde centro hasta Iniciales: OK")
 	return true
