@@ -17,6 +17,10 @@ signal ai_action_executed(
 	success: bool,
 	actions_remaining: int
 )
+signal ai_decision_diagnostic(
+	player_id: StringName,
+	diagnostic: Dictionary
+)
 signal ai_turn_finished(
 	player_id: StringName,
 	profile_name: String,
@@ -41,6 +45,7 @@ var ai_profile_types: Dictionary = {}
 var configured: bool = false
 
 var last_turn_executions: Array[KarmanyAiExecutionResult] = []
+var last_turn_diagnostics: Array[Dictionary] = []
 var last_turn_player_id: StringName = &""
 var last_turn_had_budget_relinquish: bool = false
 var last_turn_decision_attempts: int = 0
@@ -51,7 +56,7 @@ func configure(
 	p_local_session: KarmanyLocalMultiplayerSession,
 	p_coordinator: KarmanyMatchCoordinator,
 	p_human_player_id: StringName,
-	match_seed: int
+	seed_value: int
 ) -> bool:
 	if p_local_session == null or not p_local_session.configured:
 		return false
@@ -84,7 +89,7 @@ func configure(
 		controller_types[player.player_id] = KarmanyPlayerControllerType.Kind.AI
 		var profile_type: int = _profile_for_ai_ordinal(ai_ordinal)
 		var controller := KarmanyAiTurnController.new()
-		var ai_seed: int = _derive_ai_seed(match_seed, ai_ordinal)
+		var ai_seed: int = _derive_ai_seed(seed_value, ai_ordinal)
 		if not controller.configure(profile_type, ai_seed):
 			return false
 		ai_controllers[player.player_id] = controller
@@ -97,47 +102,27 @@ func configure(
 
 
 func get_controller_kind(player_id: StringName) -> int:
-	return int(
-		controller_types.get(
-			player_id,
-			-1
-		)
-	)
+	return int(controller_types.get(player_id, -1))
 
 
 func is_human_player(player_id: StringName) -> bool:
-	return (
-		configured
-		and get_controller_kind(player_id)
-		== KarmanyPlayerControllerType.Kind.HUMAN
-	)
+	return configured and get_controller_kind(player_id) == KarmanyPlayerControllerType.Kind.HUMAN
 
 
 func is_ai_player(player_id: StringName) -> bool:
-	return (
-		configured
-		and get_controller_kind(player_id)
-		== KarmanyPlayerControllerType.Kind.AI
-	)
+	return configured and get_controller_kind(player_id) == KarmanyPlayerControllerType.Kind.AI
 
 
 func get_ai_controller_count() -> int:
 	return ai_controllers.size()
 
 
-func get_ai_controller(
-	player_id: StringName
-) -> KarmanyAiTurnController:
+func get_ai_controller(player_id: StringName) -> KarmanyAiTurnController:
 	return ai_controllers.get(player_id, null) as KarmanyAiTurnController
 
 
 func get_ai_profile_type(player_id: StringName) -> int:
-	return int(
-		ai_profile_types.get(
-			player_id,
-			-1
-		)
-	)
+	return int(ai_profile_types.get(player_id, -1))
 
 
 func get_ai_profile_name(player_id: StringName) -> String:
@@ -197,6 +182,8 @@ func run_current_ai_turn() -> bool:
 			attempt_count += 1
 			last_turn_decision_attempts += 1
 
+			# Se regeneran y reevalúan todas las acciones después de cada acción
+			# exitosa. Recursos, posición y utilidad marginal ya pueden cambiar.
 			var legal_actions := KarmanyAiLegalActionGenerator.build_legal_actions(
 				coordinator,
 				player
@@ -218,6 +205,9 @@ func run_current_ai_turn() -> bool:
 				last_block_reason = "La IA no pudo seleccionar una accion legal."
 				break
 
+			var score_breakdown: Dictionary = controller.brain.get_score_breakdown(choice)
+			var resources_before: Dictionary = player.get_resource_snapshot()
+			var coord_before: Vector2i = player.current_coord
 			controller.last_choice_label = choice.debug_label
 			ai_action_chosen.emit(
 				player.player_id,
@@ -231,19 +221,39 @@ func run_current_ai_turn() -> bool:
 				choice
 			)
 			last_turn_executions.append(execution)
+			var was_executed: bool = execution != null and execution.was_executed()
+			if was_executed:
+				controller.brain.record_executed_action(choice)
+
+			var diagnostic: Dictionary = {
+				"action_label": choice.debug_label,
+				"action_type": choice.action_type,
+				"score": float(score_breakdown.get("final_score", -INF)),
+				"base_profile_score": float(score_breakdown.get("base_profile_score", -INF)),
+				"repetition_penalty": float(score_breakdown.get("repetition_penalty", 0.0)),
+				"repeat_streak_before": int(score_breakdown.get("repeat_streak", 0)),
+				"resources_before": resources_before,
+				"resources_after": player.get_resource_snapshot(),
+				"coord_before": coord_before,
+				"coord_after": player.current_coord,
+				"resource_utility": choice.payload.get("resource_utility", {}),
+				"success": was_executed
+			}
+			last_turn_diagnostics.append(diagnostic)
+			ai_decision_diagnostic.emit(player.player_id, diagnostic.duplicate(true))
 			ai_action_executed.emit(
 				player.player_id,
 				choice.debug_label,
-				execution.was_executed(),
+				was_executed,
 				turn_manager.actions_remaining
 			)
 
-			if execution.was_executed():
+			if was_executed:
 				action_executed = true
 				break
 
 			excluded_labels[choice.debug_label] = true
-			last_block_reason = execution.message
+			last_block_reason = execution.message if execution != null else "Ejecucion IA nula."
 
 		if action_executed:
 			continue
@@ -260,15 +270,9 @@ func run_current_ai_turn() -> bool:
 		and turn_manager.get_active_player() == player
 		and turn_manager.actions_remaining == 0
 	):
-		# Reutiliza el cierre de turno del controlador IA existente. Con cero
-		# acciones, play_turn no decide nada: solo resuelve descartes pendientes
-		# y delega el fin de turno al coordinador/TurnManager.
-		controller.play_turn(
-			coordinator,
-			player,
-			Callable(),
-			true
-		)
+		# Con cero acciones play_turn no decide nada: solo resuelve descartes
+		# pendientes y delega el fin de turno al coordinador/TurnManager.
+		controller.play_turn(coordinator, player, Callable(), true)
 
 	var turn_finished: bool = (
 		not turn_manager.is_running
@@ -277,11 +281,7 @@ func run_current_ai_turn() -> bool:
 	if not turn_finished:
 		return false
 
-	ai_turn_finished.emit(
-		player.player_id,
-		profile_name,
-		turn_round
-	)
+	ai_turn_finished.emit(player.player_id, profile_name, turn_round)
 	return true
 
 
@@ -312,9 +312,7 @@ func run_ai_until_human(
 	return coordinator.is_finished
 
 
-func _relinquish_unusable_action_budget(
-	player: KarmanyPlayerState
-) -> bool:
+func _relinquish_unusable_action_budget(player: KarmanyPlayerState) -> bool:
 	if player == null or coordinator == null or coordinator.turn_manager == null:
 		return false
 	var turn_manager := coordinator.turn_manager
@@ -325,10 +323,7 @@ func _relinquish_unusable_action_budget(
 		and turn_manager.get_active_player() == player
 		and turn_manager.actions_remaining > 0
 	):
-		if not turn_manager.spend_action_for(
-			AI_NO_LEGAL_ACTION_BUDGET_ID,
-			1
-		):
+		if not turn_manager.spend_action_for(AI_NO_LEGAL_ACTION_BUDGET_ID, 1):
 			return false
 	return true
 
@@ -344,11 +339,8 @@ func _profile_for_ai_ordinal(ai_ordinal: int) -> int:
 	return KarmanyAiProfile.ProfileType.OPPORTUNIST
 
 
-func _derive_ai_seed(
-	match_seed: int,
-	ai_ordinal: int
-) -> int:
-	var base_seed: int = absi(match_seed)
+func _derive_ai_seed(seed_value: int, ai_ordinal: int) -> int:
+	var base_seed: int = absi(seed_value)
 	if base_seed == 0:
 		base_seed = 1
 	return base_seed + (ai_ordinal + 1) * 1009
@@ -356,6 +348,7 @@ func _derive_ai_seed(
 
 func _clear_last_turn_state() -> void:
 	last_turn_executions.clear()
+	last_turn_diagnostics.clear()
 	last_turn_player_id = &""
 	last_turn_had_budget_relinquish = false
 	last_turn_decision_attempts = 0
