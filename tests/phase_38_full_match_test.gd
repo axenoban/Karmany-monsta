@@ -46,6 +46,8 @@ func _run_seed(
 		return _fail("Seed %d: runtime F37 no pudo configurarse." % seed_value)
 
 	var session := KarmanyFullMatchSession.new()
+	session.verbose_console_output = false
+
 	if not session.configure(runtime):
 		return _fail("Seed %d: setup F38 fallo: %s" % [seed_value, session.last_error])
 

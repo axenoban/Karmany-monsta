@@ -12,7 +12,7 @@ const CANONICAL_COUNTS: Dictionary = {
 	"missions": 16,
 }
 
-const TRAINER_IDS: PackedStringArray = PackedStringArray([
+static var TRAINER_IDS: PackedStringArray = PackedStringArray([
 	"E-01",
 	"E-02",
 	"E-03",
@@ -23,7 +23,7 @@ const TRAINER_IDS: PackedStringArray = PackedStringArray([
 	"E-08",
 ])
 
-const TILE_IDS: PackedStringArray = PackedStringArray([
+static var TILE_IDS: PackedStringArray = PackedStringArray([
 	"I-01",
 	"I-02",
 	"I-03",
@@ -67,7 +67,7 @@ const TILE_IDS: PackedStringArray = PackedStringArray([
 	"N3-06",
 ])
 
-const KARMANY_IDS: PackedStringArray = PackedStringArray([
+static var KARMANY_IDS: PackedStringArray = PackedStringArray([
 	"K-01",
 	"K-02",
 	"K-03",
@@ -98,7 +98,7 @@ const KARMANY_IDS: PackedStringArray = PackedStringArray([
 	"K-28",
 ])
 
-const BEAST_IDS: PackedStringArray = PackedStringArray([
+static var BEAST_IDS: PackedStringArray = PackedStringArray([
 	"B-01",
 	"B-02",
 	"B-03",
@@ -125,7 +125,7 @@ const BEAST_IDS: PackedStringArray = PackedStringArray([
 	"B-24",
 ])
 
-const EQUIPMENT_IDS: PackedStringArray = PackedStringArray([
+static var EQUIPMENT_IDS: PackedStringArray = PackedStringArray([
 	"EQ-01",
 	"EQ-02",
 	"EQ-03",
@@ -164,7 +164,7 @@ const EQUIPMENT_IDS: PackedStringArray = PackedStringArray([
 	"EQ-36",
 ])
 
-const RESONANCE_IDS: PackedStringArray = PackedStringArray([
+static var RESONANCE_IDS: PackedStringArray = PackedStringArray([
 	"R-01",
 	"R-02",
 	"R-03",
@@ -207,7 +207,7 @@ const RESONANCE_IDS: PackedStringArray = PackedStringArray([
 	"R-40",
 ])
 
-const OBJECTIVE_IDS: PackedStringArray = PackedStringArray([
+static var OBJECTIVE_IDS: PackedStringArray = PackedStringArray([
 	"OP-E01",
 	"OP-E02",
 	"OP-E03",
@@ -222,7 +222,7 @@ const OBJECTIVE_IDS: PackedStringArray = PackedStringArray([
 	"OP-A03",
 ])
 
-const MISSION_IDS: PackedStringArray = PackedStringArray([
+static var MISSION_IDS: PackedStringArray = PackedStringArray([
 	"ME-A1",
 	"ME-A2",
 	"ME-L1",
@@ -241,7 +241,7 @@ const MISSION_IDS: PackedStringArray = PackedStringArray([
 	"ME-O2",
 ])
 
-const AUTOMATED_RESONANCE_IDS: PackedStringArray = PackedStringArray([
+static var AUTOMATED_RESONANCE_IDS: PackedStringArray = PackedStringArray([
 	"R-01",
 	"R-02",
 	"R-03",
@@ -257,7 +257,7 @@ const AUTOMATED_RESONANCE_IDS: PackedStringArray = PackedStringArray([
 	"R-37",
 ])
 
-const RESONANCE_DEFINITIONS: Array[Dictionary] = [
+static var RESONANCE_DEFINITIONS: Array[Dictionary] = [
 	{
 		"id": &"R-01", "name": "Impulso Luminico", "type": 0, "power": 4,
 		"use_text": "Combate", "effect_text": "Si ganas, recupera 2 EK.",

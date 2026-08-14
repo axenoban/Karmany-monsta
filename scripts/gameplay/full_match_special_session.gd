@@ -305,3 +305,61 @@ func _append_aeterna_candidate(result: Array[KarmanyAiActionCandidate], player: 
 	if resonance_id != &"":
 		candidate.payload["resonance_id"] = resonance_id
 	result.append(candidate)
+
+
+func _choose_automated_combat_resonance(player: KarmanyPlayerState) -> StringName:
+	if player == null:
+		return &""
+	var best_id: StringName = &""
+	var best_power: int = -1
+	for card in player.get_resonance_hand():
+		if card == null:
+			continue
+		if not KarmanyV074CanonicalRuntimeCatalog.is_resonance_automated(card.resonance_id):
+			continue
+		if not card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
+			continue
+		if card.printed_power > best_power:
+			best_power = card.printed_power
+			best_id = card.resonance_id
+	return best_id
+
+
+
+
+func _rank_from_tile_level(level: int) -> int:
+	match level:
+		KarmanyTileData.TileLevel.N1:
+			return KarmanyData.Rank.N1
+		KarmanyTileData.TileLevel.N2:
+			return KarmanyData.Rank.N2
+		KarmanyTileData.TileLevel.N3:
+			return KarmanyData.Rank.N3
+	return -1
+
+
+func _beast_tier_from_tile(tile: KarmanyTileData) -> int:
+	if tile == null:
+		return -1
+	for tag in tile.function_tags:
+		var normalized: String = tag.to_lower()
+		if normalized.contains("bestia basica") or normalized.contains("bestia básica"):
+			return KarmanyBeastData.Tier.BASIC
+		if normalized.contains("bestia media"):
+			return KarmanyBeastData.Tier.MEDIUM
+		if normalized.contains("bestia compleja"):
+			return KarmanyBeastData.Tier.COMPLEX
+		if normalized.contains("jefe"):
+			return KarmanyBeastData.Tier.BOSS
+	return -1
+
+
+func _find_two_common_resources(player: KarmanyPlayerState) -> Array[int]:
+	var result: Array[int] = []
+	for resource_type in [KarmanyEffectData.ResourceType.MN, KarmanyEffectData.ResourceType.MR, KarmanyEffectData.ResourceType.EK]:
+		var count: int = player.get_resource(resource_type)
+		for _index in range(count):
+			result.append(resource_type)
+			if result.size() == 2:
+				return result
+	return []

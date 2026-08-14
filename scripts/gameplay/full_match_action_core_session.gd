@@ -142,41 +142,7 @@ func execute_human_special(preferred_types: Array[int]) -> bool:
 	return false
 
 
-func auto_complete_match(max_turns: int = DEFAULT_WATCHDOG_TURNS) -> bool:
-	if not configured:
-		return false
-	if match_state == MatchState.SETUP and not start_playing():
-		return false
-	if match_state == MatchState.FINISHED:
-		return true
-	if max_turns <= 0:
-		return false
 
-	var resolved_turns: int = 0
-	var previous_round: int = runtime.local_session.turn_manager.current_round
-	while match_state == MatchState.PLAYING:
-		var manager := runtime.local_session.turn_manager
-		if manager == null or not manager.is_running:
-			if runtime.coordinator.is_finished:
-				_finalize_from_coordinator()
-				break
-			return _fail("TurnManager se detuvo antes de FINISHED.")
-		if resolved_turns >= max_turns:
-			_log("FULL MATCH DEADLOCK | watchdog=%d" % max_turns)
-			return _fail("FULL MATCH DEADLOCK")
-		var active := manager.get_active_player()
-		if active == null:
-			return _fail("Jugador activo inexistente.")
-		if not run_automated_current_turn():
-			return false
-		resolved_turns += 1
-		statistics["turns"] = resolved_turns
-		if match_state == MatchState.PLAYING and manager.current_round != previous_round:
-			if manager.current_round <= previous_round:
-				return _fail("La ronda no avanzo de forma monotona.")
-			previous_round = manager.current_round
-
-	return match_state == MatchState.FINISHED
 
 
 func _full_explore_executor(

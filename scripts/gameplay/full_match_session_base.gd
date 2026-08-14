@@ -46,6 +46,7 @@ var alpha_log: PackedStringArray = PackedStringArray()
 var statistics: Dictionary = {}
 
 var last_error: String = ""
+var verbose_console_output: bool = true
 
 var _setup_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _action_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -140,7 +141,10 @@ func _coord_key(coord: Vector2i) -> String:
 
 func _log(message: String) -> void:
 	alpha_log.append(message)
-	print("FASE 38: ", message)
+
+	if verbose_console_output:
+		print("FASE 38: ", message)
+
 	alpha_log_event.emit(message)
 
 
