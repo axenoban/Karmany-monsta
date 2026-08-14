@@ -73,9 +73,6 @@ static func _append_move_and_explore(
 			explore.base_utility = 1.0
 			explore.exploration_value = 3.0
 			explore.opportunity_value = 0.75
-
-			# La IA recibe solo el nivel estructural publico. No se consulta
-			# KarmanyTileData mientras la posicion permanezca oculta.
 			var public_level: int = coordinator.board_state.get_structural_level(coord)
 			if public_level >= 0:
 				explore.payload["public_level"] = public_level
@@ -90,6 +87,14 @@ static func _append_interactions(
 	coordinator: KarmanyMatchCoordinator,
 	player: KarmanyPlayerState
 ) -> void:
+	var service := get_universal_interaction_service(coordinator)
+	if service != null:
+		for candidate in service.build_legal_candidates(player):
+			if candidate != null and candidate.is_valid():
+				result.append(candidate)
+		return
+
+	# Compatibility fallback for phases that do not configure F39.
 	var validation := KarmanyTileInteractionResolver.validate_interaction(
 		player,
 		coordinator.board_state,
@@ -97,12 +102,19 @@ static func _append_interactions(
 	)
 	if validation == null or not validation.is_success():
 		return
-
 	var tile: KarmanyTileData = coordinator.board_state.get_tile_data(player.current_coord)
 	if tile == null or tile.later_use_effects.is_empty():
 		return
-
 	for option_index in range(tile.later_use_effects.size()):
+		var option_validation := KarmanyTileInteractionResolver.validate_effect_option(
+			player,
+			coordinator.board_state,
+			coordinator.turn_manager,
+			option_index,
+			coordinator.effect_context
+		)
+		if not option_validation.is_success():
+			continue
 		var effect: KarmanyEffectData = tile.later_use_effects[option_index]
 		if effect == null:
 			continue
@@ -112,17 +124,13 @@ static func _append_interactions(
 		candidate.target_coord = player.current_coord
 		candidate.debug_label = "Interactuar %s opcion %d" % [tile.tile_id, option_index]
 		candidate.base_utility = 1.0
-
 		var estimate := KarmanyAiResourceUtility.estimate_effects(
-			[effect],
-			player,
-			coordinator
+			[effect], player, coordinator
 		)
 		candidate.economy_value = float(estimate.get("value", 0.0))
 		candidate.opportunity_value = candidate.economy_value + 0.5
 		candidate.payload["resource_utility"] = estimate
 		candidate.payload["public_tile_id"] = String(tile.tile_id)
-
 		if effect.effect_type == KarmanyEffectData.EffectType.MODIFY_STATE:
 			candidate.progress_value = maxf(float(effect.amount), 1.0)
 		result.append(candidate)
@@ -133,16 +141,26 @@ static func _append_book_upgrade(
 	coordinator: KarmanyMatchCoordinator,
 	player: KarmanyPlayerState
 ) -> void:
+	var candidate := build_book_upgrade_candidate(coordinator, player)
+	if candidate != null:
+		result.append(candidate)
+
+
+static func build_book_upgrade_candidate(
+	coordinator: KarmanyMatchCoordinator,
+	player: KarmanyPlayerState
+) -> KarmanyAiActionCandidate:
+	if coordinator == null or player == null or coordinator.turn_manager == null:
+		return null
 	var state: KarmanyBookProgressState = coordinator.get_book_state(player.player_id)
 	if state == null or not state.can_improve():
-		return
+		return null
 	if not coordinator.turn_manager.can_spend_action(1):
-		return
+		return null
 	var next_level: int = state.get_next_level()
 	var cost: Dictionary = KarmanyBookProgressController.get_upgrade_cost(next_level)
 	if cost.is_empty() or not player.can_afford_resources(cost):
-		return
-
+		return null
 	var candidate := KarmanyAiActionCandidate.new()
 	candidate.action_type = KarmanyAiActionCandidate.ActionType.IMPROVE_BOOK
 	candidate.debug_label = "Mejorar Libro a nivel %d" % next_level
@@ -151,7 +169,24 @@ static func _append_book_upgrade(
 	candidate.opportunity_value = 2.0 if next_level == 3 else 1.0
 	candidate.economy_value = 0.5
 	candidate.payload["resource_cost"] = cost.duplicate()
-	result.append(candidate)
+	return candidate
+
+
+static func get_universal_interaction_service(
+	coordinator: KarmanyMatchCoordinator
+) -> KarmanyUniversalTileInteractionService:
+	if coordinator == null or not coordinator.has_meta(
+		KarmanyUniversalTileInteractionService.META_KEY
+	):
+		return null
+	var value: Variant = coordinator.get_meta(
+		KarmanyUniversalTileInteractionService.META_KEY
+	)
+	if value is KarmanyUniversalTileInteractionService:
+		var service := value as KarmanyUniversalTileInteractionService
+		if service.is_configured():
+			return service
+	return null
 
 
 static func _append_valid_special_candidates(
