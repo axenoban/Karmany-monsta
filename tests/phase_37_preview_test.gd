@@ -45,6 +45,20 @@ func _test_preview_and_execution_share_data() -> bool:
 		prototype.queue_free()
 		return _fail("Inicial de P1 no esta publica.")
 
+	# La vista de setup prueba privacidad mientras todas las Misiones siguen
+	# secretas. La UI F37 solo renderiza la del humano propietario.
+	var own_mission := runtime.get_secret_mission_for_viewer(&"player_1", &"player_1")
+	var rival_mission := runtime.get_secret_mission_for_viewer(&"player_1", &"player_2")
+	if own_mission == null or rival_mission != null:
+		prototype.queue_free()
+		return _fail("Privacidad inicial de Misiones Secretas no se preservo.")
+	if not prototype.get_content_status_text().contains(own_mission.display_name):
+		prototype.queue_free()
+		return _fail("La UI no muestra la Mision propia del humano.")
+	if prototype.get_content_status_text().contains("player_2"):
+		prototype.queue_free()
+		return _fail("La UI de contenido contiene una referencia a Mision rival.")
+
 	var hidden_target: Vector2i = _find_legal_target(
 		runtime,
 		p1,
@@ -165,13 +179,6 @@ func _test_preview_and_execution_share_data() -> bool:
 	if resource_after_move - resource_before_move != entry_effect.amount:
 		prototype.queue_free()
 		return _fail("Mover aplico una Entrada distinta a la previsualizada.")
-
-	# Mision propia visible; las de rivales permanecen privadas.
-	var own_mission := runtime.get_secret_mission_for_viewer(&"player_1", &"player_1")
-	var rival_mission := runtime.get_secret_mission_for_viewer(&"player_1", &"player_2")
-	if own_mission == null or rival_mission != null:
-		prototype.queue_free()
-		return _fail("Privacidad de Misiones Secretas no se preservo.")
 
 	print("Oculta -> revelar -> preview de datos -> Interactuar/Mover coinciden con resolver: OK")
 	prototype.queue_free()
