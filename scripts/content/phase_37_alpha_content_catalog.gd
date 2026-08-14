@@ -68,6 +68,15 @@ static func get_tiles() -> Array[KarmanyTileData]:
 	return result
 
 
+static func get_starting_karmanys() -> Array[KarmanyData]:
+	var result: Array[KarmanyData] = []
+	for resource_value in load_category(&"karmanys"):
+		var data := resource_value as KarmanyData
+		if data != null and data.is_starting_karmany and data.is_valid_definition():
+			result.append(data)
+	return result
+
+
 static func get_runtime_karmanys() -> Array[KarmanyData]:
 	var result: Array[KarmanyData] = []
 	for resource_value in load_category(&"karmanys"):
