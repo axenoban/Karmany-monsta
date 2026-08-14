@@ -491,12 +491,7 @@ func _refresh_ui() -> void:
 	if phase_36 != null:
 		phase_36.pass_button.disabled = true
 		if human_turn and not _auto_match_busy:
-			var active := manager.get_active_player()
-			if active != null and full_session.has_explored_this_turn(active.player_id):
-				phase_36.explore_button.disabled = true
-				phase_36.explore_button.tooltip_text = "Explorar solo puede usarse una vez por turno."
-			else:
-				phase_36.explore_button.tooltip_text = ""
+			phase_36.explore_button.tooltip_text = ""
 	_refresh_entry_preview_guard(human_turn)
 
 

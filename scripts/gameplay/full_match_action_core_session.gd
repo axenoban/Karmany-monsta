@@ -20,11 +20,7 @@ func build_full_legal_actions(
 	for candidate in candidates:
 		if candidate == null:
 			continue
-		if (
-			has_explored_this_turn(player.player_id)
-			and candidate.action_type == KarmanyAiActionCandidate.ActionType.EXPLORE
-		):
-			continue
+		
 		if candidate.action_type == KarmanyAiActionCandidate.ActionType.MOVE:
 			var own_unit_id: StringName = runtime.local_session.get_unit_id_for_player(
 				player.player_id
@@ -170,12 +166,13 @@ func _full_explore_executor(
 	player: KarmanyPlayerState,
 	target_coord: Vector2i
 ) -> bool:
-	if player == null or has_explored_this_turn(player.player_id):
+	if player == null:
 		return false
-	if not runtime._explore_executor(player, target_coord):
-		return false
-	_explored_this_turn_by_player[player.player_id] = true
-	return true
+
+	return runtime._explore_executor(
+		player,
+		target_coord
+	)
 
 
 func _full_move_executor(
