@@ -7,6 +7,8 @@ const GENERIC_COMBAT_RESONANCE_EXCLUSIONS = [
 	"R-37"  # Instinto de Caza: solo combate contra Bestia.
 ]
 
+var universal_tile_interactions: KarmanyUniversalTileInteractionService = null
+
 
 func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	last_error = ""
@@ -38,6 +40,18 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	if not _apply_complete_setup():
 		return false
 
+	universal_tile_interactions = KarmanyUniversalTileInteractionService.new()
+	if not universal_tile_interactions.configure(
+		runtime,
+		Callable(self, "_phase39_build_tile_special_candidates"),
+		Callable(self, "_execute_candidate")
+	):
+		return _fail("F39 no pudo configurar la fuente universal de Interactuar.")
+	runtime.coordinator.set_meta(
+		KarmanyUniversalTileInteractionService.META_KEY,
+		universal_tile_interactions
+	)
+
 	runtime.coordinator._move_executor = Callable(self, "_full_move_executor")
 	runtime.coordinator._explore_executor = Callable(self, "_full_explore_executor")
 	_initialize_turn_rule_trackers()
@@ -45,9 +59,99 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 	match_state = MatchState.SETUP
 	configured = true
 	_log("SETUP COMPLETE | seed=%d | mapa=41 | jugadores=4" % match_seed)
+	_log("FASE 39 | Uso posterior e Interactuar comparten una fuente de verdad.")
 	setup_completed.emit(get_setup_summary())
 	state_changed.emit(match_state)
 	return true
+
+
+func build_full_legal_actions(
+	player: KarmanyPlayerState
+) -> Array[KarmanyAiActionCandidate]:
+	var inherited := super.build_full_legal_actions(player)
+	if universal_tile_interactions == null or not universal_tile_interactions.is_configured():
+		return inherited
+	var result: Array[KarmanyAiActionCandidate] = []
+	var tile := runtime.get_public_tile_data(player.current_coord) if player != null else null
+	for candidate in inherited:
+		if candidate == null:
+			continue
+		if _is_legacy_tile_use_duplicate(candidate, player, tile):
+			continue
+		result.append(candidate)
+	return result
+
+
+func _phase39_build_tile_special_candidates(
+	player: KarmanyPlayerState
+) -> Array[KarmanyAiActionCandidate]:
+	var result: Array[KarmanyAiActionCandidate] = []
+	if player == null or runtime == null:
+		return result
+	var tile := runtime.get_public_tile_data(player.current_coord)
+	if tile == null or not tile.has_universal_interaction_definition():
+		return result
+
+	if tile.interaction_profile_id in [
+		KarmanyUniversalTileInteractionService.PROFILE_CAMP_BASIC,
+		KarmanyUniversalTileInteractionService.PROFILE_CRYSTAL_PASS,
+		KarmanyUniversalTileInteractionService.PROFILE_FORGE
+	]:
+		_append_craft_candidate(result, player)
+	if tile.interaction_profile_id == KarmanyUniversalTileInteractionService.PROFILE_FORGE:
+		_append_forge_candidate(result, player)
+		var book_candidate := KarmanyAiLegalActionGenerator.build_book_upgrade_candidate(
+			runtime.coordinator,
+			player
+		)
+		if book_candidate != null:
+			result.append(book_candidate)
+	if tile.interaction_profile_id in [
+		KarmanyUniversalTileInteractionService.PROFILE_BEAST_MEDIUM,
+		KarmanyUniversalTileInteractionService.PROFILE_CRYSTAL_CAVE
+	]:
+		var beast_candidates: Array[KarmanyAiActionCandidate] = []
+		_append_beast_candidate(beast_candidates, player)
+		for candidate in beast_candidates:
+			if (
+				candidate != null
+				and candidate.target_coord == player.current_coord
+				and bool(candidate.payload.get("spawn_if_missing", false))
+			):
+				result.append(candidate)
+	if tile.interaction_profile_id == KarmanyUniversalTileInteractionService.PROFILE_AETERNA:
+		_append_aeterna_candidate(result, player)
+	return result
+
+
+func _is_legacy_tile_use_duplicate(
+	candidate: KarmanyAiActionCandidate,
+	player: KarmanyPlayerState,
+	tile: KarmanyTileData
+) -> bool:
+	if candidate == null or player == null or tile == null:
+		return false
+	var profile_id: StringName = tile.interaction_profile_id
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.CRAFT_EQUIPMENT:
+		return profile_id in [
+			KarmanyUniversalTileInteractionService.PROFILE_CAMP_BASIC,
+			KarmanyUniversalTileInteractionService.PROFILE_CRYSTAL_PASS,
+			KarmanyUniversalTileInteractionService.PROFILE_FORGE
+		]
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.FORGE:
+		return profile_id == KarmanyUniversalTileInteractionService.PROFILE_FORGE
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.AETERNA:
+		return profile_id == KarmanyUniversalTileInteractionService.PROFILE_AETERNA
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.FIGHT_BEAST:
+		return (
+			profile_id in [
+				KarmanyUniversalTileInteractionService.PROFILE_BEAST_MEDIUM,
+				KarmanyUniversalTileInteractionService.PROFILE_CRYSTAL_CAVE
+			]
+			and candidate.target_coord == player.current_coord
+			and bool(candidate.payload.get("spawn_if_missing", false))
+		)
+	return false
 
 
 func start_playing() -> bool:
@@ -64,6 +168,7 @@ func start_playing() -> bool:
 	_log("ROUND START | %d" % manager.current_round)
 	state_changed.emit(match_state)
 	return true
+
 
 func auto_complete_match(max_turns: int = DEFAULT_WATCHDOG_TURNS) -> bool:
 	if not configured:
@@ -100,7 +205,8 @@ func auto_complete_match(max_turns: int = DEFAULT_WATCHDOG_TURNS) -> bool:
 			previous_round = manager.current_round
 
 	return match_state == MatchState.FINISHED
-	
+
+
 func get_setup_summary() -> Dictionary:
 	var player_rows: Array[Dictionary] = []
 	if runtime != null and runtime.local_session != null:
