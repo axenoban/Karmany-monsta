@@ -68,7 +68,7 @@ func configure(p_runtime: KarmanyMultiAiAlphaRuntime) -> bool:
 func build_full_legal_actions(
 	player: KarmanyPlayerState
 ) -> Array[KarmanyAiActionCandidate]:
-	var inherited := super.build_full_legal_actions(player)
+	var inherited := super(player)
 	if universal_tile_interactions == null or not universal_tile_interactions.is_configured():
 		return inherited
 	var result: Array[KarmanyAiActionCandidate] = []
