@@ -48,6 +48,9 @@ func _execute_candidate(
 		statistics["pvp_resolved"] = int(statistics.get("pvp_resolved", 0)) + 1
 	elif candidate.action_type == KarmanyAiActionCandidate.ActionType.AETERNA:
 		statistics["aeterna_attempts"] = int(statistics.get("aeterna_attempts", 0)) + 1
+		var aeterna_result: KarmanyAeternaResult = execution.raw_result as KarmanyAeternaResult
+		if aeterna_result != null:
+			_resolve_aeterna_post_result(player, aeterna_result)
 	var resonance_id: StringName = _candidate_resonance_id(candidate)
 	if resonance_id != &"" and _execution_is_victory(execution, player.player_id):
 		runtime.objectives_missions.record_event(player, EVENT_COMBAT_WON_WITH_RESONANCE, {"resonance_id": String(resonance_id)}, manager.current_round)
@@ -106,6 +109,58 @@ func _execute_bond_combat(player: KarmanyPlayerState, candidate: KarmanyAiAction
 			runtime.objectives_missions.record_event(player, EVENT_COMBAT_WON_WITH_RESONANCE, {"resonance_id": String(resonance_id)}, runtime.local_session.turn_manager.current_round)
 		return true
 	return complete.status == KarmanyEncounterResult.Status.COMBAT_FAILED
+
+
+func _resolve_aeterna_post_result(
+	player: KarmanyPlayerState,
+	aeterna_result: KarmanyAeternaResult
+) -> void:
+	if player == null or aeterna_result == null or not aeterna_result.is_resolved():
+		return
+	if aeterna_result.is_victory() and aeterna_result.reward_choice_required:
+		# Para controladores IA/Auto-P1 la opcion Alpha determinista es la
+		# recompensa reglamentaria de Resonancias. No se inventa una tercera
+		# recompensa ni se altera el premio de 8 PL ya otorgado por Aeterna.
+		if runtime.coordinator.resolve_aeterna_resonance_reward(player, aeterna_result):
+			_log("AETERNA REWARD | %s | roba 3 Resonancias y conserva 2" % String(player.player_id))
+		else:
+			_log("AETERNA REWARD PENDING | %s | no se pudo resolver la opcion de Resonancias" % String(player.player_id))
+		return
+	if aeterna_result.is_defeat() and aeterna_result.basic_resources_discard_pending > 0:
+		var requested: int = aeterna_result.basic_resources_discard_pending
+		var discarded: int = _discard_basic_resources_by_choice(player, requested)
+		_log("AETERNA DEFEAT | %s | descarta %d/%d recursos basicos" % [
+			String(player.player_id),
+			discarded,
+			requested
+		])
+
+
+func _discard_basic_resources_by_choice(
+	player: KarmanyPlayerState,
+	amount: int
+) -> int:
+	if player == null or amount <= 0:
+		return 0
+	var discarded: int = 0
+	while discarded < amount:
+		var selected_type: int = -1
+		var selected_amount: int = 0
+		for resource_type in [
+			KarmanyEffectData.ResourceType.MN,
+			KarmanyEffectData.ResourceType.MR,
+			KarmanyEffectData.ResourceType.EK
+		]:
+			var available: int = player.get_resource(resource_type)
+			if available > selected_amount:
+				selected_amount = available
+				selected_type = resource_type
+		if selected_type < 0 or selected_amount <= 0:
+			break
+		if not player.spend_resource(selected_type, 1):
+			break
+		discarded += 1
+	return discarded
 
 
 func _resolve_entry_bonus_after_beast(player: KarmanyPlayerState, target_coord: Vector2i) -> void:
