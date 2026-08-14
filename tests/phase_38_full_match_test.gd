@@ -17,8 +17,22 @@ func _ready() -> void:
 	var finished_count: int = 0
 
 	for seed_value in TEST_SEEDS:
-		var seed_ok: bool = _run_seed(seed_value, map_fingerprints, result_signatures)
+		print("")
+		print(">>> F38 START SEED %d" % seed_value)
+
+		var seed_ok: bool = _run_seed(
+			seed_value,
+			map_fingerprints,
+			result_signatures
+		)
+
+		print(
+			"<<< F38 END SEED %d | ok=%s"
+			% [seed_value, str(seed_ok)]
+		)
+
 		ok = seed_ok and ok
+
 		if seed_ok:
 			finished_count += 1
 
@@ -134,14 +148,63 @@ func _run_seed(
 
 	map_fingerprints[runtime.content_session.get_assignment_fingerprint()] = true
 
+
+
 	if not session.start_playing():
-		return _fail("Seed %d: no pudo pasar SETUP -> PLAYING." % seed_value)
+		return _fail(
+			"Seed %d: no pudo pasar SETUP -> PLAYING."
+			% seed_value
+		)
+
 	if session.get_state_label() != "PLAYING":
-		return _fail("Seed %d: estado no es PLAYING." % seed_value)
-	if not session.auto_complete_match(WATCHDOG_TURNS):
-		return _fail("Seed %d: %s" % [seed_value, session.last_error])
+		return _fail(
+			"Seed %d: estado no es PLAYING."
+			% seed_value
+		)
+
+	print(
+		"F38 %d | CHECKPOINT B | entrando auto_complete_match"
+		% seed_value
+	)
+
+	var auto_ok: bool = session.auto_complete_match(WATCHDOG_TURNS)
+
+	print(
+		"F38 %d | CHECKPOINT C | auto_complete retorno=%s | estado=%s | ronda=%d | turn_manager=%s | coordinator_finished=%s"
+		% [
+			seed_value,
+			str(auto_ok),
+			session.get_state_label(),
+			runtime.local_session.turn_manager.current_round,
+			str(runtime.local_session.turn_manager.is_running),
+			str(runtime.coordinator.is_finished)
+		]
+	)
+
+	if not auto_ok:
+		var debug_log: PackedStringArray = session.get_alpha_log()
+
+		print("")
+		print("===== F38 FAILURE LOG TAIL | SEED %d =====" % seed_value)
+
+		var start_index: int = maxi(0, debug_log.size() - 20)
+
+		for index in range(start_index, debug_log.size()):
+			print(debug_log[index])
+
+		print("===== END F38 FAILURE LOG =====")
+		print("")
+
+		return _fail(
+			"Seed %d: %s"
+			% [seed_value, session.last_error]
+		)
+
 	if session.get_state_label() != "FINISHED":
-		return _fail("Seed %d: partida no termino en FINISHED." % seed_value)
+		return _fail(
+			"Seed %d: partida no termino en FINISHED."
+			% seed_value
+		)
 	if not runtime.coordinator.is_finished:
 		return _fail("Seed %d: MatchCoordinator no marco final." % seed_value)
 	if runtime.local_session.turn_manager.is_running:

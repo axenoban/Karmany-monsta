@@ -26,10 +26,31 @@ func build_full_legal_actions(
 		):
 			continue
 		if candidate.action_type == KarmanyAiActionCandidate.ActionType.MOVE:
+			var own_unit_id: StringName = runtime.local_session.get_unit_id_for_player(
+				player.player_id
+			)
+
+			var target_occupant: StringName = runtime.board_state.get_occupying_unit_id(
+				candidate.target_coord
+			)
+
+			# F38: una posicion ocupada por otro entrenador no es un destino
+			# ejecutable para Mover. Evitamos ofrecer a la IA una accion que
+			# _relocate_player() rechazaria posteriormente.
+			if target_occupant != &"" and target_occupant != own_unit_id:
+				continue
+
 			var entry_status: StringName = get_entry_bonus_status(
 				player,
 				candidate.target_coord
 			)
+
+			if entry_status != &"eligible":
+				candidate.economy_value = 0.0
+				candidate.opportunity_value = minf(
+					candidate.opportunity_value,
+					0.5
+				)
 			if entry_status != &"eligible":
 				# El generador F34 valora entry_effects publicos. Si F38 ya
 				# consumio esa bonificacion segun v0.74, no permitimos que la IA

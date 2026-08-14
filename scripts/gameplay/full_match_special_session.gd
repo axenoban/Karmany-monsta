@@ -215,25 +215,51 @@ func _append_craft_candidate(result: Array[KarmanyAiActionCandidate], player: Ka
 		result.append(candidate)
 
 
-func _append_forge_candidate(result: Array[KarmanyAiActionCandidate], player: KarmanyPlayerState) -> void:
+func _append_forge_candidate(
+	result: Array[KarmanyAiActionCandidate],
+	player: KarmanyPlayerState
+) -> void:
+	if player == null:
+		return
+
+	if runtime.board_state.is_blocked_by_beast(player.current_coord):
+		return
+
 	var tile := runtime.get_public_tile_data(player.current_coord)
+
 	if tile == null:
 		return
-	var text: String = ("%s %s" % [" ".join(tile.function_tags), tile.later_use_text]).to_lower()
-	if not text.contains("forja"):
+
+	# La conversion reglamentaria solo pertenece a N3-02 Forja Antigua.
+	if StringName(tile.tile_id) != KarmanyForgeInteractionController.FORGE_TILE_ID:
 		return
+
+	# La conversion de Forja solo puede utilizarse una vez por jugador.
+	if runtime.coordinator.forge_controller.has_used_conversion(
+		player.player_id
+	):
+		return
+
 	var pair := _find_two_common_resources(player)
+
 	if pair.size() != 2:
 		return
+
 	var candidate := KarmanyAiActionCandidate.new()
-	candidate.action_type = KarmanyAiActionCandidate.ActionType.FORGE
+
+	candidate.action_type = (
+		KarmanyAiActionCandidate.ActionType.FORGE
+	)
+
 	candidate.target_coord = player.current_coord
 	candidate.debug_label = "Forja 2 comunes -> 1 FA"
 	candidate.base_utility = 1.0
 	candidate.economy_value = 2.0
 	candidate.progress_value = 2.5
+
 	candidate.payload["first_resource"] = pair[0]
 	candidate.payload["second_resource"] = pair[1]
+
 	result.append(candidate)
 
 
