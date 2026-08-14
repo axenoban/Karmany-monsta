@@ -18,9 +18,9 @@ func _process(_delta: float) -> void:
 	if display_id == &"" or display_id == active.player_id:
 		return
 
-	# La lógica ya puede haber preparado al siguiente jugador mientras F35
-	# todavía reproduce el turno anterior. Ningún botón debe iniciar otra
-	# acción durante esa ventana de presentación.
+	# La logica ya puede haber preparado al siguiente jugador mientras F35
+	# todavia reproduce el turno anterior. Ningun boton debe iniciar otra
+	# accion durante esa ventana de presentacion.
 	ux.move_button.disabled = true
 	ux.explore_button.disabled = true
 	ux.interact_button.disabled = true
@@ -28,5 +28,5 @@ func _process(_delta: float) -> void:
 	ux.pass_button.disabled = true
 	ux.ai_button.disabled = true
 	ux.all_ai_button.disabled = true
-	ux.actions_label.text = "PRESENTANDO: %s" % ux.phase_35.get_public_participants_text().split("\n")[0] if not ux.phase_35.get_public_participants_text().is_empty() else "PRESENTANDO TURNO"
-	ux.action_reason_label.text = "Espera a que termine la animacion antes de iniciar otra accion."
+	ux.actions_label.text = "PRESENTANDO TURNO · espera a que termine la animacion"
+	ux.action_reason_label.text = "Los controles se habilitan al sincronizar presentacion y TurnManager."
