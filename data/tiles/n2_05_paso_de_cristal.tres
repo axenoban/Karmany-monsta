@@ -21,6 +21,7 @@ on_explore_text = "Elige: recolecta 2 MR y mira 1 carta del mercado; o craftea 1
 entry_bonus_text = "Entrada: Mira 1 carta de Equipo del mazo; dejala arriba o abajo."
 later_use_text = "Recolectar 2 MR o craftear 1 Equipo Basico/Avanzado si puedes pagar."
 limit_text = "Maximo 1 crafteo por turno desde esta loseta."
+interaction_profile_id = &"crystal_pass"
 later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_mr")])
 starts_revealed = false
 can_rotate_visual = true
