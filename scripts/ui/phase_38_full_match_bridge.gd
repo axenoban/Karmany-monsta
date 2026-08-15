@@ -24,6 +24,7 @@ var result_label: Label = null
 
 var _ai_driver_busy: bool = false
 var _auto_match_busy: bool = false
+var _teardown_started: bool = false
 
 
 func _ready() -> void:
@@ -51,6 +52,23 @@ func _ready() -> void:
 
 func get_full_session() -> KarmanyFullMatchSession:
 	return full_session
+
+
+func begin_teardown() -> void:
+	if _teardown_started:
+		return
+	_teardown_started = true
+	_ai_driver_busy = false
+	_auto_match_busy = false
+	_set_gameplay_enabled(false)
+	_disconnect_full_match_signals()
+	var phase_35 := (
+		phase_37.phase_36.phase_35
+		if phase_37 != null and phase_37.phase_36 != null
+		else null
+	)
+	if phase_35 != null:
+		phase_35.begin_teardown()
 
 
 func _build_setup_overlay() -> void:
@@ -191,9 +209,14 @@ func _build_result_overlay() -> void:
 
 
 func _connect_full_match_signals() -> void:
-	full_session.state_changed.connect(_on_state_changed)
-	full_session.full_action_resolved.connect(_on_full_action_resolved)
-	full_session.result_ready.connect(_on_result_ready)
+	if _teardown_started or full_session == null:
+		return
+	if not full_session.state_changed.is_connected(_on_state_changed):
+		full_session.state_changed.connect(_on_state_changed)
+	if not full_session.full_action_resolved.is_connected(_on_full_action_resolved):
+		full_session.full_action_resolved.connect(_on_full_action_resolved)
+	if not full_session.result_ready.is_connected(_on_result_ready):
+		full_session.result_ready.connect(_on_result_ready)
 	var manager := full_session.runtime.local_session.turn_manager
 	if not manager.turn_started.is_connected(_on_turn_started):
 		manager.turn_started.connect(_on_turn_started)
@@ -206,6 +229,33 @@ func _connect_full_match_signals() -> void:
 			var tile := phase_31.get_tile_view(coord)
 			if tile != null and not tile.tile_clicked.is_connected(_on_phase38_tile_clicked):
 				tile.tile_clicked.connect(_on_phase38_tile_clicked)
+
+
+func _disconnect_full_match_signals() -> void:
+	if full_session != null:
+		if full_session.state_changed.is_connected(_on_state_changed):
+			full_session.state_changed.disconnect(_on_state_changed)
+		if full_session.full_action_resolved.is_connected(_on_full_action_resolved):
+			full_session.full_action_resolved.disconnect(_on_full_action_resolved)
+		if full_session.result_ready.is_connected(_on_result_ready):
+			full_session.result_ready.disconnect(_on_result_ready)
+		if full_session.runtime != null and full_session.runtime.local_session != null:
+			var manager := full_session.runtime.local_session.turn_manager
+			if manager != null:
+				if manager.turn_started.is_connected(_on_turn_started):
+					manager.turn_started.disconnect(_on_turn_started)
+				if manager.action_spent.is_connected(_on_action_spent):
+					manager.action_spent.disconnect(_on_action_spent)
+	if phase_37 == null or phase_37.phase_36 == null or phase_37.phase_36.phase_35 == null:
+		return
+	var phase_31 := phase_37.phase_36.phase_35.phase_34.phase_32.phase_31
+	if phase_31 == null:
+		return
+	for coord_value in phase_31.get_level_map().keys():
+		var coord: Vector2i = coord_value
+		var tile := phase_31.get_tile_view(coord)
+		if tile != null and tile.tile_clicked.is_connected(_on_phase38_tile_clicked):
+			tile.tile_clicked.disconnect(_on_phase38_tile_clicked)
 
 
 func _disable_obsolete_debug_controls() -> void:
@@ -226,7 +276,7 @@ func _disable_obsolete_debug_controls() -> void:
 
 
 func _on_start_pressed() -> void:
-	if full_session == null or not full_session.start_playing():
+	if _teardown_started or full_session == null or not full_session.start_playing():
 		return
 	setup_overlay.visible = false
 	_refresh_ui()
@@ -259,7 +309,7 @@ func _on_equipment_pressed() -> void:
 
 
 func _resolve_human_special(preferred: Array[int], unavailable_text: String) -> void:
-	if full_session == null or _auto_match_busy:
+	if _teardown_started or full_session == null or _auto_match_busy:
 		return
 	var success: bool = full_session.execute_human_special(preferred)
 	action_label.text = "Accion resuelta." if success else unavailable_text
@@ -267,7 +317,7 @@ func _resolve_human_special(preferred: Array[int], unavailable_text: String) -> 
 
 
 func _on_auto_p1_pressed() -> void:
-	if full_session == null or _auto_match_busy:
+	if _teardown_started or full_session == null or _auto_match_busy:
 		return
 	var manager := full_session.runtime.local_session.turn_manager
 	var player := manager.get_active_player()
@@ -280,7 +330,7 @@ func _on_auto_p1_pressed() -> void:
 
 
 func _on_auto_match_pressed() -> void:
-	if full_session == null or _auto_match_busy:
+	if _teardown_started or full_session == null or _auto_match_busy:
 		return
 	if full_session.match_state == KarmanyFullMatchSession.MatchState.SETUP:
 		if not full_session.start_playing():
@@ -292,16 +342,32 @@ func _on_auto_match_pressed() -> void:
 
 
 func _run_auto_match_visual() -> void:
-	while full_session != null and full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING:
+	while (
+		not _teardown_started
+		and full_session != null
+		and full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING
+	):
 		var success: bool = full_session.run_automated_current_turn()
 		if not success:
-			action_label.text = full_session.last_error
+			if not _teardown_started:
+				action_label.text = full_session.last_error
 			break
-		await phase_37.phase_36.phase_35.wait_for_presentation_idle()
-		await get_tree().create_timer(0.08).timeout
+		var phase_35 := phase_37.phase_36.phase_35
+		if phase_35 == null or not await phase_35.wait_for_presentation_idle():
+			break
+		if _teardown_started or not is_inside_tree():
+			break
+		var tree := get_tree()
+		if tree == null:
+			break
+		await tree.create_timer(0.08).timeout
+		if _teardown_started:
+			break
 		_refresh_ui()
 	_auto_match_busy = false
-	if full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING:
+	if _teardown_started:
+		return
+	if full_session != null and full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING:
 		_set_gameplay_enabled(true)
 	_refresh_ui()
 
@@ -311,6 +377,8 @@ func _on_turn_started(
 	_round_number: int,
 	_actions_available: int
 ) -> void:
+	if _teardown_started:
+		return
 	_refresh_ui()
 	if (
 		player != null
@@ -323,22 +391,37 @@ func _on_turn_started(
 
 
 func _drive_ai_until_human() -> void:
-	if _ai_driver_busy or _auto_match_busy:
+	if _teardown_started or _ai_driver_busy or _auto_match_busy:
 		return
 	_ai_driver_busy = true
-	while full_session != null and full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING:
+	while (
+		not _teardown_started
+		and full_session != null
+		and full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING
+	):
 		var manager := full_session.runtime.local_session.turn_manager
 		if manager == null or not manager.is_running:
 			break
 		var player := manager.get_active_player()
 		if player == null or full_session.runtime.ai_match_controller.is_human_player(player.player_id):
 			break
-		await get_tree().create_timer(0.22).timeout
+		if not is_inside_tree():
+			break
+		var tree := get_tree()
+		if tree == null:
+			break
+		await tree.create_timer(0.22).timeout
+		if _teardown_started:
+			break
 		var success: bool = full_session.run_automated_current_turn()
 		if not success:
 			action_label.text = full_session.last_error
 			break
-		await phase_37.phase_36.phase_35.wait_for_presentation_idle()
+		var phase_35 := phase_37.phase_36.phase_35
+		if phase_35 == null or not await phase_35.wait_for_presentation_idle():
+			break
+		if _teardown_started:
+			break
 		_refresh_ui()
 	_ai_driver_busy = false
 
@@ -348,6 +431,8 @@ func _on_full_action_resolved(
 	action_text: String,
 	success: bool
 ) -> void:
+	if _teardown_started:
+		return
 	action_label.text = "%s: %s%s" % [
 		String(player_id).to_upper(),
 		action_text,
@@ -359,16 +444,19 @@ func _on_full_action_resolved(
 
 
 func _reconcile_visuals_to_logic() -> void:
-	if full_session == null:
+	if _teardown_started or full_session == null:
 		return
 	var phase_35 := phase_37.phase_36.phase_35
-	if phase_35 == null:
+	if phase_35 == null or not await phase_35.wait_for_presentation_idle():
 		return
-	await phase_35.wait_for_presentation_idle()
+	if _teardown_started:
+		return
 	var phase_31 := phase_35.phase_34.phase_32.phase_31
 	if phase_31 == null:
 		return
 	for player in full_session.runtime.local_session.players:
+		if _teardown_started:
+			return
 		if player == null or phase_35.get_visual_coord(player.player_id) == player.current_coord:
 			continue
 		var unit := phase_35.get_trainer_unit(player.player_id)
@@ -378,14 +466,22 @@ func _reconcile_visuals_to_logic() -> void:
 		phase_35.feedback.animate_unit_move(unit, unit.global_position, tile.unit_anchor.global_position)
 		var wait_seconds: float = phase_35.feedback.movement_duration * phase_35.feedback.duration_scale
 		if wait_seconds > 0.0:
-			await get_tree().create_timer(wait_seconds).timeout
+			if not is_inside_tree():
+				return
+			var tree := get_tree()
+			if tree == null:
+				return
+			await tree.create_timer(wait_seconds).timeout
+			if _teardown_started:
+				return
 		unit.snap_visual_to(tile.unit_anchor)
 		phase_35._visual_coord_by_player[player.player_id] = player.current_coord
 		phase_35._logic_coord_snapshot[player.player_id] = player.current_coord
 
 
 func _on_phase38_tile_clicked(_tile: KarmanyHexTile3D) -> void:
-	call_deferred("_refresh_ui")
+	if not _teardown_started:
+		call_deferred("_refresh_ui")
 
 
 func _on_action_spent(
@@ -393,12 +489,14 @@ func _on_action_spent(
 	_cost: int,
 	_actions_remaining: int
 ) -> void:
+	if _teardown_started:
+		return
 	call_deferred("_finish_human_end_turn_if_needed")
 	call_deferred("_refresh_ui")
 
 
 func _finish_human_end_turn_if_needed() -> void:
-	if full_session == null:
+	if _teardown_started or full_session == null:
 		return
 	var manager := full_session.runtime.local_session.turn_manager
 	if manager == null or not manager.is_running or manager.actions_remaining != 0:
@@ -409,10 +507,13 @@ func _finish_human_end_turn_if_needed() -> void:
 
 
 func _on_state_changed(_state_value: int) -> void:
-	_refresh_ui()
+	if not _teardown_started:
+		_refresh_ui()
 
 
 func _on_result_ready(result: Dictionary) -> void:
+	if _teardown_started:
+		return
 	_set_gameplay_enabled(false)
 	result_label.text = _format_result(result)
 	result_overlay.visible = true
@@ -455,7 +556,7 @@ func _refresh_setup_summary() -> void:
 
 
 func _refresh_ui() -> void:
-	if full_session == null or state_label == null:
+	if _teardown_started or full_session == null or state_label == null:
 		return
 	var manager := full_session.runtime.local_session.turn_manager
 	var active_text: String = "-"
@@ -496,7 +597,7 @@ func _refresh_ui() -> void:
 
 
 func _refresh_entry_preview_guard(human_turn: bool) -> void:
-	if not human_turn or phase_37.move_preview_label == null:
+	if _teardown_started or not human_turn or phase_37.move_preview_label == null:
 		return
 	var coord: Vector2i = phase_37.phase_36.get_selected_coord()
 	if coord == KarmanyPhase37ContentPreviewBridge.INVALID_COORD:
@@ -523,7 +624,7 @@ func _refresh_entry_preview_guard(human_turn: bool) -> void:
 
 
 func _set_gameplay_enabled(enabled: bool) -> void:
-	var phase_36 := phase_37.phase_36
+	var phase_36 := phase_37.phase_36 if phase_37 != null else null
 	if phase_36 != null:
 		phase_36.move_button.disabled = not enabled
 		phase_36.explore_button.disabled = not enabled
