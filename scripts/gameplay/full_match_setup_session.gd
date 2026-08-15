@@ -2,6 +2,12 @@ class_name KarmanyFullMatchSetupSession
 extends KarmanyFullMatchSessionBase
 
 
+# F41 usa esta inyeccion exclusivamente para convertir la decision humana
+# confirmada en la misma regla de setup que ya consume F38. Si el diccionario
+# esta vacio, F38 conserva su seleccion automatica determinista original.
+var forced_starting_choice_by_player: Dictionary = {}
+
+
 func _apply_complete_setup() -> bool:
 	var players: Array[KarmanyPlayerState] = runtime.local_session.players
 	if players.size() != 4:
@@ -44,40 +50,32 @@ func _setup_trainers_and_starting_karmanys(
 			trainers.append(value as KarmanyTrainerData)
 	if trainers.size() != KarmanyV074CanonicalRuntimeCatalog.CANONICAL_COUNTS["trainers"]:
 		return _fail("Se requieren los 8 Entrenadores canonicos para setup F38.")
-	_shuffle_trainers(trainers)
 
 	var starting_deck := KarmanyPhase37AlphaContentCatalog.get_starting_karmanys()
 	if starting_deck.size() != 8:
 		return _fail("Se requieren los 8 Karmany iniciales canonicos.")
-	_shuffle_karmanys(starting_deck)
+
+	var plan := KarmanyStartingKarmanySetupPlan.new()
+	if not plan.build(
+		players,
+		trainers,
+		starting_deck,
+		_setup_rng,
+		forced_starting_choice_by_player
+	):
+		return _fail(plan.last_error)
 
 	trainer_by_player.clear()
 	starting_karmany_by_player.clear()
 	setup_choices_by_player.clear()
 
-	for player_index in range(players.size()):
-		var player: KarmanyPlayerState = players[player_index]
-		var trainer: KarmanyTrainerData = trainers[player_index]
+	for player in players:
+		var trainer: KarmanyTrainerData = plan.get_trainer(player.player_id)
+		var chosen: KarmanyData = plan.get_chosen(player.player_id)
+		var offered: Array[KarmanyData] = plan.get_offered(player.player_id)
+		if trainer == null or chosen == null or offered.size() != 3:
+			return _fail("Plan de setup incompleto para %s." % String(player.player_id))
 		trainer_by_player[player.player_id] = trainer
-
-		if starting_deck.size() < 3:
-			return _fail("Mazo de iniciales insuficiente para revelar 3.")
-		var offered: Array[KarmanyData] = [
-			starting_deck[0],
-			starting_deck[1],
-			starting_deck[2]
-		]
-		var chosen_index: int = _setup_rng.randi_range(0, 2)
-		var chosen: KarmanyData = offered[chosen_index]
-		var returned: Array[KarmanyData] = []
-		for index in range(3):
-			if index != chosen_index:
-				returned.append(offered[index])
-		starting_deck.remove_at(chosen_index)
-		for _remove in range(2):
-			starting_deck.pop_front()
-		for card in returned:
-			starting_deck.append(card)
 
 		var runtime_state := KarmanyRuntimeState.new()
 		var instance_id := StringName(
