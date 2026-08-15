@@ -87,12 +87,15 @@ func _run_test() -> bool:
 		return _fail("FINISHED no conduce a RESULT.")
 	if String(shell.final_result.get("state", "")) != "FINISHED":
 		return _fail("RESULT no conserva el resultado autoritativo FINISHED.")
-	if int(shell.final_result.get("rounds", 0)) != 8:
+	var result_rounds: int = int(shell.final_result.get("rounds", 0))
+	if result_rounds != 8:
 		return _fail("Resultado no informa 8 rondas.")
 	if shell.completed_match_count != 1:
 		return _fail("result_ready fue procesado mas o menos de una vez.")
-	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
-		return _fail("RESULT mantiene la partida anterior dentro del MatchHost.")
+	if not shell.has_active_match() or shell.get_match_host_child_count() != 1:
+		return _fail("RESULT perdio la partida FINISHED antes de una decision de navegacion.")
+	if manager.is_running or full_session.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
+		return _fail("La partida retenida en RESULT no esta realmente detenida/FINISHED.")
 
 	shell.return_to_main_menu()
 	await get_tree().process_frame
@@ -103,7 +106,7 @@ func _run_test() -> bool:
 
 	print("F42 SHELL | seed=%d | rounds=%d | completed=%d" % [
 		TEST_SEED,
-		int(shell.final_result.get("rounds", 0)),
+		result_rounds,
 		shell.completed_match_count
 	])
 	return true
