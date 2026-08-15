@@ -73,7 +73,9 @@ func build(
 
 		var chosen_index: int = -1
 		if forced_choice_by_player.has(player.player_id):
-			var forced_id := StringName(forced_choice_by_player[player.player_id])
+			var forced_id: StringName = StringName(
+				String(forced_choice_by_player.get(player.player_id, ""))
+			)
 			chosen_index = _find_karmany_index(offered, forced_id)
 			if chosen_index < 0:
 				return _fail(
