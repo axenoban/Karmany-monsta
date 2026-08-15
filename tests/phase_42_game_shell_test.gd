@@ -97,14 +97,32 @@ func _run_test() -> bool:
 	if manager.is_running or full_session.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
 		return _fail("La partida retenida en RESULT no esta realmente detenida/FINISHED.")
 
+	var finished_root := shell.active_match_root
+	if finished_root == null or not finished_root.is_inside_tree():
+		return _fail("La raiz FINISHED no esta dentro del SceneTree antes de navegar.")
 	shell.return_to_main_menu()
+	if not is_instance_valid(finished_root):
+		return _fail("Teardown libero la raiz de forma inmediata en vez de usar queue_free seguro.")
+	if not finished_root.is_queued_for_deletion():
+		return _fail("Teardown no marco la raiz anterior para queue_free.")
+	if not finished_root.is_inside_tree():
+		return _fail("Teardown convirtio la raiz anterior en [Orphan] antes de queue_free.")
 	await get_tree().process_frame
+	if is_instance_valid(finished_root):
+		return _fail("La raiz anterior sigue viva despues del frame de liberacion diferida.")
 	if shell.app_state != KarmanyAlphaGameShell.AppState.MAIN_MENU:
 		return _fail("MENÚ PRINCIPAL no recupera MAIN_MENU.")
 	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
 		return _fail("Volver al menu conserva runtime/UI de partida.")
 
-	print("F42 SHELL | seed=%d | rounds=%d | completed=%d" % [
+	# Un frame adicional deja oportunidad a cualquier callback/coroutine vieja de
+	# reanudarse. Si conservase acceso huérfano a SceneTree, Godot reportaría el
+	# error de lifecycle que este test protege.
+	await get_tree().process_frame
+	if shell.get_match_host_child_count() != 0:
+		return _fail("Un callback tardio volvio a montar estado de la partida retirada.")
+
+	print("F42 SHELL | seed=%d | rounds=%d | completed=%d | teardown_orphan=false" % [
 		TEST_SEED,
 		result_rounds,
 		shell.completed_match_count
