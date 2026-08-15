@@ -14,6 +14,10 @@ const PLAYER_TINTS: Array[Color] = [
 ]
 
 
+# F42 can inject a seed before this bridge enters the SceneTree. Zero keeps
+# the historical F34 seed, preserving every existing probe/regression.
+@export var requested_match_seed: int = 0
+
 @onready var phase_32: KarmanyPhase32RandomMapBridge = $Phase32RandomMapPrototype
 @onready var status_label: Label = $Phase34Overlay/RootMargin/Panel/InnerMargin/VBox/StatusLabel
 @onready var participants_label: Label = $Phase34Overlay/RootMargin/Panel/InnerMargin/VBox/ParticipantsLabel
@@ -32,6 +36,10 @@ var _event_lines: Array[String] = []
 var _last_action_text: String = "Sin acciones IA ejecutadas."
 
 
+func get_effective_match_seed() -> int:
+	return requested_match_seed if requested_match_seed != 0 else DEFAULT_PHASE_34_SEED
+
+
 func _ready() -> void:
 	if phase_32 == null or not phase_32.setup_ok or phase_32.phase_31 == null:
 		push_error("FASE 34 ERROR: Fase 32/Fase 31 no esta disponible.")
@@ -41,7 +49,8 @@ func _ready() -> void:
 	if phase_32_overlay != null:
 		phase_32_overlay.visible = false
 
-	if not phase_32.set_seed_and_regenerate(DEFAULT_PHASE_34_SEED):
+	var effective_seed: int = get_effective_match_seed()
+	if not phase_32.set_seed_and_regenerate(effective_seed):
 		push_error("FASE 34 ERROR: No se pudo preparar la seed visual.")
 		return
 
@@ -50,7 +59,7 @@ func _ready() -> void:
 	runtime = KarmanyMultiAiAlphaRuntime.new()
 	if not runtime.configure_existing(
 		4,
-		DEFAULT_PHASE_34_SEED,
+		effective_seed,
 		phase_32.phase_31.board_state,
 		phase_32.content_session,
 		&"player_1"
