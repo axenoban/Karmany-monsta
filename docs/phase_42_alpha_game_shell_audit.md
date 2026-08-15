@@ -16,7 +16,7 @@ F41 descendía linealmente de F40, que a su vez descendía de F39/dev. Por ello 
 
 `97f02bba2772c22182976e3e67bcf4d37853b627` (`feature/phase-41-human-setup-flow`).
 
-No se hizo merge ciego, rebase, force push ni integración a `dev/karmany-core`.
+No se hizo merge ciego, rebase, force push ni integración a `dev/karmany-core` durante el desarrollo de F42.
 
 ## Objetivo de producto
 
@@ -70,7 +70,7 @@ No existe partida activa. Se muestran solamente:
 
 ### PLAYING
 
-El shell escucha `KarmanyHumanSetupFlow.playing_started`. No inicia rondas por su cuenta. La transición sigue siendo responsabilidad de F41/F38, por lo que PLAYING debe comenzar en Ronda 1, P1 y 2 acciones.
+El shell escucha `KarmanyHumanSetupFlow.playing_started`. No inicia rondas por su cuenta. La transición sigue siendo responsabilidad de F41/F38, por lo que PLAYING comienza en Ronda 1, P1 y 2 acciones.
 
 Toda la partida usa los sistemas existentes de F38/F39/F40/F41: MAP41, IA P2–P4, acciones, Interactuar universal, combate, Equipos/Forja, Resonancias soportadas, objetivos, misiones, PL y finalización.
 
@@ -86,9 +86,9 @@ El shell escucha el `result_ready` del mismo `KarmanyFullMatchSession` materiali
 - `NUEVA PARTIDA`;
 - `MENÚ PRINCIPAL`.
 
-Mientras RESULT está visible, la partida que acaba de terminar puede permanecer temporalmente montada, pero está en `FINISHED` y su `TurnManager` ya está detenido. Esto evita invalidar callbacks/coroutines del mismo frame en el que se emitió `result_ready`.
+Mientras RESULT está visible, la partida que acaba de terminar permanece temporalmente montada, pero está en `FINISHED` y su `TurnManager` ya está detenido. Esto evita invalidar callbacks/coroutines del mismo frame en el que se emitió `result_ready`.
 
-La partida anterior se destruye de forma obligatoria al elegir `NUEVA PARTIDA` o `MENÚ PRINCIPAL`, antes de continuar al siguiente estado de aplicación.
+La partida anterior se destruye de forma obligatoria al elegir `NUEVA PARTIDA` o `MENÚ PRINCIPAL`, antes de continuar al siguiente ciclo de aplicación.
 
 ## Lifecycle y limpieza
 
@@ -98,15 +98,23 @@ La partida anterior se destruye de forma obligatoria al elegir `NUEVA PARTIDA` o
 - `KarmanyHumanSetupFlow`;
 - `KarmanyFullMatchSession`.
 
-Al abandonar RESULT, cancelar una partida o iniciar otra:
+La implementación final de lifecycle corrige una regresión detectada durante la validación local: retirar manualmente la raíz con `remove_child()` antes de `queue_free()` podía dejar la cadena visual F35/F38 como `[Orphan]` mientras todavía existían coroutines suspendidas en presentación.
 
-1. se detiene `TurnManager` si todavía estuviera activo;
-2. se eliminan las referencias activas del shell;
-3. la raíz F41 anterior se retira de `MatchHost`;
-4. la raíz se libera mediante `queue_free()`;
-5. la siguiente partida instancia una cadena F31–F41 completamente nueva.
+El teardown definitivo sigue este orden:
 
-Por diseño nunca se añade la nueva raíz F41 antes de retirar la anterior. Esto evita reutilizar jugadores, manos, señales, BoardState, IA, CanvasLayers o callbacks de la partida anterior.
+1. el Game Shell desconecta sus señales hacia `HumanSetupFlow` / `FullMatchSession`;
+2. se detiene `TurnManager` si todavía estuviera activo;
+3. `KarmanyPhase41HumanSetupBridge`, por herencia de F38, recibe `begin_teardown()`;
+4. F38 cancela nuevos drivers visuales/asíncronos, desconecta señales de partida y propaga el teardown hacia F35;
+5. F35 vacía colas de presentación, desconecta observadores de IA/TurnManager y hace que las coroutines pendientes terminen limpiamente en sus puntos de suspensión;
+6. la raíz F41 se oculta y se desactiva para procesamiento;
+7. la raíz se agenda mediante `queue_free()` **sin usar `remove_child()`**;
+8. la jerarquía permanece dentro del `SceneTree` hasta la liberación diferida de fin de frame, evitando la ventana `[Orphan]`;
+9. las referencias activas del shell se limpian y la siguiente partida crea una cadena F31–F41 nueva.
+
+Las rutas asíncronas auditadas y protegidas incluyen `wait_for_presentation_idle()`, `_drain_external_steps()`, `_present_step()`, `_run_auto_match_visual()`, `_drive_ai_until_human()` y `_reconcile_visuals_to_logic()`.
+
+Por diseño, la segunda partida no reutiliza jugadores, manos, señales, `BoardState`, IA, `TurnManager`, `FullMatchSession`, CanvasLayers ni callbacks de la partida anterior.
 
 ## Seed
 
@@ -122,7 +130,7 @@ No se regenera un runtime después de haber comenzado el setup: la seed se inyec
 
 ### `tests/phase_42_game_shell_test.tscn`
 
-Valida lógicamente:
+Valida:
 
 - arranque en MAIN_MENU;
 - Nueva Partida crea exactamente una cadena de partida;
@@ -134,11 +142,15 @@ Valida lógicamente:
 - FINISHED produce RESULT;
 - RESULT conserva seed/rondas/resultado autoritativo;
 - la partida retenida durante RESULT está detenida y FINISHED;
-- volver al menú desmonta la partida y deja cero partidas activas.
+- al volver al menú, la raíz y F35 permanecen dentro del `SceneTree` mientras esperan `queue_free()`;
+- tras el frame de liberación, raíz y F35 desaparecen;
+- un frame adicional no reactiva callbacks de la partida anterior.
 
 ### `tests/phase_42_restart_match_test.tscn`
 
-Ejecuta dos partidas consecutivas con seeds distintas. Al crear B, A se destruye antes de montar la nueva raíz. El test verifica que Runtime, BoardState, TurnManager, PlayerState y FullMatchSession de A no sean reutilizados por B. También comprueba cuatro participantes, R1/2 acciones al reiniciar, una sola UI activa y exactamente un evento de resultado por partida.
+Ejecuta dos partidas consecutivas con seeds distintas. Verifica que Runtime, BoardState, TurnManager, PlayerState y FullMatchSession de A no sean reutilizados por B. También comprueba cuatro participantes, R1/2 acciones al reiniciar, una sola UI activa y exactamente un evento de resultado por partida.
+
+El test final además comprueba expresamente que F35 de la Partida A no quede `[Orphan]` durante `RESULT -> NUEVA PARTIDA`, que la raíz anterior se libere al final del frame y que el mismo contrato se cumpla al destruir la Partida B al volver al menú.
 
 ### `tests/phase_42_game_shell_visual_probe.tscn`
 
@@ -159,23 +171,24 @@ F42 no aumenta watchdogs, no modifica tests antiguos para ocultar fallos y no re
 
 El baseline todavía arrancaba `tests/phase_4_turn_manager_test.tscn` desde `project.godot`.
 
-El último paso técnico de F42 cambia `run/main_scene` a:
+F42 cambia `run/main_scene` a:
 
 `res://scenes/app/main.tscn`
 
-La validación final de usuario pasa a ser F5.
+La ejecución normal del proyecto con F5 entra por el Game Shell Alpha.
 
-## Verificación disponible en el entorno remoto
+## Verificación y cierre
 
 Desde GitHub se verificó que:
 
 - la rama F42 parte linealmente del HEAD aprobado de F41;
+- F40 y F41 están contenidos en su historia;
 - los archivos nuevos y modificados existen en la rama correcta;
 - `project.godot` apunta a `res://scenes/app/main.tscn`;
-- no se integró F42 a `dev/karmany-core` ni a `main`;
-- no existen checks CI asociados al HEAD de F42.
+- la corrección final de lifecycle elimina el `remove_child()` previo al `queue_free()` y protege la cadena asíncrona F35/F38;
+- F42 no fue integrada a `dev/karmany-core` durante su desarrollo.
 
-El entorno remoto utilizado para editar el repositorio no dispone de un ejecutable Godot. Por ello la compilación/parser/runtime real de Godot 4.7.1 y las regresiones F38–F42 permanecen pendientes de validación local.
+La validación local en Godot 4.7.1 fue realizada después de la corrección final de lifecycle y fue reportada como exitosa para F42 y sus regresiones F38–F41. Con esa validación, F42 queda cerrada técnicamente y lista para integración fast-forward a `dev/karmany-core` si la historia del repositorio continúa siendo lineal.
 
 ## Limitaciones Alpha preservadas
 
