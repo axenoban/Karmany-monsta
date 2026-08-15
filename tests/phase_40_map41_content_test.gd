@@ -56,7 +56,7 @@ func _test_geometry() -> bool:
 		Vector2i(-4, 2),
 		Vector2i(1, -4)
 	]
-	var actual_starts: Array[Vector2i] = KarmanyCanonicalMap41Layout.get_start_coords()
+	var actual_starts: Array[Vector2i] = KarmanyCanonicalMap41Layout.get_starting_coords()
 	if actual_starts != expected_starts:
 		return _fail("Las cuatro posiciones iniciales cambiaron respecto al baseline aprobado.")
 	return true
@@ -162,11 +162,14 @@ func _test_pools_and_fallback() -> bool:
 			rng
 		)
 		var generated_value: Variant = fallback.get("tiles", [])
-		if not (generated_value is Array) or generated_value.size() != target_count:
+		if not (generated_value is Array):
+			return _fail("Fallback no devolvio una coleccion valida en %s." % KarmanyMap41ContentAudit.get_level_label(level))
+		var generated_tiles: Array = generated_value
+		if generated_tiles.size() != target_count:
 			return _fail("Fallback no cubrio todos los slots de %s." % KarmanyMap41ContentAudit.get_level_label(level))
 		if bool(fallback.get("used_fallback", false)) != (pool.size() < target_count):
 			return _fail("Reporte used_fallback inconsistente en %s." % KarmanyMap41ContentAudit.get_level_label(level))
-		for tile_value in generated_value:
+		for tile_value in generated_tiles:
 			var generated_tile := tile_value as KarmanyTileData
 			if generated_tile == null or generated_tile.level != level:
 				return _fail("Fallback mezclo niveles en %s." % KarmanyMap41ContentAudit.get_level_label(level))
@@ -184,7 +187,10 @@ func _test_pools_and_fallback() -> bool:
 	var tiny_tiles_value: Variant = tiny_result.get("tiles", [])
 	if not bool(tiny_result.get("used_fallback", false)):
 		return _fail("El fallback F32 dejo de activarse con pool menor que slots.")
-	if not (tiny_tiles_value is Array) or tiny_tiles_value.size() != 3:
+	if not (tiny_tiles_value is Array):
+		return _fail("El fallback F32 no devolvio tiles en el fixture reducido.")
+	var tiny_tiles: Array = tiny_tiles_value
+	if tiny_tiles.size() != 3:
 		return _fail("El fallback F32 no completo el fixture de 3 slots.")
 	return true
 
@@ -228,7 +234,10 @@ func _test_seed_determinism_and_effective_variety() -> bool:
 			if pool_size < target:
 				if not bool(level_report.get("used_fallback", false)):
 					return _fail("Seed %d no activo fallback requerido en %s." % [seed_value, KarmanyMap41ContentAudit.get_level_label(level)])
-				if not (usage_value is Dictionary) or usage_value.size() != pool_size:
+				if not (usage_value is Dictionary):
+					return _fail("Seed %d no devolvio usage_counts valido." % seed_value)
+				var usage_counts: Dictionary = usage_value
+				if usage_counts.size() != pool_size:
 					return _fail("Seed %d no utilizo toda la variedad real disponible de %s." % [seed_value, KarmanyMap41ContentAudit.get_level_label(level)])
 
 	if fingerprints.size() < 2:
