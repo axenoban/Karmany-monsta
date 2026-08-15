@@ -226,14 +226,20 @@ func _destroy_active_match() -> void:
 				manager.stop_match()
 
 	var old_root := active_match_root
+	if old_root != null and is_instance_valid(old_root):
+		# F42 lifecycle: primero se cancela la presentacion asíncrona y luego se
+		# agenda la liberacion manteniendo la raiz dentro del SceneTree. No usamos
+		# remove_child(): eso convertia F35/F38 en [Orphan] mientras sus awaits
+		# pendientes todavia podian reanudarse.
+		old_root.begin_teardown()
+		old_root.visible = false
+		old_root.process_mode = Node.PROCESS_MODE_DISABLED
+		old_root.queue_free()
+		match_destroyed.emit()
+
 	active_match_root = null
 	active_human_setup = null
 	active_full_session = null
-	if old_root != null and is_instance_valid(old_root):
-		if old_root.get_parent() != null:
-			old_root.get_parent().remove_child(old_root)
-		old_root.queue_free()
-		match_destroyed.emit()
 	if match_host != null:
 		match_host.visible = false
 
