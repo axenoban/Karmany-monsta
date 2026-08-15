@@ -212,36 +212,145 @@ func _test_forge_cost_and_limit() -> bool:
 		return _fail("F39 volvio a ofrecer la conversion de Forja despues de usarla.")
 	return true
 
-
 func _test_blocked_interaction_preview() -> bool:
 	var setup := _new_started_session(39121)
 	if setup.is_empty():
 		return false
+
 	var session: KarmanyFullMatchSession = setup["session"]
 	var runtime: KarmanyMultiAiAlphaRuntime = setup["runtime"]
-	var player := runtime.local_session.get_player_by_id(runtime.human_player_id)
+	var player := runtime.local_session.get_player_by_id(
+		runtime.human_player_id
+	)
+
 	var target := _reveal_and_find_tile(runtime, &"N2-01")
 	if target == Vector2i(999, 999):
-		return _fail("No se encontro N2-01 para prueba bloqueada.")
+		return _fail(
+			"No se encontro N2-01 para prueba bloqueada."
+		)
+
 	if not runtime._relocate_player(player, target):
-		return _fail("No se pudo preparar P1 sobre N2-01.")
-	var spawn := runtime.spawn_beast_from_current_tile(player, false)
+		return _fail(
+			"No se pudo preparar P1 sobre N2-01."
+		)
+
+	# Fixture aislado:
+	# B-07 existe y es Bestia Media, pero todavia no forma parte
+	# del catalogo runtime ejecutable completo.
+	var medium_beast := ResourceLoader.load(
+		"res://data/beasts/b_07_terranuk.tres"
+	) as KarmanyBeastData
+
+	if medium_beast == null:
+		return _fail(
+			"No se pudo cargar B-07 Terranuk para la prueba."
+		)
+
+	if medium_beast.tier != KarmanyBeastData.Tier.MEDIUM:
+		return _fail(
+			"B-07 no esta configurada como Bestia Media."
+		)
+
+	var medium_cards: Array[KarmanyBeastData] = [
+		medium_beast
+	]
+
+	var test_deck := KarmanyBeastDeck.new()
+
+	if not test_deck.setup(
+		medium_cards,
+		false,
+		39121
+	):
+		return _fail(
+			"No se pudo preparar el mazo temporal de Bestia Media."
+		)
+
+	var spawn := runtime.coordinator.spawn_beast(
+		target,
+		test_deck,
+		false
+	)
+
 	if spawn == null or not spawn.is_spawned():
-		return _fail("No se pudo crear la Bestia reglamentaria de N2-01.")
+		return _fail(
+			"No se pudo colocar la Bestia Media de prueba sobre N2-01."
+		)
 
-	var preview := session.universal_tile_interactions.get_public_preview(player, target)
+	# Verificacion 1:
+	# La Bestia debe existir realmente dentro del BoardState.
+	if not runtime.board_state.has_beast(target):
+		return _fail(
+			"Spawn exitoso, pero BoardState no registra Bestia en N2-01."
+		)
+
+	# Verificacion 2:
+	# La celda debe reconocerse como bloqueada.
+	if not runtime.board_state.is_blocked_by_beast(target):
+		return _fail(
+			"BoardState contiene Bestia, pero N2-01 no figura bloqueada."
+		)
+
+	# Verificacion 3:
+	# El resolver comun debe prohibir Interactuar.
+	var common_validation := KarmanyTileInteractionResolver.validate_common(
+		player,
+		runtime.board_state,
+		runtime.local_session.turn_manager
+	)
+
+	if common_validation.is_success():
+		return _fail(
+			"validate_common considero legal Interactuar pese al bloqueo por Bestia."
+		)
+
+	if not common_validation.message.contains("Bestia"):
+		return _fail(
+			"validate_common rechazo Interactuar, pero no identifico la Bestia como causa."
+		)
+
+	# Verificacion 4:
+	# El preview debe seguir mostrando la informacion publica,
+	# pero marcar la accion como ilegal.
+	var preview := session.universal_tile_interactions.get_public_preview(
+		player,
+		target
+	)
+
 	if not bool(preview.get("visible", false)):
-		return _fail("N2-01 revelada dejo de ser visible en preview.")
-	if String(preview.get("interaction_text", "")).strip_edges().is_empty():
-		return _fail("N2-01 bloqueada oculto su Uso posterior.")
-	if bool(preview.get("legal_now", true)):
-		return _fail("Interactuar siguio legal mientras una Bestia bloqueaba la loseta.")
-	if not String(preview.get("requirements_text", "")).contains("Bestia"):
-		return _fail("Preview bloqueado no explico que la Bestia impide Interactuar.")
-	if not session.universal_tile_interactions.build_legal_candidates(player).is_empty():
-		return _fail("La IA recibio Interactuar aunque la Bestia bloquea N2-01.")
-	return true
+		return _fail(
+			"N2-01 revelada dejo de ser visible en preview."
+		)
 
+	if String(
+		preview.get("interaction_text", "")
+	).strip_edges().is_empty():
+		return _fail(
+			"N2-01 bloqueada oculto su Uso posterior."
+		)
+
+	if bool(preview.get("legal_now", true)):
+		return _fail(
+			"Interactuar siguio legal mientras una Bestia bloqueaba la loseta."
+		)
+
+	if not String(
+		preview.get("requirements_text", "")
+	).contains("Bestia"):
+		return _fail(
+			"Preview bloqueado no explico que la Bestia impide Interactuar."
+		)
+
+	# Verificacion 5:
+	# La IA tampoco debe recibir candidatos de Interactuar.
+	if not session.universal_tile_interactions.build_legal_candidates(
+		player
+	).is_empty():
+		return _fail(
+			"La IA recibio Interactuar aunque la Bestia bloquea N2-01."
+		)
+
+	return true
 
 func _test_ai_selects_and_executes_interaction() -> bool:
 	var setup := _new_started_session(39131)
