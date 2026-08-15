@@ -68,6 +68,7 @@ var _display_actions_remaining: int = 0
 var _capturing_ai_logic: bool = false
 var _presentation_busy: bool = false
 var _external_drain_scheduled: bool = false
+var _teardown_started: bool = false
 
 
 func _ready() -> void:
@@ -98,6 +99,21 @@ func _ready() -> void:
 	_refresh_public_hud()
 	setup_ok = true
 	print("FASE 35 VISUAL OK - cuatro TrainerUnit3D, movimiento interpolado y HUD publico activos.")
+
+
+func begin_teardown() -> void:
+	if _teardown_started:
+		return
+	_teardown_started = true
+	setup_ok = false
+	_capturing_ai_logic = false
+	_presentation_busy = false
+	_external_drain_scheduled = false
+	_pending_ai_origin.clear()
+	_captured_ai_steps.clear()
+	_queued_external_steps.clear()
+	_disconnect_gameplay_observers()
+	_set_controls_disabled(true)
 
 
 func set_presentation_speed_multiplier(value: float) -> void:
@@ -148,7 +164,7 @@ func is_player_halo_visible(player_id: StringName) -> bool:
 
 
 func center_on_human() -> bool:
-	if phase_34 == null or phase_34.runtime == null:
+	if _teardown_started or phase_34 == null or phase_34.runtime == null:
 		return false
 	var human_id: StringName = phase_34.runtime.human_player_id
 	var unit := get_trainer_unit(human_id)
@@ -160,7 +176,7 @@ func center_on_human() -> bool:
 
 
 func pass_human_turn_presented() -> bool:
-	if not setup_ok or _presentation_busy or phase_34.runtime == null:
+	if _teardown_started or not setup_ok or _presentation_busy or phase_34.runtime == null:
 		return false
 	var manager := phase_34.runtime.local_session.turn_manager
 	var active := manager.get_active_player()
@@ -173,6 +189,8 @@ func pass_human_turn_presented() -> bool:
 	_append_event(active.player_id, "turn_finished", "P1 termina turno")
 	var success: bool = phase_34.runtime.simulate_human_probe_turn()
 	_presentation_busy = false
+	if _teardown_started:
+		return false
 	_set_controls_disabled(false)
 	_sync_display_to_logical_active()
 	_refresh_public_hud()
@@ -180,7 +198,7 @@ func pass_human_turn_presented() -> bool:
 
 
 func run_current_ai_turn_presented() -> bool:
-	if not setup_ok or _presentation_busy or phase_34.runtime == null:
+	if _teardown_started or not setup_ok or _presentation_busy or phase_34.runtime == null:
 		return false
 	var manager := phase_34.runtime.local_session.turn_manager
 	var ai_control := phase_34.runtime.ai_match_controller
@@ -204,9 +222,10 @@ func run_current_ai_turn_presented() -> bool:
 	_capturing_ai_logic = false
 	if not logical_success:
 		_presentation_busy = false
-		_set_controls_disabled(false)
-		_sync_display_to_logical_active()
-		_refresh_public_hud()
+		if not _teardown_started:
+			_set_controls_disabled(false)
+			_sync_display_to_logical_active()
+			_refresh_public_hud()
 		return false
 
 	_set_display_active_player(acting_player_id, acting_round, acting_actions)
@@ -214,13 +233,19 @@ func run_current_ai_turn_presented() -> bool:
 	_append_event(acting_player_id, "turn_started", "%s comienza turno" % acting_profile)
 	_focus_player_visual(acting_player_id)
 	await _wait_presentation_delay(ai_turn_intro_delay)
+	if _teardown_started:
+		return false
 
 	for step in _captured_ai_steps:
 		await _present_step(step)
+		if _teardown_started:
+			return false
 
 	action_feedback_label.text = "%s termina turno." % _short_player_role(acting_player_id)
 	_append_event(acting_player_id, "turn_finished", "%s termina turno" % acting_profile)
 	await _wait_presentation_delay(ai_turn_pause)
+	if _teardown_started:
+		return false
 
 	_presentation_busy = false
 	_set_controls_disabled(false)
@@ -234,10 +259,12 @@ func run_current_ai_turn_presented() -> bool:
 
 
 func run_all_ai_until_human_presented() -> bool:
-	if not setup_ok or _presentation_busy:
+	if _teardown_started or not setup_ok or _presentation_busy:
 		return false
 	var resolved: int = 0
 	while resolved < KarmanyTurnManager.MAX_PLAYERS - 1:
+		if _teardown_started:
+			return false
 		var active := phase_34.runtime.local_session.turn_manager.get_active_player()
 		if active == null:
 			return false
@@ -247,17 +274,26 @@ func run_all_ai_until_human_presented() -> bool:
 		if not phase_34.runtime.ai_match_controller.is_ai_player(active.player_id):
 			return false
 		var turn_ok: bool = await run_current_ai_turn_presented()
-		if not turn_ok:
+		if not turn_ok or _teardown_started:
 			return false
 		resolved += 1
 	return _is_human_logically_active()
 
 
 func wait_for_presentation_idle(max_frames: int = 360) -> bool:
+	if _teardown_started:
+		return false
 	for _index in range(max_frames):
+		if _teardown_started:
+			return false
 		if not _presentation_busy and _queued_external_steps.is_empty():
 			return true
-		await get_tree().process_frame
+		if not is_inside_tree():
+			return false
+		var tree := get_tree()
+		if tree == null:
+			return false
+		await tree.process_frame
 	return false
 
 
@@ -394,6 +430,25 @@ func _connect_gameplay_observers() -> void:
 		manager.turn_ended.connect(_on_turn_ended)
 
 
+func _disconnect_gameplay_observers() -> void:
+	if phase_34 == null or phase_34.runtime == null:
+		return
+	var ai_control := phase_34.runtime.ai_match_controller
+	if ai_control != null:
+		if ai_control.ai_action_chosen.is_connected(_on_ai_action_chosen):
+			ai_control.ai_action_chosen.disconnect(_on_ai_action_chosen)
+		if ai_control.ai_action_executed.is_connected(_on_ai_action_executed):
+			ai_control.ai_action_executed.disconnect(_on_ai_action_executed)
+	var manager := phase_34.runtime.local_session.turn_manager
+	if manager != null:
+		if manager.action_spent.is_connected(_on_action_spent):
+			manager.action_spent.disconnect(_on_action_spent)
+		if manager.turn_started.is_connected(_on_turn_started):
+			manager.turn_started.disconnect(_on_turn_started)
+		if manager.turn_ended.is_connected(_on_turn_ended):
+			manager.turn_ended.disconnect(_on_turn_ended)
+
+
 func _connect_controls() -> void:
 	if not pass_human_button.pressed.is_connected(_on_pass_human_pressed):
 		pass_human_button.pressed.connect(_on_pass_human_pressed)
@@ -410,7 +465,7 @@ func _on_ai_action_chosen(
 	action_label: String,
 	_actions_remaining: int
 ) -> void:
-	if not _capturing_ai_logic:
+	if _teardown_started or not _capturing_ai_logic:
 		return
 	var player := phase_34.runtime.local_session.get_player_by_id(player_id)
 	if player == null:
@@ -428,7 +483,7 @@ func _on_ai_action_executed(
 	success: bool,
 	actions_remaining: int
 ) -> void:
-	if not _capturing_ai_logic:
+	if _teardown_started or not _capturing_ai_logic:
 		return
 	var player := phase_34.runtime.local_session.get_player_by_id(player_id)
 	if player == null:
@@ -455,7 +510,7 @@ func _on_action_spent(
 	_cost: int,
 	_actions_remaining: int
 ) -> void:
-	if player == null:
+	if _teardown_started or player == null:
 		return
 	if _capturing_ai_logic:
 		return
@@ -488,7 +543,7 @@ func _on_turn_started(
 	round_number: int,
 	actions_available: int
 ) -> void:
-	if player == null:
+	if _teardown_started or player == null:
 		return
 	if not _capturing_ai_logic and not _presentation_busy:
 		_set_display_active_player(player.player_id, round_number, actions_available)
@@ -499,12 +554,12 @@ func _on_turn_ended(
 	player: KarmanyPlayerState,
 	_round_number: int
 ) -> void:
-	if player != null and not _capturing_ai_logic:
+	if not _teardown_started and player != null and not _capturing_ai_logic:
 		_append_event(player.player_id, "turn_finished", "%s termina turno" % _short_player_id(player.player_id))
 
 
 func _schedule_external_step_drain() -> void:
-	if _external_drain_scheduled:
+	if _teardown_started or _external_drain_scheduled:
 		return
 	_external_drain_scheduled = true
 	call_deferred("_drain_external_steps")
@@ -512,14 +567,16 @@ func _schedule_external_step_drain() -> void:
 
 func _drain_external_steps() -> void:
 	_external_drain_scheduled = false
-	if _presentation_busy:
+	if _teardown_started or _presentation_busy:
 		return
 	if _queued_external_steps.is_empty():
 		return
 	_presentation_busy = true
-	while not _queued_external_steps.is_empty():
+	while not _teardown_started and not _queued_external_steps.is_empty():
 		var step: Dictionary = _queued_external_steps.pop_front()
 		await _present_step(step)
+	if _teardown_started:
+		return
 	_presentation_busy = false
 	_sync_display_to_logical_active()
 	_refresh_public_hud()
@@ -527,6 +584,8 @@ func _drain_external_steps() -> void:
 
 func _collect_new_logical_reveals() -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
+	if _teardown_started:
+		return result
 	for coord in phase_34.runtime.board_state.get_coords():
 		if not phase_34.runtime.board_state.is_revealed(coord):
 			continue
@@ -538,6 +597,8 @@ func _collect_new_logical_reveals() -> Array[Vector2i]:
 
 
 func _present_step(step: Dictionary) -> void:
+	if _teardown_started:
+		return
 	var player_id: StringName = StringName(step.get("player_id", ""))
 	var unit := get_trainer_unit(player_id)
 	if player_id == &"" or unit == null:
@@ -569,22 +630,32 @@ func _present_step(step: Dictionary) -> void:
 		var from_position: Vector3 = unit.global_position
 		feedback.animate_unit_move(unit, from_position, target_position)
 		await _wait_presentation_delay(feedback.movement_duration)
+		if _teardown_started:
+			return
 		_snap_unit_to_visual_coord(player_id, destination)
 		_visual_coord_by_player[player_id] = destination
 
 	var revealed_value: Variant = step.get("revealed_coords", [])
 	if revealed_value is Array:
 		for coord_value in revealed_value:
+			if _teardown_started:
+				return
 			if coord_value is Vector2i:
 				var revealed_coord: Vector2i = coord_value
 				await _present_tile_reveal(revealed_coord)
 
+	if _teardown_started:
+		return
 	_refresh_public_hud()
 	await _wait_presentation_delay(ai_action_pause)
+	if _teardown_started:
+		return
 	visual_action_finished.emit(player_id, feedback_text)
 
 
 func _present_tile_reveal(coord: Vector2i) -> void:
+	if _teardown_started:
+		return
 	var tile := _get_tile_view(coord)
 	var cell := phase_34.runtime.board_state.get_cell(coord)
 	if tile == null or cell == null or not cell.revealed:
@@ -666,6 +737,8 @@ func _get_camera_controller() -> KarmanyStrategicCameraController:
 
 
 func _focus_player_visual(player_id: StringName) -> void:
+	if _teardown_started:
+		return
 	var unit := get_trainer_unit(player_id)
 	var controller := _get_camera_controller()
 	if unit != null and controller != null:
@@ -673,6 +746,8 @@ func _focus_player_visual(player_id: StringName) -> void:
 
 
 func _focus_coord(coord: Vector2i) -> void:
+	if _teardown_started:
+		return
 	var tile := _get_tile_view(coord)
 	var controller := _get_camera_controller()
 	if tile != null and controller != null:
@@ -684,6 +759,8 @@ func _set_display_active_player(
 	round_number: int = -1,
 	actions_remaining: int = -1
 ) -> void:
+	if _teardown_started:
+		return
 	_display_active_player_id = player_id
 	if round_number >= 0:
 		_display_round_number = round_number
@@ -697,6 +774,8 @@ func _set_display_active_player(
 
 
 func _sync_display_to_logical_active() -> void:
+	if _teardown_started or phase_34 == null or phase_34.runtime == null:
+		return
 	var manager := phase_34.runtime.local_session.turn_manager
 	var active := manager.get_active_player()
 	if active != null:
@@ -708,7 +787,7 @@ func _sync_display_to_logical_active() -> void:
 
 
 func _refresh_active_label() -> void:
-	if active_turn_label == null or phase_34 == null or phase_34.runtime == null:
+	if _teardown_started or active_turn_label == null or phase_34 == null or phase_34.runtime == null:
 		return
 	var role: String = _long_player_role(_display_active_player_id)
 	active_turn_label.text = "%s — TURNO | Ronda %d | acciones %d/2" % [
@@ -719,7 +798,7 @@ func _refresh_active_label() -> void:
 
 
 func _refresh_public_hud() -> void:
-	if phase_34 == null or phase_34.runtime == null:
+	if _teardown_started or phase_34 == null or phase_34.runtime == null:
 		return
 	_refresh_active_label()
 	var lines: PackedStringArray = PackedStringArray()
@@ -751,14 +830,20 @@ func _set_controls_disabled(value: bool) -> void:
 	if pass_human_button == null:
 		return
 	var active: KarmanyPlayerState = null
-	if phase_34 != null and phase_34.runtime != null:
+	if not _teardown_started and phase_34 != null and phase_34.runtime != null:
 		active = phase_34.runtime.local_session.turn_manager.get_active_player()
-	var human_active: bool = active != null and phase_34.runtime.ai_match_controller.is_human_player(active.player_id)
-	var ai_active: bool = active != null and phase_34.runtime.ai_match_controller.is_ai_player(active.player_id)
-	pass_human_button.disabled = value or not human_active
-	run_ai_button.disabled = value or not ai_active
-	run_all_ai_button.disabled = value or not ai_active
-	center_human_button.disabled = value
+	var human_active: bool = (
+		active != null
+		and phase_34.runtime.ai_match_controller.is_human_player(active.player_id)
+	)
+	var ai_active: bool = (
+		active != null
+		and phase_34.runtime.ai_match_controller.is_ai_player(active.player_id)
+	)
+	pass_human_button.disabled = value or _teardown_started or not human_active
+	run_ai_button.disabled = value or _teardown_started or not ai_active
+	run_all_ai_button.disabled = value or _teardown_started or not ai_active
+	center_human_button.disabled = value or _teardown_started
 
 
 func _build_feedback_text(
@@ -817,6 +902,8 @@ func _append_event(
 	kind: String,
 	text: String
 ) -> void:
+	if _teardown_started:
+		return
 	_presentation_events.append({
 		"player_id": player_id,
 		"kind": kind,
@@ -827,28 +914,43 @@ func _append_event(
 
 
 func _is_human_logically_active() -> bool:
+	if _teardown_started or phase_34 == null or phase_34.runtime == null:
+		return false
 	var active := phase_34.runtime.local_session.turn_manager.get_active_player()
 	return active != null and phase_34.runtime.ai_match_controller.is_human_player(active.player_id)
 
 
 func _wait_presentation_delay(base_seconds: float) -> void:
+	if _teardown_started:
+		return
 	var duration: float = maxf(base_seconds / presentation_speed_multiplier, 0.0)
 	if duration <= 0.0:
 		return
-	await get_tree().create_timer(duration).timeout
+	if not is_inside_tree():
+		return
+	var tree := get_tree()
+	if tree == null:
+		return
+	await tree.create_timer(duration).timeout
 
 
 func _on_pass_human_pressed() -> void:
-	pass_human_turn_presented()
+	if not _teardown_started:
+		pass_human_turn_presented()
 
 
 func _on_run_ai_pressed() -> void:
+	if _teardown_started:
+		return
 	await run_current_ai_turn_presented()
 
 
 func _on_run_all_ai_pressed() -> void:
+	if _teardown_started:
+		return
 	await run_all_ai_until_human_presented()
 
 
 func _on_center_human_pressed() -> void:
-	center_on_human()
+	if not _teardown_started:
+		center_on_human()
