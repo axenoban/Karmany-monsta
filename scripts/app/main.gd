@@ -180,6 +180,20 @@ func _bind_full_session() -> void:
 		active_full_session.result_ready.connect(result_cb)
 
 
+func _disconnect_active_shell_signals() -> void:
+	if active_human_setup != null:
+		var confirmed_cb := Callable(self, "_on_human_setup_confirmed")
+		var playing_cb := Callable(self, "_on_playing_started")
+		if active_human_setup.human_setup_confirmed.is_connected(confirmed_cb):
+			active_human_setup.human_setup_confirmed.disconnect(confirmed_cb)
+		if active_human_setup.playing_started.is_connected(playing_cb):
+			active_human_setup.playing_started.disconnect(playing_cb)
+	if active_full_session != null:
+		var result_cb := Callable(self, "_on_match_result_ready")
+		if active_full_session.result_ready.is_connected(result_cb):
+			active_full_session.result_ready.disconnect(result_cb)
+
+
 func _on_human_setup_confirmed() -> void:
 	_bind_full_session()
 
@@ -203,6 +217,7 @@ func _on_match_result_ready(result: Dictionary) -> void:
 
 
 func _destroy_active_match() -> void:
+	_disconnect_active_shell_signals()
 	if active_human_setup != null and active_human_setup.runtime != null:
 		var runtime := active_human_setup.runtime
 		if runtime.local_session != null:
