@@ -196,9 +196,9 @@ func _on_match_result_ready(result: Dictionary) -> void:
 	completed_match_count += 1
 	_render_result(final_result)
 	_set_app_state(AppState.RESULT)
-	# La presentacion de resultado pertenece al shell. El arbol completo de la
-	# partida se retira del SceneTree de inmediato y se libera al final del frame.
-	_destroy_active_match()
+	# El runtime ya esta FINISHED y TurnManager detenido. Se conserva unicamente
+	# mientras el jugador ve RESULT para no invalidar callbacks/coroutines del
+	# frame final. NUEVA PARTIDA o MENÚ destruyen la raiz completa antes de seguir.
 	result_presented.emit(final_result.duplicate(true))
 
 
