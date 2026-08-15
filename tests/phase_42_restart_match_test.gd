@@ -36,6 +36,7 @@ func _run_test() -> bool:
 	if runtime_a == null or setup_a == null:
 		return _fail("Partida A no creo runtime/setup.")
 	var root_a := shell.active_match_root
+	var phase_35_a := root_a.phase_37.phase_36.phase_35 if root_a != null else null
 	var board_a := runtime_a.board_state
 	var turn_manager_a := runtime_a.local_session.turn_manager
 	var player_a := runtime_a.local_session.get_player_by_id(&"player_1")
@@ -62,6 +63,8 @@ func _run_test() -> bool:
 		return _fail("Partida A retenida en RESULT no esta detenida/FINISHED.")
 	if root_a == null or not root_a.is_inside_tree():
 		return _fail("Raiz A no esta en SceneTree antes del restart.")
+	if phase_35_a == null or not phase_35_a.is_inside_tree():
+		return _fail("F35 de A no esta dentro del SceneTree antes del restart.")
 
 	if not shell.start_new_match(SEED_B):
 		return _fail("No se pudo crear Partida B: %s" % shell.last_error)
@@ -71,9 +74,13 @@ func _run_test() -> bool:
 		return _fail("Restart no marco la raiz A para liberacion diferida.")
 	if not root_a.is_inside_tree():
 		return _fail("Restart convirtio A en [Orphan] antes de completar su teardown.")
+	if not is_instance_valid(phase_35_a) or not phase_35_a.is_inside_tree():
+		return _fail("F35 de A quedo [Orphan] mientras A esperaba queue_free.")
 	await get_tree().process_frame
 	if is_instance_valid(root_a):
 		return _fail("Raiz A sigue viva despues del frame de teardown.")
+	if is_instance_valid(phase_35_a):
+		return _fail("F35 de A sigue vivo despues de liberar la Partida A.")
 
 	var runtime_b := shell.get_active_runtime()
 	var setup_b := shell.get_active_human_setup()
@@ -123,8 +130,11 @@ func _run_test() -> bool:
 		return _fail("Partida B retenida en RESULT no esta detenida/FINISHED.")
 
 	var root_b := shell.active_match_root
+	var phase_35_b := root_b.phase_37.phase_36.phase_35 if root_b != null else null
 	if root_b == null or not root_b.is_inside_tree():
 		return _fail("Raiz B no esta en SceneTree antes de volver al menu.")
+	if phase_35_b == null or not phase_35_b.is_inside_tree():
+		return _fail("F35 de B no esta dentro del SceneTree antes del menu.")
 	shell.return_to_main_menu()
 	if not is_instance_valid(root_b):
 		return _fail("Menu libero B inmediatamente en vez de queue_free seguro.")
@@ -132,9 +142,13 @@ func _run_test() -> bool:
 		return _fail("Menu no marco B para liberacion diferida.")
 	if not root_b.is_inside_tree():
 		return _fail("Menu convirtio B en [Orphan] durante teardown.")
+	if not is_instance_valid(phase_35_b) or not phase_35_b.is_inside_tree():
+		return _fail("F35 de B quedo [Orphan] durante teardown al menu.")
 	await get_tree().process_frame
 	if is_instance_valid(root_b):
 		return _fail("Raiz B sigue viva despues del frame de teardown.")
+	if is_instance_valid(phase_35_b):
+		return _fail("F35 de B sigue vivo despues de liberar la Partida B.")
 	if shell.app_state != KarmanyAlphaGameShell.AppState.MAIN_MENU:
 		return _fail("No se pudo regresar al menu tras la segunda partida.")
 	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
