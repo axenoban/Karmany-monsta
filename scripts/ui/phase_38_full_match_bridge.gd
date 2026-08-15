@@ -353,7 +353,10 @@ func _run_auto_match_visual() -> void:
 				action_label.text = full_session.last_error
 			break
 		var phase_35 := phase_37.phase_36.phase_35
-		if phase_35 == null or not await phase_35.wait_for_presentation_idle():
+		if phase_35 == null:
+			break
+		var presentation_idle: bool = await phase_35.wait_for_presentation_idle()
+		if not presentation_idle:
 			break
 		if _teardown_started or not is_inside_tree():
 			break
@@ -418,9 +421,10 @@ func _drive_ai_until_human() -> void:
 			action_label.text = full_session.last_error
 			break
 		var phase_35 := phase_37.phase_36.phase_35
-		if phase_35 == null or not await phase_35.wait_for_presentation_idle():
+		if phase_35 == null:
 			break
-		if _teardown_started:
+		var presentation_idle: bool = await phase_35.wait_for_presentation_idle()
+		if not presentation_idle or _teardown_started:
 			break
 		_refresh_ui()
 	_ai_driver_busy = false
@@ -447,9 +451,10 @@ func _reconcile_visuals_to_logic() -> void:
 	if _teardown_started or full_session == null:
 		return
 	var phase_35 := phase_37.phase_36.phase_35
-	if phase_35 == null or not await phase_35.wait_for_presentation_idle():
+	if phase_35 == null:
 		return
-	if _teardown_started:
+	var presentation_idle: bool = await phase_35.wait_for_presentation_idle()
+	if not presentation_idle or _teardown_started:
 		return
 	var phase_31 := phase_35.phase_34.phase_32.phase_31
 	if phase_31 == null:
