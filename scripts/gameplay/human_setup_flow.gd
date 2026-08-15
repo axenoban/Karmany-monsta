@@ -143,7 +143,11 @@ func confirm_starting_candidate() -> bool:
 
 	var human_player := runtime.local_session.get_player_by_id(runtime.human_player_id)
 	var active := human_player.get_active_karmany() if human_player != null else null
-	if active == null or active.data == null or active.data.karmany_id != selected.karmany_id:
+	if (
+		active == null
+		or active.karmany_data == null
+		or active.karmany_data.karmany_id != selected.karmany_id
+	):
 		manager.stop_match()
 		return _fail("La eleccion confirmada no se convirtio en Karmany activo de P1.")
 
