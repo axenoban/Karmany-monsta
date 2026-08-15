@@ -35,6 +35,7 @@ func _run_test() -> bool:
 	var setup_a := shell.get_active_human_setup()
 	if runtime_a == null or setup_a == null:
 		return _fail("Partida A no creo runtime/setup.")
+	var root_a := shell.active_match_root
 	var board_a := runtime_a.board_state
 	var turn_manager_a := runtime_a.local_session.turn_manager
 	var player_a := runtime_a.local_session.get_player_by_id(&"player_1")
@@ -59,10 +60,21 @@ func _run_test() -> bool:
 		return _fail("RESULT A no conserva temporalmente la partida FINISHED hasta navegar.")
 	if turn_manager_a.is_running or session_a.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
 		return _fail("Partida A retenida en RESULT no esta detenida/FINISHED.")
+	if root_a == null or not root_a.is_inside_tree():
+		return _fail("Raiz A no esta en SceneTree antes del restart.")
 
 	if not shell.start_new_match(SEED_B):
 		return _fail("No se pudo crear Partida B: %s" % shell.last_error)
+	if not is_instance_valid(root_a):
+		return _fail("Restart libero A inmediatamente; se esperaba queue_free al final del frame.")
+	if not root_a.is_queued_for_deletion():
+		return _fail("Restart no marco la raiz A para liberacion diferida.")
+	if not root_a.is_inside_tree():
+		return _fail("Restart convirtio A en [Orphan] antes de completar su teardown.")
 	await get_tree().process_frame
+	if is_instance_valid(root_a):
+		return _fail("Raiz A sigue viva despues del frame de teardown.")
+
 	var runtime_b := shell.get_active_runtime()
 	var setup_b := shell.get_active_human_setup()
 	if runtime_b == null or setup_b == null:
@@ -85,7 +97,7 @@ func _run_test() -> bool:
 	if not shell.final_result.is_empty():
 		return _fail("Nueva Partida B conserva informacion de resultado de A.")
 	if shell.get_match_host_child_count() != 1:
-		return _fail("Partida B no es la unica UI de partida montada.")
+		return _fail("Partida B no es la unica UI de partida montada despues del frame de teardown.")
 
 	if not shell.select_starting_karmany(1) or not shell.confirm_starting_karmany():
 		return _fail("Partida B no completo setup F41.")
@@ -110,14 +122,31 @@ func _run_test() -> bool:
 	if manager_b.is_running or session_b.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
 		return _fail("Partida B retenida en RESULT no esta detenida/FINISHED.")
 
+	var root_b := shell.active_match_root
+	if root_b == null or not root_b.is_inside_tree():
+		return _fail("Raiz B no esta en SceneTree antes de volver al menu.")
 	shell.return_to_main_menu()
+	if not is_instance_valid(root_b):
+		return _fail("Menu libero B inmediatamente en vez de queue_free seguro.")
+	if not root_b.is_queued_for_deletion():
+		return _fail("Menu no marco B para liberacion diferida.")
+	if not root_b.is_inside_tree():
+		return _fail("Menu convirtio B en [Orphan] durante teardown.")
 	await get_tree().process_frame
+	if is_instance_valid(root_b):
+		return _fail("Raiz B sigue viva despues del frame de teardown.")
 	if shell.app_state != KarmanyAlphaGameShell.AppState.MAIN_MENU:
 		return _fail("No se pudo regresar al menu tras la segunda partida.")
 	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
 		return _fail("Menu final conserva UI/runtime de alguna partida.")
 
-	print("F42 RESTART | A=%d | B=%d | runtimes_distintos=true | resultados=%d" % [
+	# Da un frame extra a callbacks diferidos del arbol anterior. No deben poder
+	# reactivar estado ni producir accesos a nodos huérfanos.
+	await get_tree().process_frame
+	if shell.get_match_host_child_count() != 0:
+		return _fail("Callback tardio de A/B volvio a montar una partida retirada.")
+
+	print("F42 RESTART | A=%d | B=%d | runtimes_distintos=true | resultados=%d | orphan=false" % [
 		SEED_A,
 		SEED_B,
 		shell.completed_match_count
