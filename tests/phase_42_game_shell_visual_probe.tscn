@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://d42visualprobe" path="res://tests/phase_42_game_shell_visual_probe.gd" id="1_probe"]
+[ext_resource type="PackedScene" path="res://scenes/app/main.tscn" id="2_shell"]
+
+[node name="Phase42GameShellVisualProbe" type="Node"]
+script = ExtResource("1_probe")
+
+[node name="KarmanyAlphaGameShell" parent="." instance=ExtResource("2_shell")]
