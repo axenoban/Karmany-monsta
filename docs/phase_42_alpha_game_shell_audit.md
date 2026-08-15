@@ -86,7 +86,9 @@ El shell escucha el `result_ready` del mismo `KarmanyFullMatchSession` materiali
 - `NUEVA PARTIDA`;
 - `MENÚ PRINCIPAL`.
 
-Después de copiar el resultado, la raíz completa de la partida se retira de `MatchHost` y se agenda para liberación. El resultado no depende de mantener vivo el runtime anterior.
+Mientras RESULT está visible, la partida que acaba de terminar puede permanecer temporalmente montada, pero está en `FINISHED` y su `TurnManager` ya está detenido. Esto evita invalidar callbacks/coroutines del mismo frame en el que se emitió `result_ready`.
+
+La partida anterior se destruye de forma obligatoria al elegir `NUEVA PARTIDA` o `MENÚ PRINCIPAL`, antes de continuar al siguiente estado de aplicación.
 
 ## Lifecycle y limpieza
 
@@ -96,15 +98,15 @@ Después de copiar el resultado, la raíz completa de la partida se retira de `M
 - `KarmanyHumanSetupFlow`;
 - `KarmanyFullMatchSession`.
 
-Al terminar, volver al menú o iniciar una nueva partida:
+Al abandonar RESULT, cancelar una partida o iniciar otra:
 
 1. se detiene `TurnManager` si todavía estuviera activo;
-2. se eliminan las referencias del shell;
-3. la raíz F41 se retira inmediatamente de `MatchHost`;
+2. se eliminan las referencias activas del shell;
+3. la raíz F41 anterior se retira de `MatchHost`;
 4. la raíz se libera mediante `queue_free()`;
 5. la siguiente partida instancia una cadena F31–F41 completamente nueva.
 
-Esto evita reutilizar jugadores, manos, señales, BoardState, IA, CanvasLayers o callbacks de la partida anterior.
+Por diseño nunca se añade la nueva raíz F41 antes de retirar la anterior. Esto evita reutilizar jugadores, manos, señales, BoardState, IA, CanvasLayers o callbacks de la partida anterior.
 
 ## Seed
 
@@ -131,12 +133,12 @@ Valida lógicamente:
 - el mismo FullMatchSession puede completarse automáticamente;
 - FINISHED produce RESULT;
 - RESULT conserva seed/rondas/resultado autoritativo;
-- la partida se desmonta;
-- volver al menú deja cero partidas activas.
+- la partida retenida durante RESULT está detenida y FINISHED;
+- volver al menú desmonta la partida y deja cero partidas activas.
 
 ### `tests/phase_42_restart_match_test.tscn`
 
-Ejecuta dos partidas consecutivas con seeds distintas y verifica que Runtime, BoardState, TurnManager, PlayerState y FullMatchSession de A no sean reutilizados por B. También comprueba cuatro participantes, R1/2 acciones al reiniciar y exactamente un evento de resultado por partida.
+Ejecuta dos partidas consecutivas con seeds distintas. Al crear B, A se destruye antes de montar la nueva raíz. El test verifica que Runtime, BoardState, TurnManager, PlayerState y FullMatchSession de A no sean reutilizados por B. También comprueba cuatro participantes, R1/2 acciones al reiniciar, una sola UI activa y exactamente un evento de resultado por partida.
 
 ### `tests/phase_42_game_shell_visual_probe.tscn`
 
@@ -162,6 +164,18 @@ El último paso técnico de F42 cambia `run/main_scene` a:
 `res://scenes/app/main.tscn`
 
 La validación final de usuario pasa a ser F5.
+
+## Verificación disponible en el entorno remoto
+
+Desde GitHub se verificó que:
+
+- la rama F42 parte linealmente del HEAD aprobado de F41;
+- los archivos nuevos y modificados existen en la rama correcta;
+- `project.godot` apunta a `res://scenes/app/main.tscn`;
+- no se integró F42 a `dev/karmany-core` ni a `main`;
+- no existen checks CI asociados al HEAD de F42.
+
+El entorno remoto utilizado para editar el repositorio no dispone de un ejecutable Godot. Por ello la compilación/parser/runtime real de Godot 4.7.1 y las regresiones F38–F42 permanecen pendientes de validación local.
 
 ## Limitaciones Alpha preservadas
 
