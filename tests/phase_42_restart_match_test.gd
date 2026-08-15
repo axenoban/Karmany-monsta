@@ -55,8 +55,10 @@ func _run_test() -> bool:
 	var result_a: Dictionary = shell.final_result.duplicate(true)
 	if int(result_a.get("seed", 0)) != SEED_A:
 		return _fail("Resultado A perdio su seed.")
-	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
-		return _fail("Partida A sigue montada despues de RESULT.")
+	if not shell.has_active_match() or shell.get_match_host_child_count() != 1:
+		return _fail("RESULT A no conserva temporalmente la partida FINISHED hasta navegar.")
+	if turn_manager_a.is_running or session_a.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
+		return _fail("Partida A retenida en RESULT no esta detenida/FINISHED.")
 
 	if not shell.start_new_match(SEED_B):
 		return _fail("No se pudo crear Partida B: %s" % shell.last_error)
@@ -81,7 +83,7 @@ func _run_test() -> bool:
 	if manager_b.is_running or manager_b.actions_remaining != 0:
 		return _fail("Partida B heredo una ronda/acciones antes de terminar SETUP.")
 	if not shell.final_result.is_empty():
-		return _fail("Nueva Partida B conserva informacion de resultado privada/publica de A.")
+		return _fail("Nueva Partida B conserva informacion de resultado de A.")
 	if shell.get_match_host_child_count() != 1:
 		return _fail("Partida B no es la unica UI de partida montada.")
 
@@ -103,8 +105,10 @@ func _run_test() -> bool:
 		return _fail("Las dos partidas no produjeron exactamente dos resultados.")
 	if int(shell.final_result.get("seed", 0)) != SEED_B:
 		return _fail("Resultado B contiene seed/estado de A.")
-	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
-		return _fail("Partida B queda montada despues de FINISHED.")
+	if not shell.has_active_match() or shell.get_match_host_child_count() != 1:
+		return _fail("RESULT B perdio la partida FINISHED antes de navegar al menu.")
+	if manager_b.is_running or session_b.match_state != KarmanyFullMatchSession.MatchState.FINISHED:
+		return _fail("Partida B retenida en RESULT no esta detenida/FINISHED.")
 
 	shell.return_to_main_menu()
 	await get_tree().process_frame
