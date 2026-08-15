@@ -100,6 +100,9 @@ func _run_test() -> bool:
 	var finished_root := shell.active_match_root
 	if finished_root == null or not finished_root.is_inside_tree():
 		return _fail("La raiz FINISHED no esta dentro del SceneTree antes de navegar.")
+	var finished_phase_35 := finished_root.phase_37.phase_36.phase_35
+	if finished_phase_35 == null or not finished_phase_35.is_inside_tree():
+		return _fail("F35 no esta dentro del SceneTree antes del teardown.")
 	shell.return_to_main_menu()
 	if not is_instance_valid(finished_root):
 		return _fail("Teardown libero la raiz de forma inmediata en vez de usar queue_free seguro.")
@@ -107,9 +110,13 @@ func _run_test() -> bool:
 		return _fail("Teardown no marco la raiz anterior para queue_free.")
 	if not finished_root.is_inside_tree():
 		return _fail("Teardown convirtio la raiz anterior en [Orphan] antes de queue_free.")
+	if not is_instance_valid(finished_phase_35) or not finished_phase_35.is_inside_tree():
+		return _fail("F35 quedo [Orphan] mientras la raiz esperaba queue_free.")
 	await get_tree().process_frame
 	if is_instance_valid(finished_root):
 		return _fail("La raiz anterior sigue viva despues del frame de liberacion diferida.")
+	if is_instance_valid(finished_phase_35):
+		return _fail("F35 sigue vivo despues de liberar la raiz de partida.")
 	if shell.app_state != KarmanyAlphaGameShell.AppState.MAIN_MENU:
 		return _fail("MENÚ PRINCIPAL no recupera MAIN_MENU.")
 	if shell.has_active_match() or shell.get_match_host_child_count() != 0:
