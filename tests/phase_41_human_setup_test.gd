@@ -66,9 +66,9 @@ func _run_test() -> bool:
 	if flow.confirm_starting_candidate():
 		return _fail("Confirmacion sin seleccion fue aceptada.")
 
-	const CHOSEN_INDEX: int = 1
-	var expected: KarmanyData = candidates[CHOSEN_INDEX]
-	if not flow.select_starting_candidate(CHOSEN_INDEX):
+	var chosen_index: int = 1
+	var expected: KarmanyData = candidates[chosen_index]
+	if not flow.select_starting_candidate(chosen_index):
 		return _fail("No se pudo seleccionar candidato indice 1.")
 	if p1.has_active_karmany():
 		return _fail("Seleccionar visualmente ya vinculo un Karmany antes de confirmar.")
@@ -122,6 +122,8 @@ func _run_test() -> bool:
 	var full_session := flow.get_full_session()
 	if full_session == null or full_session.match_state != KarmanyFullMatchSession.MatchState.SETUP:
 		return _fail("FullMatchSession no permanece en SETUP antes de iniciar partida.")
+	if not _verify_ai_setup_determinism(full_session, chosen_index):
+		return false
 	if runtime.local_session.turn_manager.is_running:
 		return _fail("TurnManager se reactivo antes del boton de iniciar partida.")
 	if not flow.start_playing():
@@ -142,6 +144,32 @@ func _run_test() -> bool:
 		own_hand.size(),
 		String(own_mission.mission_id)
 	])
+	return true
+
+
+func _verify_ai_setup_determinism(
+	first_session: KarmanyFullMatchSession,
+	chosen_index: int
+) -> bool:
+	var runtime_b := KarmanyMultiAiAlphaRuntime.new()
+	if not runtime_b.configure_new(4, TEST_SEED, &"player_1"):
+		return _fail("Determinismo: segundo runtime no pudo configurarse.")
+	var flow_b := KarmanyHumanSetupFlow.new()
+	if not flow_b.configure(runtime_b):
+		return _fail("Determinismo: segundo setup F41 fallo.")
+	var candidates_b := flow_b.get_human_starting_candidates(&"player_1")
+	if candidates_b.size() != 3:
+		return _fail("Determinismo: segundo setup no produjo 3 candidatos.")
+	if not flow_b.select_starting_candidate(chosen_index) or not flow_b.confirm_starting_candidate():
+		return _fail("Determinismo: no pudo repetirse la misma eleccion humana.")
+	var second_session := flow_b.get_full_session()
+	if second_session == null:
+		return _fail("Determinismo: segundo FullMatchSession inexistente.")
+	for ai_id in [&"player_2", &"player_3", &"player_4"]:
+		var first_data: KarmanyData = first_session.starting_karmany_by_player.get(ai_id, null) as KarmanyData
+		var second_data: KarmanyData = second_session.starting_karmany_by_player.get(ai_id, null) as KarmanyData
+		if first_data == null or second_data == null or first_data.karmany_id != second_data.karmany_id:
+			return _fail("Determinismo: %s cambio de Karmany con misma seed y misma eleccion." % String(ai_id))
 	return true
 
 
