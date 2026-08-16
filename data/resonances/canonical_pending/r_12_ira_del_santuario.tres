@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-12"
+display_name = "Ira del Santuario"
+resonance_type = 0
+printed_power = 5
+use_windows = PackedStringArray("combat")
+rules_text = "Contra Jefes o Legendario, gana +3 Poder adicional."
+tags = PackedStringArray("canonical_v074", "pending_f44")

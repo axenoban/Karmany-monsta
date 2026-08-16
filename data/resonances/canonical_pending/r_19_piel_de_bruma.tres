@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-19"
+display_name = "Piel de Bruma"
+resonance_type = 1
+printed_power = 0
+use_windows = PackedStringArray("reaction")
+rules_text = "Juega cuando pierdas un combate: no retrocedes."
+tags = PackedStringArray("canonical_v074", "pending_f44")
