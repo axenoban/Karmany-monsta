@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k06_canonical_ability"
+display_name = "Pequeno Veloz"
+trigger_id = &"pending_f44"
+rules_text = "Despues de explorar una loseta Nivel 1, mira 1 loseta oculta adyacente."
+effect_tags = PackedStringArray("explore", "information")
+
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-06"
+display_name = "Brisu"
+subtitle = "Pequeno Veloz"
+rank = 1
+compatible_ranks = PackedInt32Array(1)
+primary_type = 2
+type_tags = PackedStringArray("Tactico")
+power = 5
+encounter_defense = 8
+acquisition_text = "Paga 2 EK o derrota Defensa 8"
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+bond_cost = {2: 2}
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])
