@@ -17,4 +17,4 @@ balance_text = "Convierte cartas +0 en breakpoints reales de combate sin mantene
 passive_id = &"maelis_zero_draw"
 active_id = &"maelis_zero_to_four"
 setup_bonus_id = &"maelis_setup_filter"
-automation_status = 0
+automation_status = 1
