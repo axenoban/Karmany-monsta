@@ -13,6 +13,6 @@ on_explore_text = "Elige: muevete 1 loseta revelada adyacente; o mira una loseta
 entry_bonus_text = "Entrada: Mira 1 loseta oculta adyacente."
 later_use_text = "Moverte 1 loseta revelada o mirar una loseta oculta adyacente."
 limit_text = "-"
-interaction_profile_id = &"pending_f44"
+interaction_profile_id = &"free_move"
 starts_revealed = false
 can_rotate_visual = true
