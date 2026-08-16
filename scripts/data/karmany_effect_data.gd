@@ -10,7 +10,8 @@ enum EffectType {
 	MODIFY_STATE,
 	ACTIVATE_CONDITION,
 	TRIGGER_ENCOUNTER,
-	DISCARD_CARDS
+	DISCARD_CARDS,
+	DRAW_DISCARD_CARDS
 }
 
 
@@ -33,6 +34,9 @@ enum StateOperation {
 
 @export var effect_type: EffectType = EffectType.NONE
 @export var amount: int = 0
+# Optional second quantity for compound effects. F44 currently uses it for
+# DRAW_DISCARD_CARDS: amount = cards drawn, secondary_amount = cards discarded.
+@export var secondary_amount: int = 0
 
 
 @export_group("Resource")
