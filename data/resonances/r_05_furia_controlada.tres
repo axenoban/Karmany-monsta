@@ -26,5 +26,5 @@ resonance_type = 0
 printed_power = 6
 use_windows = PackedStringArray("combat")
 effect_blocks = Array[ExtResource("2_block")]([SubResource("R05AfterLoss")])
-rules_text = "Solo PvP legal: +6 Poder. Si pierdes, descarta 1 Resonancia adicional de tu mano si tienes. Puedes lanzar Dado de Riesgo 2.0 aunque tu Karmany no sea Salvaje; aplica resultados 1-6 completos. No puede combinarse con otro efecto que permita Dado en este PvP."
-tags = PackedStringArray("ataque", "pvp", "risk_authorization")
+rules_text = "Solo PvP legal. Si pierdes, descarta 1 Resonancia adicional de tu mano si tienes. Puedes lanzar Dado de Riesgo 2.0 aunque tu Karmany no sea Salvaje; aplica resultados 1-6 completos. No puede combinarse con otro efecto que permita Dado en este PvP."
+tags = PackedStringArray("ataque", "pvp", "risk_authorization", "canonical_v074")
