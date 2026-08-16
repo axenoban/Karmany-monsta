@@ -44,6 +44,9 @@ static func apply_effect(
 		KarmanyEffectData.EffectType.DISCARD_CARDS:
 			return _apply_discard_cards(effect, player, context)
 
+		KarmanyEffectData.EffectType.DRAW_DISCARD_CARDS:
+			return _apply_draw_discard_cards(effect, player, context)
+
 		KarmanyEffectData.EffectType.MODIFY_STATE:
 			return _apply_modify_state(effect, player, context)
 
@@ -216,6 +219,53 @@ static func _apply_discard_cards(
 		effect,
 		effect.amount,
 		"Descarte de cartas delegado al contexto."
+	)
+
+
+static func _apply_draw_discard_cards(
+	effect: KarmanyEffectData,
+	player: KarmanyPlayerState,
+	context: KarmanyEffectContext
+) -> KarmanyEffectResult:
+	if (
+		effect.amount <= 0
+		or effect.secondary_amount <= 0
+		or effect.card_source_id == &""
+	):
+		return _result(
+			KarmanyEffectResult.Status.INVALID_EFFECT,
+			effect,
+			0,
+			"DRAW_DISCARD_CARDS requiere robo, descarte y card_source_id validos."
+		)
+	if context == null:
+		return _missing_context(effect)
+	if not context.has_draw_cards_handler():
+		return _missing_handler(effect, "draw_cards_handler")
+	if not context.has_discard_cards_handler():
+		return _missing_handler(effect, "discard_cards_handler")
+
+	var draw_result: Variant = context.draw_cards_handler.call(
+		effect.card_source_id,
+		effect.amount,
+		player
+	)
+	if not _callback_succeeded(draw_result):
+		return _failed_handler(effect, "draw_cards_handler")
+
+	var discard_result: Variant = context.discard_cards_handler.call(
+		effect.card_source_id,
+		effect.secondary_amount,
+		player
+	)
+	if not _callback_succeeded(discard_result):
+		return _failed_handler(effect, "discard_cards_handler")
+
+	return _result(
+		KarmanyEffectResult.Status.APPLIED,
+		effect,
+		effect.amount,
+		"Robo y descarte de cartas delegados al contexto."
 	)
 
 
