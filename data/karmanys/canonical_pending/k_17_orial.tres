@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k17_canonical_ability"
+trigger_id = &"pending_f44"
+rules_text = "Cuando defiendes en PvP, gana +2 Poder."
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-17"
+display_name = "Orial"
+subtitle = "Ciervo Luminico"
+rank = 2
+compatible_ranks = PackedInt32Array(2)
+primary_type = 3
+type_tags = PackedStringArray("Defensivo")
+power = 8
+encounter_defense = 12
+acquisition_text = "Paga 3 EK o derrota Defensa 12"
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+bond_cost = {2: 3}
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])

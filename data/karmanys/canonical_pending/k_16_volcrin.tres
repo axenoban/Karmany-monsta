@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k16_canonical_ability"
+trigger_id = &"pending_f44"
+rules_text = "Puedes lanzar el Dado de Riesgo 2.0. Si sale 1, ademas de la penalizacion del dado, descarta 1 Resonancia."
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-16"
+display_name = "Volcrin"
+subtitle = "Ala de Ceniza"
+rank = 2
+compatible_ranks = PackedInt32Array(2)
+primary_type = 1
+type_tags = PackedStringArray("Salvaje")
+power = 8
+encounter_defense = 14
+acquisition_text = "Derrota Defensa 14"
+can_acquire_by_defeat = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])

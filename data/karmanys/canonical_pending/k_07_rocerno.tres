@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k07_canonical_ability"
+trigger_id = &"pending_f44"
+usage_limit = 2
+rules_text = "La primera vez por ronda que una derrota te haga perder recursos basicos, pierde 2 recursos menos."
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-07"
+display_name = "Rocerno"
+subtitle = "Cria de Piedra"
+rank = 1
+compatible_ranks = PackedInt32Array(1)
+primary_type = 3
+type_tags = PackedStringArray("Defensivo")
+power = 5
+encounter_defense = 9
+acquisition_text = "Paga 2 MR + 1 MN o derrota Defensa 9"
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+bond_cost = {0: 1, 1: 2}
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])

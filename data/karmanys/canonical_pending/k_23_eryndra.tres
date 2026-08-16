@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k23_canonical_ability"
+trigger_id = &"pending_f44"
+usage_limit = 3
+rules_text = "Una Resonancia +0 que uses en combate puede valer +4 Poder. Maximo una vez por combate."
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-23"
+display_name = "Eryndra"
+subtitle = "Ave de Resonancia"
+rank = 3
+compatible_ranks = PackedInt32Array(3)
+primary_type = 2
+type_tags = PackedStringArray("Tactico")
+power = 11
+encounter_defense = 16
+acquisition_text = "Derrota Defensa 16 o paga 1 FA + 2 EK"
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+bond_cost = {2: 2, 3: 1}
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])

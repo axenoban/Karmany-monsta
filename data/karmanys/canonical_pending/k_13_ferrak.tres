@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityCanonical"]
+script = ExtResource("2_ability")
+ability_id = &"k13_canonical_ability"
+trigger_id = &"pending_f44"
+rules_text = "Cuando combate contra Bestias medias, gana +2 Poder."
+[resource]
+script = ExtResource("1_data")
+karmany_id = &"K-13"
+display_name = "Ferrak"
+subtitle = "Mandibula Runica"
+rank = 2
+compatible_ranks = PackedInt32Array(2)
+primary_type = 0
+type_tags = PackedStringArray("Estable")
+power = 9
+encounter_defense = 14
+acquisition_text = "Paga 2 MR + 2 MN o derrota Defensa 14"
+can_acquire_by_payment = true
+can_acquire_by_defeat = true
+bond_cost = {0: 2, 1: 2}
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityCanonical")])
