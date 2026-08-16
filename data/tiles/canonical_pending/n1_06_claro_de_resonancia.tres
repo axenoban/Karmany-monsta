@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-06"
+display_name = "Claro de Resonancia"
+level = 1
+function_tags = PackedStringArray("Cartas de Resonancia")
+icon_tags = PackedStringArray("Resonancia", "EK")
+on_explore_text = "Elige: roba 3 Resonancias y descarta 1; o recolecta 2 EK."
+entry_bonus_text = "Entrada: Roba 1 Resonancia y descarta 1."
+later_use_text = "Robar 1 Resonancia y descartar 1."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true
