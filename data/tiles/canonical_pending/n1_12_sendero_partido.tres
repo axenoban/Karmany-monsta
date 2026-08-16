@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-12"
+display_name = "Sendero Partido"
+level = 1
+function_tags = PackedStringArray("Movimiento", "informacion")
+icon_tags = PackedStringArray("Movimiento", "Ojo")
+on_explore_text = "Elige: muevete a una loseta revelada adyacente; o mira una loseta Nivel 2 adyacente."
+entry_bonus_text = "Entrada: Mira 1 loseta oculta adyacente."
+later_use_text = "Moverte 1 loseta revelada o mirar una loseta oculta adyacente."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true
