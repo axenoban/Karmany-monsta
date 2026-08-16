@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-05"
+display_name = "Cuernillo Verde"
+classification = "Herbivoro Agresivo"
+tier = 0
+base_defense = 9
+combat_tags = PackedStringArray("beast", "basic", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 1
+reward_text = "1 PL + 2 MN o 2 EK"
+defeat_text = "Descarta 2 recursos basicos de tu eleccion."
+rules_text = "No puede ser evitada con cartas de movimiento."
