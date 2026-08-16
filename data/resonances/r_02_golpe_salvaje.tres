@@ -25,5 +25,5 @@ resonance_type = 0
 printed_power = 6
 use_windows = PackedStringArray("combat")
 effect_blocks = Array[ExtResource("2_block")]([SubResource("R02AfterCombat")])
-rules_text = "Combate: +6 Poder. Despues del combate descarta 1 carta. Si tu Karmany no usa Riesgo, esta carta autoriza Dado de Riesgo 2.0."
-tags = PackedStringArray("ataque", "combate", "risk_authorization")
+rules_text = "Despues del combate, descarta 1 carta de tu mano. Si tu Karmany no usa Dado de Riesgo, puedes lanzar el Dado de Riesgo 2.0; aplica resultados 1-6 completos. Ese dado no puede repetirse ni modificarse por otro efecto."
+tags = PackedStringArray("ataque", "combate", "risk_authorization", "canonical_v074")
