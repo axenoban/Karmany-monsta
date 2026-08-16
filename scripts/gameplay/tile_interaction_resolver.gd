@@ -47,58 +47,6 @@ static func interact_effect_option(
 	result.option_index = option_index
 	result.action_consumed = true
 	result.effect_result = effect_result
-	result.effect_results = [effect_result]
-	return result
-
-
-static func interact_effect_bundle_option(
-	player: KarmanyPlayerState,
-	board_state: KarmanyBoardState,
-	turn_manager: KarmanyTurnManager,
-	option_index: int,
-	effect_context: KarmanyEffectContext = null
-) -> KarmanyTileInteractionResult:
-	var validation := validate_effect_bundle_option(
-		player,
-		board_state,
-		turn_manager,
-		option_index,
-		effect_context
-	)
-	if not validation.is_success():
-		return validation
-
-	var tile_data: KarmanyTileData = board_state.get_tile_data(player.current_coord)
-	var option: KarmanyTileInteractionOptionData = tile_data.later_use_options[option_index]
-	var applied_results: Array[KarmanyEffectResult] = []
-	for effect in option.effects:
-		var effect_result: KarmanyEffectResult = KarmanyEffectResolver.apply_effect(
-			effect,
-			player,
-			effect_context
-		)
-		if effect_result == null or not effect_result.was_applied():
-			return _result(
-				KarmanyTileInteractionResult.Status.EFFECT_FAILED,
-				"La secuencia de Uso posterior fallo en una de sus operaciones."
-			)
-		applied_results.append(effect_result)
-
-	if not turn_manager.spend_action_for(ACTION_ID_INTERACT, 1):
-		return _result(
-			KarmanyTileInteractionResult.Status.NO_ACTIONS,
-			"No se pudo consumir la accion de Interactuar."
-		)
-
-	var result := KarmanyTileInteractionResult.new()
-	result.status = KarmanyTileInteractionResult.Status.SUCCESS
-	result.message = "Uso posterior compuesto resuelto."
-	result.tile_id = StringName(tile_data.tile_id)
-	result.option_index = option_index
-	result.action_consumed = true
-	result.effect_results = applied_results
-	if not applied_results.is_empty():
-		result.effect_result = applied_results[applied_results.size() - 1]
 	return result
 
 
@@ -174,53 +122,6 @@ static func validate_effect_option(
 	return result
 
 
-static func validate_effect_bundle_option(
-	player: KarmanyPlayerState,
-	board_state: KarmanyBoardState,
-	turn_manager: KarmanyTurnManager,
-	option_index: int,
-	effect_context: KarmanyEffectContext = null
-) -> KarmanyTileInteractionResult:
-	var common := validate_common(player, board_state, turn_manager)
-	if not common.is_success():
-		return common
-	var tile_data: KarmanyTileData = board_state.get_tile_data(player.current_coord)
-	if tile_data == null:
-		return _result(
-			KarmanyTileInteractionResult.Status.INVALID_TILE,
-			"La loseta actual no tiene datos."
-		)
-	if tile_data.later_use_text.strip_edges().is_empty():
-		return _result(
-			KarmanyTileInteractionResult.Status.NO_LATER_USE,
-			"La loseta no tiene Uso posterior."
-		)
-	if option_index < 0 or option_index >= tile_data.later_use_options.size():
-		return _result(
-			KarmanyTileInteractionResult.Status.INVALID_OPTION,
-			"La opcion compuesta de Uso posterior no existe."
-		)
-	var option: KarmanyTileInteractionOptionData = tile_data.later_use_options[option_index]
-	if option == null or not option.is_valid_definition():
-		return _result(
-			KarmanyTileInteractionResult.Status.INVALID_OPTION,
-			"La opcion compuesta no tiene una definicion ejecutable."
-		)
-	for effect in option.effects:
-		var effect_error: String = _effect_preflight_error(effect, effect_context)
-		if not effect_error.is_empty():
-			return _result(
-				KarmanyTileInteractionResult.Status.EFFECT_FAILED,
-				effect_error
-			)
-	var result := KarmanyTileInteractionResult.new()
-	result.status = KarmanyTileInteractionResult.Status.SUCCESS
-	result.tile_id = StringName(tile_data.tile_id)
-	result.option_index = option_index
-	result.message = "Opcion compuesta de Interactuar legal."
-	return result
-
-
 static func validate_common(
 	player: KarmanyPlayerState,
 	board_state: KarmanyBoardState,
@@ -285,6 +186,16 @@ static func _effect_preflight_error(
 		KarmanyEffectData.EffectType.DISCARD_CARDS:
 			if effect.card_source_id == &"" or context == null or not context.has_discard_cards_handler():
 				return "El descarte de cartas no tiene un adaptador disponible."
+		KarmanyEffectData.EffectType.DRAW_DISCARD_CARDS:
+			if effect.secondary_amount <= 0:
+				return "El efecto de robo/descarte requiere una cantidad de descarte positiva."
+			if (
+				effect.card_source_id == &""
+				or context == null
+				or not context.has_draw_cards_handler()
+				or not context.has_discard_cards_handler()
+			):
+				return "El robo/descarte no tiene todos sus adaptadores disponibles."
 		KarmanyEffectData.EffectType.MODIFY_STATE:
 			if effect.state_id == &"" or context == null or not context.has_modify_state_handler():
 				return "La modificacion de estado no tiene un adaptador disponible."
