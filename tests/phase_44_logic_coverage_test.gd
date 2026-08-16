@@ -7,10 +7,25 @@ const STATUS_PARTIAL: String = "PARTIAL"
 const STATUS_DATA_ONLY: String = "DATA_ONLY"
 const STATUS_PENDING: String = "PENDING"
 
+# F44.0 fue el snapshot inicial 0/75/130/0. Tras validar F44.0, F44.1A
+# puede promover logicamente un subconjunto explicito sin mover aun los
+# Resources fuera de canonical_pending. La auditoria evoluciona con los
+# hitos aprobados y sigue rechazando cualquier promocion no declarada.
+const APPROVED_PENDING_PARTIAL_IDS: PackedStringArray = PackedStringArray([
+	"N1-06",
+	"N1-10",
+	"N1-11",
+	"N1-16",
+	"N1-18",
+	"N2-03",
+	"N2-07",
+	"N2-11",
+])
+
 const EXPECTED_STATUS_COUNTS: Dictionary = {
 	"FULLY_EXECUTABLE": 0,
-	"PARTIAL": 75,
-	"DATA_ONLY": 130,
+	"PARTIAL": 83,
+	"DATA_ONLY": 122,
 	"PENDING": 0,
 }
 
@@ -59,7 +74,7 @@ const CHOICE_HINTS: Array = [
 func _ready() -> void:
 	print("")
 	print("========================================")
-	print("KARMANY MONSTA - FASE 44.0 COBERTURA")
+	print("KARMANY MONSTA - FASE 44 COBERTURA")
 	print("========================================")
 
 	var report: Dictionary = _run_audit()
@@ -70,7 +85,7 @@ func _ready() -> void:
 	if ok:
 		var totals: Dictionary = report.get("status_counts", {})
 		print(
-			"F44.0 STATUS | FULLY=%d | PARTIAL=%d | DATA_ONLY=%d | PENDING=%d"
+			"F44 STATUS | FULLY=%d | PARTIAL=%d | DATA_ONLY=%d | PENDING=%d"
 			% [
 				int(totals.get(STATUS_FULLY, 0)),
 				int(totals.get(STATUS_PARTIAL, 0)),
@@ -79,7 +94,7 @@ func _ready() -> void:
 			]
 		)
 		print(
-			"F44.0 EVIDENCIA | payloads estructurados=%d | candidatos choice=%d"
+			"F44 EVIDENCIA | payloads estructurados=%d | candidatos choice=%d"
 			% [
 				int(report.get("structured_evidence", 0)),
 				int(report.get("choice_candidates", 0)),
@@ -87,7 +102,7 @@ func _ready() -> void:
 		)
 		var scripts: Dictionary = report.get("script_evidence", {})
 		print(
-			"F44.0 INFRA | gd=%d resolver=%d controller=%d interaction=%d progress=%d ai=%d"
+			"F44 INFRA | gd=%d resolver=%d controller=%d interaction=%d progress=%d ai=%d"
 			% [
 				int(scripts.get("gd", 0)),
 				int(scripts.get("resolver", 0)),
@@ -97,9 +112,9 @@ func _ready() -> void:
 				int(scripts.get("ai", 0)),
 			]
 		)
-		print("FASE 44.0 OK - 205 Resources auditados; baseline logico reproducible listo para F44.1.")
+		print("FASE 44 AUDIT OK - 205 Resources; F44.1A reconoce 8 promociones parciales explicitas.")
 	else:
-		push_error("FASE 44.0 ERROR - revisar el primer fallo real antes de implementar F44.1.")
+		push_error("FASE 44 AUDIT ERROR - revisar el primer fallo real.")
 	print("========================================")
 
 
@@ -111,6 +126,7 @@ func _run_audit() -> Dictionary:
 	var total_pending_paths: int = 0
 	var structured_evidence: int = 0
 	var choice_candidates: int = 0
+	var promoted_seen: Dictionary = {}
 
 	for spec in _specs():
 		var category: String = String(spec.get("category", ""))
@@ -136,7 +152,6 @@ func _run_audit() -> Dictionary:
 		for data in resources:
 			if data == null:
 				return _failure("%s: se cargo un Resource nulo." % category)
-
 			if not _has_property(data, id_property):
 				return _failure("%s: Resource sin propiedad %s." % [category, id_property])
 
@@ -150,7 +165,6 @@ func _run_audit() -> Dictionary:
 					"ID global duplicado %s entre %s y %s."
 					% [canonical_id, String(global_seen[canonical_id]), category]
 				)
-
 			category_seen[canonical_id] = true
 			global_seen[canonical_id] = category
 
@@ -160,15 +174,24 @@ func _run_audit() -> Dictionary:
 			else:
 				direct_count += 1
 
-			var status: String = _classify(category, data, is_pending_path)
+			var status: String = _classify(category, canonical_id, data, is_pending_path)
 			category_status[status] = int(category_status.get(status, 0)) + 1
 			status_counts[status] = int(status_counts.get(status, 0)) + 1
 
-			if is_pending_path and status != STATUS_DATA_ONLY:
-				return _failure(
-					"%s %s: canonical_pending fue promovido a %s sin prueba F44."
-					% [category, canonical_id, status]
-				)
+			if is_pending_path:
+				var approved_partial: bool = _is_approved_pending_partial(category, canonical_id)
+				if approved_partial:
+					if status != STATUS_PARTIAL:
+						return _failure(
+							"%s %s: promocion F44.1A declarada pero sin cobertura PARTIAL."
+							% [category, canonical_id]
+						)
+					promoted_seen[canonical_id] = true
+				elif status != STATUS_DATA_ONLY:
+					return _failure(
+						"%s %s: canonical_pending fue promovido a %s sin hito F44 aprobado."
+						% [category, canonical_id, status]
+					)
 
 			if _has_structured_evidence(data):
 				structured_evidence += 1
@@ -192,7 +215,7 @@ func _run_audit() -> Dictionary:
 			)
 
 		print(
-			"F44.0 | %s | total=%d direct=%d pending_path=%d | F=%d P=%d D=%d ?=%d"
+			"F44 | %s | total=%d direct=%d pending_path=%d | F=%d P=%d D=%d ?=%d"
 			% [
 				category,
 				resources.size(),
@@ -208,6 +231,15 @@ func _run_audit() -> Dictionary:
 		total_resources += resources.size()
 		total_direct += direct_count
 		total_pending_paths += pending_path_count
+
+	if promoted_seen.size() != APPROVED_PENDING_PARTIAL_IDS.size():
+		return _failure(
+			"Promociones F44.1A esperadas %d y detectadas %d."
+			% [APPROVED_PENDING_PARTIAL_IDS.size(), promoted_seen.size()]
+		)
+	for promoted_id in APPROVED_PENDING_PARTIAL_IDS:
+		if not promoted_seen.has(String(promoted_id)):
+			return _failure("Falta promocion F44.1A auditada: %s." % String(promoted_id))
 
 	if total_resources != EXPECTED_TOTAL:
 		return _failure("Total esperado %d y auditado %d." % [EXPECTED_TOTAL, total_resources])
@@ -237,7 +269,12 @@ func _run_audit() -> Dictionary:
 	}
 
 
-func _classify(category: String, data: Resource, is_pending_path: bool) -> String:
+func _classify(
+	category: String,
+	canonical_id: String,
+	data: Resource,
+	is_pending_path: bool
+) -> String:
 	if category == "Entrenadores":
 		if not _has_property(data, "automation_status"):
 			return STATUS_PENDING
@@ -253,11 +290,24 @@ func _classify(category: String, data: Resource, is_pending_path: bool) -> Strin
 				return STATUS_PENDING
 
 	if is_pending_path:
+		if _is_approved_pending_partial(category, canonical_id):
+			if not _has_structured_evidence(data):
+				return STATUS_PENDING
+			if _has_property(data, "interaction_profile_id"):
+				var profile_id: String = String(data.get("interaction_profile_id"))
+				if profile_id.is_empty() or profile_id == "pending_f44":
+					return STATUS_PENDING
+			return STATUS_PARTIAL
 		return STATUS_DATA_ONLY
 
-	# F44.0 es una certificacion conservadora. Un Resource directo demuestra
-	# integracion historica, pero no prueba por si solo todas las clausulas v0.74.
+	# Un Resource directo demuestra integracion historica, pero no prueba por
+	# si solo todas las clausulas v0.74. F44 lo mantiene PARTIAL hasta que una
+	# prueba de categoria certifique cobertura completa.
 	return STATUS_PARTIAL
+
+
+func _is_approved_pending_partial(category: String, canonical_id: String) -> bool:
+	return category == "Losetas" and APPROVED_PENDING_PARTIAL_IDS.has(canonical_id)
 
 
 func _has_structured_evidence(data: Resource) -> bool:
@@ -276,7 +326,6 @@ func _has_structured_evidence(data: Resource) -> bool:
 		var trigger_value: String = String(data.get(property_name))
 		if not trigger_value.is_empty() and trigger_value != "pending_f44":
 			return true
-
 	return false
 
 
@@ -287,7 +336,6 @@ func _has_choice_hint(data: Resource) -> bool:
 		if not _has_property(data, property_name):
 			continue
 		combined_text += " " + String(data.get(property_name)).to_lower()
-
 	for hint_variant in CHOICE_HINTS:
 		if combined_text.contains(String(hint_variant)):
 			return true
@@ -306,17 +354,14 @@ func _load_resources_recursive(directory: String) -> Array[Resource]:
 	var dir := DirAccess.open(directory)
 	if dir == null:
 		return result
-
 	for file_name in dir.get_files():
 		if not file_name.ends_with(".tres"):
 			continue
 		var resource := load("%s/%s" % [directory, file_name]) as Resource
 		if resource != null:
 			result.append(resource)
-
 	for child_name in dir.get_directories():
 		result.append_array(_load_resources_recursive("%s/%s" % [directory, child_name]))
-
 	return result
 
 
@@ -337,7 +382,6 @@ func _scan_script_directory(directory: String, counters: Dictionary) -> void:
 	var dir := DirAccess.open(directory)
 	if dir == null:
 		return
-
 	for file_name in dir.get_files():
 		if not file_name.ends_with(".gd"):
 			continue
@@ -358,7 +402,6 @@ func _scan_script_directory(directory: String, counters: Dictionary) -> void:
 			counters["progress"] = int(counters.get("progress", 0)) + 1
 		if directory.contains("/ai") or lower_name.begins_with("ai_") or lower_name.contains("_ai_"):
 			counters["ai"] = int(counters.get("ai", 0)) + 1
-
 	for child_name in dir.get_directories():
 		_scan_script_directory("%s/%s" % [directory, child_name], counters)
 
@@ -397,7 +440,7 @@ func _specs() -> Array[Dictionary]:
 			"total": 41,
 			"direct": 13,
 			"pending_paths": 28,
-			"status": {STATUS_FULLY: 0, STATUS_PARTIAL: 13, STATUS_DATA_ONLY: 28, STATUS_PENDING: 0},
+			"status": {STATUS_FULLY: 0, STATUS_PARTIAL: 21, STATUS_DATA_ONLY: 20, STATUS_PENDING: 0},
 		},
 		{
 			"category": "Karmany",
@@ -457,5 +500,5 @@ func _specs() -> Array[Dictionary]:
 
 
 func _failure(message: String) -> Dictionary:
-	push_error("FASE 44.0 AUDIT ERROR: %s" % message)
+	push_error("FASE 44 AUDIT ERROR: %s" % message)
 	return {"ok": false}
