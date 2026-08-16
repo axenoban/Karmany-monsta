@@ -11,7 +11,7 @@ const STATUS_PENDING: String = "PENDING"
 # puede promover logicamente un subconjunto explicito sin mover aun los
 # Resources fuera de canonical_pending. La auditoria evoluciona con los
 # hitos aprobados y sigue rechazando cualquier promocion no declarada.
-const APPROVED_PENDING_PARTIAL_IDS: PackedStringArray = PackedStringArray([
+const APPROVED_PENDING_PARTIAL_IDS = [
 	"N1-06",
 	"N1-10",
 	"N1-11",
@@ -20,7 +20,7 @@ const APPROVED_PENDING_PARTIAL_IDS: PackedStringArray = PackedStringArray([
 	"N2-03",
 	"N2-07",
 	"N2-11",
-])
+]
 
 const EXPECTED_STATUS_COUNTS: Dictionary = {
 	"FULLY_EXECUTABLE": 0,
