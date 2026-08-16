@@ -2,122 +2,131 @@
 
 Fuente canónica: documento maestro v0.74, tablas 16.2–16.8 de losetas.
 
-F43.1 se ejecuta incrementalmente. No se materializan todas las identidades faltantes de una sola vez y no se adelanta la automatización completa reservada para F44.
+## Criterio F43 vs F44
 
-## Decisión de arquitectura F43 vs F44
-
-Los Resources canónicos que todavía contienen decisiones, encuentros, movimiento, peek privado, conversiones u otras operaciones no representadas íntegramente por los resolvers actuales se guardan en:
+F43.1 materializa datos canónicos. Los Resources cuyo comportamiento todavía requiere decisiones, encuentros, movimiento, información privada, conversiones o resolvers no cubiertos de forma íntegra se guardan en:
 
 `res://data/tiles/canonical_pending/`
 
-`KarmanyMap41TilePools` solo carga archivos `.tres` directamente presentes en `res://data/tiles`, por lo que esta subcarpeta no altera F32/F40 ni el fallback actual.
+Estos Resources conservan identidad y texto canónico, usan `interaction_profile_id = pending_f44`, no incluyen efectos estructurados ficticios y no entran en `KarmanyMap41TilePools`. La automatización completa queda para F44.
 
-Cada Resource pendiente conserva el contrato documental requerido:
+## Bloques validados localmente
 
-- `tile_id`;
-- `display_name`;
-- `level`;
-- `function_tags`;
-- `icon_tags`;
-- `on_explore_text`;
-- `entry_bonus_text`;
-- `later_use_text`;
-- `limit_text`;
-- `starts_revealed`;
-- `interaction_profile_id = pending_f44`.
+### F43.1A — N1-05 a N1-08
 
-`pending_f44` es una marca técnica deliberadamente desconocida para `KarmanyUniversalTileInteractionService`. Así el Resource queda materializado sin ser anunciado falsamente como ejecutable por F39. No se añaden efectos estructurados ficticios para conseguir tests verdes.
-
-## Bloque F43.1A — N1-05 a N1-08
-
-| ID | Nombre canónico | Materializado | Pool runtime | Automatización |
-|---|---|---:|---:|---|
-| N1-05 | Sendero Verde | Sí | No | Pendiente F44 |
-| N1-06 | Claro de Resonancia | Sí | No | Pendiente F44 |
-| N1-07 | Ruinas del Eco | Sí | No | Pendiente F44 |
-| N1-08 | Puente de Musgo | Sí | No | Pendiente F44 |
+- N1-05 Sendero Verde
+- N1-06 Claro de Resonancia
+- N1-07 Ruinas del Eco
+- N1-08 Puente de Musgo
 
 Test: `res://tests/phase_43_1_tiles_n1_base_test.tscn`
 
-Resultado esperado: `FASE 43.1A OK - N1-05..N1-08 materializadas canonicamente y aisladas del runtime hasta F44.`
+Validación local: exitosa.
 
-**Validación local:** reportada exitosa antes de iniciar F43.1B, incluyendo las regresiones solicitadas.
+### F43.1B — N1-09 a N1-12
 
-## Bloque F43.1B — N1-09 a N1-12
-
-| ID | Nombre canónico | Materializado | Pool runtime | Automatización |
-|---|---|---:|---:|---|
-| N1-09 | Pradera de Luma | Sí | No | Pendiente F44 |
-| N1-10 | Pozo de Bruma | Sí | No | Pendiente F44 |
-| N1-11 | Rocas del Alba | Sí | No | Pendiente F44 |
-| N1-12 | Sendero Partido | Sí | No | Pendiente F44 |
-
-Contenido preservado:
-
-- N1-09: movimiento/información, peek de N2 y Bonificación de entrada de información.
-- N1-10: EK/Resonancia con robo y descarte.
-- N1-11: MR/conversión 2 MN → 2 MR; Uso posterior de 2 MR.
-- N1-12: movimiento/información y peek de N2.
-
-No se reinterpretó N1-12: `Al explorar` conserva exactamente la formulación del maestro, sin añadir `sin revelarla` donde la tabla no lo escribe explícitamente.
+- N1-09 Pradera de Luma
+- N1-10 Pozo de Bruma
+- N1-11 Rocas del Alba
+- N1-12 Sendero Partido
 
 Test: `res://tests/phase_43_1_tiles_n1_additional_test.tscn`
 
-Resultado esperado: `FASE 43.1B OK - N1-09..N1-12 materializadas canonicamente y aisladas del runtime hasta F44.`
+Validación local: exitosa.
 
-**Validación local:** reportada exitosa antes de iniciar F43.1C.
+### F43.1C — N1-13 a N1-16
 
-## Bloque F43.1C — N1-13 a N1-16
-
-Materializadas desde la tabla 16.4 del maestro:
-
-| ID | Nombre canónico | Materializado | Pool runtime | Automatización |
-|---|---|---:|---:|---|
-| N1-13 | Refugio Menor | Sí | No | Pendiente F44 |
-| N1-14 | Hierbas de Vael | Sí | No | Pendiente F44 |
-| N1-15 | Taller Improvisado | Sí | No | Pendiente F44 |
-| N1-16 | Fuente Serena | Sí | No | Pendiente F44 |
-
-Contenido preservado:
-
-- N1-13: Vínculo guiado N1, recolección de MN y peek privado de Karmany.
-- N1-14: Bestia Básica o preparación mediante Resonancias, con bono de Poder de entrada.
-- N1-15: crafteo básico o MN; entrada de información sobre Equipo; sin Equipo avanzado/ancestral.
-- N1-16: EK/Resonancia con robo y descarte.
-
-Resources:
-
-- `res://data/tiles/canonical_pending/n1_13_refugio_menor.tres`
-- `res://data/tiles/canonical_pending/n1_14_hierbas_de_vael.tres`
-- `res://data/tiles/canonical_pending/n1_15_taller_improvisado.tres`
-- `res://data/tiles/canonical_pending/n1_16_fuente_serena.tres`
+- N1-13 Refugio Menor
+- N1-14 Hierbas de Vael
+- N1-15 Taller Improvisado
+- N1-16 Fuente Serena
 
 Test: `res://tests/phase_43_1_tiles_n1_mid_test.tscn`
 
+Validación local: exitosa.
+
+## F43.1D — materialización del resto de losetas
+
+Tras validar los tres bloques pequeños anteriores, el resto de identidades faltantes se materializó en un único lote usando exclusivamente el documento maestro v0.74.
+
+### Cierre N1
+
+- N1-17 Colina de Guardia
+- N1-18 Cruce de Raices
+
+### N2 pendientes
+
+- N2-02 Bosque de Vinculo
+- N2-03 Ruinas del Eco
+- N2-04 Atalaya Exterior
+- N2-06 Santuario Quebrado
+- N2-07 Garganta del Aullido
+- N2-08 Refugio de Karmany
+- N2-09 Mercado de Ruinas
+- N2-10 Puente de Atalaya
+- N2-11 Nido Salvaje
+- N2-12 Obelisco Menor
+
+### N3 pendientes
+
+- N3-01 Arena de Ruinas
+- N3-04 Puerta del Santuario
+- N3-05 Santuario del Eco Ancestral
+- N3-06 Fisura Ancestral
+
+Todas estas identidades permanecen en `canonical_pending` y no se anuncian como ejecutables hasta F44.
+
+## Cobertura física tras F43.1D
+
+Cobertura de Resources de loseta: **41/41**.
+
+Distribución materializada:
+
+- Inicio: 4/4
+- N1: 18/18
+- N2: 12/12
+- N3: 6/6
+- Legendaria: 1/1
+
+Composición técnica:
+
+- 13 Resources runtime preexistentes y ya interpretados por F39.
+- 28 Resources canónicos `pending_f44` materializados sin falsa automatización.
+
+Cobertura runtime segura permanece deliberadamente sin cambios:
+
+- N1 runtime: 4
+- N2 runtime: 2
+- N3 runtime: 2
+- fallback F40: conservado
+
+F43.1 no elimina el fallback ni modifica el generador MAP41; la sustitución del fallback por contenido plenamente ejecutable corresponde a la automatización posterior, no a esta materialización.
+
+## Test integral F43.1
+
+Escena:
+
+`res://tests/phase_43_1_tiles_complete_test.tscn`
+
 Comprueba:
 
-1. existencia y carga de los cuatro Resources;
-2. identidad, función, iconos y textos del maestro para N1-13..N1-16;
-3. `Uso posterior` no vacío;
-4. marca `pending_f44`;
-5. ausencia de efectos estructurados ficticios;
-6. rechazo explícito por F39 como definición ejecutable;
-7. ausencia de estas identidades en `KarmanyMap41TilePools`;
-8. conservación del pool N1 runtime anterior.
+1. fidelidad de identidad y textos v0.74 para las 16 identidades incorporadas en el lote final;
+2. exactamente 41 Resources de loseta materializados entre `data/tiles` y `data/tiles/canonical_pending`;
+3. ausencia de `tile_id` duplicados;
+4. cobertura de todos los IDs declarados por `KarmanyV074CanonicalRuntimeCatalog.TILE_IDS`;
+5. distribución exacta 4 Inicio / 18 N1 / 12 N2 / 6 N3 / 1 Legendaria;
+6. exactamente 28 Resources pendientes;
+7. todos los pendientes usan `pending_f44`;
+8. ningún pendiente contiene efectos estructurados ficticios;
+9. F39 rechaza correctamente esos pendientes como definición ejecutable;
+10. los pools runtime continúan en N1=4, N2=2 y N3=2.
 
 Resultado esperado:
 
-`FASE 43.1C OK - N1-13..N1-16 materializadas canonicamente y aisladas del runtime hasta F44.`
+`FASE 43.1 OK - 41/41 losetas canónicas materializadas; contenido pendiente aislado del runtime hasta F44.`
 
-## Cobertura tras F43.1C
+## Estado de F43.1
 
-Cobertura física de Resources de loseta: **25/41**.
+La materialización canónica de Losetas queda completa a nivel de datos: **41/41**.
 
-- 13 Resources runtime preexistentes.
-- 12 Resources canónicos pendientes F44 materializados durante F43.1A–C.
-
-Cobertura runtime segura permanece: **13/41**, con fallback F40 sin cambios.
-
-## Siguiente bloque
-
-No avanzar automáticamente. Tras validación local de F43.1C, cerrar el anillo N1 con `N1-17` y `N1-18`, siempre utilizando exclusivamente el maestro v0.74 y la misma separación materialización/automatización.
+F43.1 no debe darse por cerrada hasta completar la validación local del test integral y las regresiones F38–F42. No iniciar F43.2 antes de esa validación.
