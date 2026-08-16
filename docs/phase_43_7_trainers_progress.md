@@ -47,4 +47,8 @@ Resultado esperado:
 
 `FASE 43.7 OK - 8/8 Entrenadores canonicos alineados; 3 parciales y 5 data-only hasta F44.`
 
-Tras la validacion local de F43.7 corresponde realizar la auditoria final de cierre de F43 antes de iniciar F44.
+## Validacion
+
+Validacion local reportada por el autor: **exitosa**.
+
+F43.7 queda cerrada y la siguiente comprobacion es el test transversal `res://tests/phase_43_closure_audit_test.tscn`, que certifica conteos, set exacto de IDs y ausencia de duplicados en las ocho categorias antes de iniciar F44.
