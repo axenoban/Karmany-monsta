@@ -1,5 +1,12 @@
-[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityUmbrio"]
+script = ExtResource("2_ability")
+ability_id = &"umbrio_prevent_forced_discard"
+trigger_id = &"forced_discard"
+usage_limit = 2
+rules_text = "Una vez por ronda, cuando una Bestia o rival te obligue a descartar una carta, puedes gastar 1 recurso basico para evitar ese descarte."
 [resource]
 script = ExtResource("1_data")
 karmany_id = &"K-26"
@@ -8,7 +15,8 @@ subtitle = "Sombra del Primer Eco"
 rank = 0
 compatible_ranks = PackedInt32Array(0, 1)
 primary_type = 6
-type_tags = PackedStringArray("Control", "Defensivo")
+type_tags = PackedStringArray("Control", "defensivo")
 power = 5
-acquisition_text = "Karmany inicial. Una vez por ronda puede gastar 1 recurso basico para evitar un descarte forzado por Bestia o rival."
+acquisition_text = "Karmany inicial"
 is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityUmbrio")])

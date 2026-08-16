@@ -1,5 +1,12 @@
-[gd_resource type="Resource" script_class="KarmanyData" format=3]
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityLumirra"]
+script = ExtResource("2_ability")
+ability_id = &"lumirra_resonance_filter"
+trigger_id = &"combat_resonance_filter"
+usage_limit = 3
+rules_text = "Una vez por combate, puedes descartar 1 Resonancia para robar 2 Resonancias y elegir 1 para ese combate; descarta la otra."
 [resource]
 script = ExtResource("1_data")
 karmany_id = &"K-04"
@@ -8,7 +15,8 @@ subtitle = "Cria de Luz"
 rank = 0
 compatible_ranks = PackedInt32Array(0, 1)
 primary_type = 2
-type_tags = PackedStringArray("Tactico", "Resonancia")
+type_tags = PackedStringArray("Tactico")
 power = 5
-acquisition_text = "Karmany inicial. Habilidad: una vez por combate, puede filtrar Resonancias para elegir una opcion tactica."
+acquisition_text = "Karmany inicial"
 is_starting_karmany = true
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityLumirra")])

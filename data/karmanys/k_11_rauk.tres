@@ -1,21 +1,22 @@
-[gd_resource type="Resource" script_class="KarmanyData" format=3]
-
+[gd_resource type="Resource" script_class="KarmanyData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://scripts/data/karmany_data.gd" id="1_data"]
-
+[ext_resource type="Script" path="res://scripts/data/karmany_ability_data.gd" id="2_ability"]
+[sub_resource type="Resource" id="AbilityRauk"]
+script = ExtResource("2_ability")
+ability_id = &"rauk_risk_reward"
+trigger_id = &"combat_risk"
+rules_text = "Puede lanzar el Dado de Riesgo 2.0. Si obtiene 6 y gana, gana +1 PL adicional. Maximo una vez por partida."
 [resource]
 script = ExtResource("1_data")
 karmany_id = &"K-11"
-display_name = "Rauk"
-subtitle = "Colmillo Depredador Salvaje"
+display_name = "Rauk Colmillo"
+subtitle = "Depredador Salvaje"
 rank = 2
 compatible_ranks = PackedInt32Array(2)
 primary_type = 1
-type_tags = PackedStringArray("salvaje", "riesgo")
+type_tags = PackedStringArray("Salvaje")
 power = 8
 encounter_defense = 14
-legacy_points = 0
-acquisition_text = "Derrota Defensa 14. Puede lanzar Dado de Riesgo 2.0; si obtiene 6 y gana, +1 PL maximo una vez por partida."
-is_starting_karmany = false
-can_acquire_by_payment = false
+acquisition_text = "Derrota Defensa 14"
 can_acquire_by_defeat = true
-can_acquire_by_condition = false
+abilities = Array[ExtResource("2_ability")]([SubResource("AbilityRauk")])
