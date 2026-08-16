@@ -21,9 +21,6 @@ var tile_id: StringName = &""
 var option_index: int = -1
 var action_consumed: bool = false
 var effect_result: KarmanyEffectResult = null
-# F44 ordered interaction options may apply multiple atomic effects while
-# remaining one player choice / one Interactuar action.
-var effect_results: Array[KarmanyEffectResult] = []
 
 
 func is_success() -> bool:
