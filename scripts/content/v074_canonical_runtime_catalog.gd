@@ -550,9 +550,9 @@ static func _build_maelis_first_mission() -> KarmanyMissionData:
 	mission.mission_id = &"ME-M1"
 	mission.trainer_id = &"maelis"
 	mission.trainer_display_name = "Maelis"
-	mission.display_name = "Eco Victorioso"
+	mission.display_name = "Resonancia Decisiva"
 	mission.recommended_first_game = true
-	mission.condition_text = "Gana 2 combates usando al menos 1 Resonancia en cada uno."
+	mission.condition_text = "Gana 2 combates en los que hayas jugado una Resonancia."
 	var condition := _new_condition(
 		KarmanyProgressConditionData.ConditionType.EVENT_COUNT,
 		&"phase38_combat_won_with_resonance",
@@ -571,9 +571,9 @@ static func _build_saira_first_mission() -> KarmanyMissionData:
 	mission.mission_id = &"ME-S1"
 	mission.trainer_id = &"saira"
 	mission.trainer_display_name = "Saira"
-	mission.display_name = "Ruta de los Tres Niveles"
+	mission.display_name = "Cartografia Viva"
 	mission.recommended_first_game = true
-	mission.condition_text = "Visita 5 losetas distintas, incluyendo al menos una N2 y una N3."
+	mission.condition_text = "Visita 5 losetas distintas e incluye al menos una N2 y una N3."
 	var distinct := _new_condition(
 		KarmanyProgressConditionData.ConditionType.DISTINCT_FIELD_COUNT,
 		&"tile_visited",
