@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Mision completada: +1 FA."
+
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-K2"
+trainer_id = &"kael"
+trainer_display_name = "Kael"
+display_name = "Camino del Cazador"
+condition_text = "Derrota 1 Bestia Media o superior y entra a una loseta Nivel 3."
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])

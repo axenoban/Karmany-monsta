@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-A01"
+display_name = "Dominio Territorial"
+family = 3
+condition_text = "Ser el primer jugador en entrar a 2 losetas Nivel 3 distintas."
+reward_legacy_points = 5
+map_41_only = true

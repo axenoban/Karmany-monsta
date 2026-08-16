@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="KarmanyObjectiveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+objective_id = &"OP-C02"
+display_name = "Mano Resonante"
+family = 2
+condition_text = "Ser el primer jugador en jugar 3 Resonancias en combates distintos."
+reward_legacy_points = 4

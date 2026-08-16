@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Mision completada: +1 FA."
+
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-O2"
+trainer_id = &"oryn"
+trainer_display_name = "Oryn"
+display_name = "Riesgo Calculado"
+condition_text = "Lanza el Dado de Riesgo en 3 combates y mejora tu Libro a Nivel II."
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])

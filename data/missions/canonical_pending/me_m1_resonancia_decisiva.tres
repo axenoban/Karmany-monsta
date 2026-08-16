@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="KarmanyMissionData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/mission_data.gd" id="1_mission"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="RewardFA"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 1
+resource_type = 3
+description = "Mision completada: +1 FA."
+
+[resource]
+script = ExtResource("1_mission")
+mission_id = &"ME-M1"
+trainer_id = &"maelis"
+trainer_display_name = "Maelis"
+display_name = "Resonancia Decisiva"
+recommended_first_game = true
+condition_text = "Gana 2 combates en los que hayas jugado una Resonancia."
+reward_legacy_points = 4
+reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])
