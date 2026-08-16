@@ -97,10 +97,11 @@ func _test_move_candidate_contract() -> bool:
 
 
 func _test_runtime_move_cost() -> bool:
-	# Cada intento usa una sesion limpia. Primero Explorar revela sin desplazar;
-	# luego el mismo candidato MOVE que envuelve Interactuar debe gastar solo
-	# una accion adicional. Si la loseta revelada queda bloqueada por una
-	# Bestia, se prueba otra seed sin falsear la legalidad normal.
+	# Cada intento usa una sesion limpia. El destino se revela mediante la API
+	# de contenido, sin ejecutar Explorar: en el runtime vigente Explorar revela
+	# Y entra en la loseta. Esta fixture necesita mantener al jugador en el
+	# origen para aislar exclusivamente el coste y la ejecucion del MOVE que
+	# reutiliza free_move.
 	for attempt in range(8):
 		var setup := _new_started_session(44400 + attempt)
 		if setup.is_empty():
@@ -109,7 +110,7 @@ func _test_runtime_move_cost() -> bool:
 		var session: KarmanyFullMatchSession = setup["session"]
 		var player := runtime.local_session.get_player_by_id(runtime.human_player_id)
 		var manager := runtime.local_session.turn_manager
-		if player == null or manager == null:
+		if player == null or manager == null or runtime.content_session == null:
 			continue
 		var origin: Vector2i = player.current_coord
 		var target: Vector2i = Vector2i.ZERO
@@ -121,12 +122,19 @@ func _test_runtime_move_cost() -> bool:
 				break
 		if not found_hidden:
 			continue
-		if not session._full_explore_executor(player, target):
+
+		var actions_before_reveal: int = manager.actions_remaining
+		if not runtime.content_session.reveal_into_board_state(
+			runtime.board_state,
+			target
+		):
 			continue
 		if player.current_coord != origin:
-			return _fail("Explorar movio al jugador; F44.1B depende de la separacion Explorar/Mover.")
+			return _fail("El revelado de fixture desplazo al jugador; debe aislar solo el MOVE.")
 		if not runtime.board_state.is_revealed(target):
-			return _fail("Explorar no revelo el destino de prueba.")
+			return _fail("La API de contenido no revelo el destino de prueba.")
+		if manager.actions_remaining != actions_before_reveal:
+			return _fail("El revelado de fixture consumio acciones; no debe alterar el presupuesto.")
 
 		var move_candidates := KarmanyAiLegalActionGenerator.build_legal_move_candidates(
 			runtime.coordinator,
@@ -141,8 +149,8 @@ func _test_runtime_move_cost() -> bool:
 			continue
 
 		var actions_before: int = manager.actions_remaining
-		if actions_before != 1:
-			return _fail("Fixture inesperada: tras Explorar se esperaba 1 accion restante.")
+		if actions_before != KarmanyTurnManager.ACTIONS_PER_TURN:
+			return _fail("Fixture inesperada: el revelado previo altero las acciones del turno.")
 		if not session._execute_candidate(player, selected):
 			return _fail("El executor normal rechazo el MOVE subyacente de F44.1B.")
 		if player.current_coord != target:
