@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-18"
+display_name = "Velo de Aeterna"
+rarity = 2
+cost = {
+3: 1,
+2: 2
+}
+rules_text = "Contra Jefes o Legendarios, puedes jugar hasta 2 Resonancias en ese combate. Este efecto es una excepcion al limite normal de 1 Resonancia por jugador por combate."
+trigger_tags = PackedStringArray("pending_f44")

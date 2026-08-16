@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-25"
+display_name = "Kit de Artesano"
+rarity = 1
+cost = {
+0: 2,
+1: 1
+}
+rules_text = "Tu primer Equipo basico que craftees cada ronda cuesta 1 recurso comun menos."
+trigger_tags = PackedStringArray("pending_f44")

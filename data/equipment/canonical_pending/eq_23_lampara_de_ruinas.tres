@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-23"
+display_name = "Lampara de Ruinas"
+rarity = 1
+cost = {
+1: 2,
+0: 1
+}
+rules_text = "La primera vez por ronda que explores una loseta Nivel 2, mira la primera carta del mazo de Bestias y puedes dejarla arriba o ponerla al fondo."
+trigger_tags = PackedStringArray("pending_f44")

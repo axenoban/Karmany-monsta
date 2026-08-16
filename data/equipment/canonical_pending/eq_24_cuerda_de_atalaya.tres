@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-24"
+display_name = "Cuerda de Atalaya"
+rarity = 1
+cost = {
+0: 2,
+2: 1
+}
+rules_text = "Una vez por ronda, despues de resolver una loseta, puedes moverte 1 loseta revelada adyacente."
+trigger_tags = PackedStringArray("pending_f44")

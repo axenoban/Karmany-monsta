@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-28"
+display_name = "Colgante de Armonia"
+rarity = 0
+cost = {
+2: 2,
+1: 1
+}
+rules_text = "Tu primer vinculo de cada ronda cuesta 1 recurso comun menos. No reduce FA."
+trigger_tags = PackedStringArray("pending_f44")

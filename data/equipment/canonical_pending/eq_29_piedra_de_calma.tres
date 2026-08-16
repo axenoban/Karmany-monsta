@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-29"
+display_name = "Piedra de Calma"
+rarity = 0
+cost = {
+2: 2
+}
+rules_text = "Despues de perder un PvP, roba 1 Resonancia."
+trigger_tags = PackedStringArray("pending_f44")

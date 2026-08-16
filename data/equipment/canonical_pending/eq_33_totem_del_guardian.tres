@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-33"
+display_name = "Totem del Guardian"
+rarity = 1
+cost = {
+2: 2,
+1: 2
+}
+rules_text = "Si tienes un Karmany Defensivo activo, gana +2 Poder contra Bestias."
+trigger_tags = PackedStringArray("pending_f44")

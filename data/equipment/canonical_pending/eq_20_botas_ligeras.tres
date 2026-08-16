@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-20"
+display_name = "Botas Ligeras"
+rarity = 0
+cost = {
+0: 3
+}
+rules_text = "Una vez por ronda, si llegas a una loseta Nivel 2 o superior, puedes moverte 1 loseta revelada adyacente adicional sin gastar accion."
+trigger_tags = PackedStringArray("pending_f44")

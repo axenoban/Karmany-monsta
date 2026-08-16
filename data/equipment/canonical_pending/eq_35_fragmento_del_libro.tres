@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-35"
+display_name = "Fragmento del Libro"
+rarity = 2
+cost = {
+3: 1,
+2: 2
+}
+rules_text = "Una vez por partida, despues de usar una Resonancia, devuelvela a tu mano en vez de descartarla."
+trigger_tags = PackedStringArray("pending_f44")

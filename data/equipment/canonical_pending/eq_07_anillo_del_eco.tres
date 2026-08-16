@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-07"
+display_name = "Anillo del Eco"
+rarity = 1
+cost = {
+1: 2,
+2: 2
+}
+rules_text = "Una vez por ronda, repite un Dado de Riesgo. Debes conservar el nuevo resultado."
+trigger_tags = PackedStringArray("pending_f44")

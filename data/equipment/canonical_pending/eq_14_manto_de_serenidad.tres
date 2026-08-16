@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-14"
+display_name = "Manto de Serenidad"
+rarity = 1
+cost = {
+2: 2,
+0: 1
+}
+rules_text = "La primera vez por ronda que una Bestia te obligue a descartar una Resonancia, ignora ese descarte."
+trigger_tags = PackedStringArray("pending_f44")

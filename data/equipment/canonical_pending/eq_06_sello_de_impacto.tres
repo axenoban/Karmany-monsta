@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-06"
+display_name = "Sello de Impacto"
+rarity = 1
+cost = {
+1: 2,
+2: 2
+}
+rules_text = "La primera vez por ronda que derrotes una Bestia media o compleja, gana +1 PL."
+trigger_tags = PackedStringArray("pending_f44")

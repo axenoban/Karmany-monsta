@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-31"
+display_name = "Medallon del Eco"
+rarity = 0
+cost = {
+1: 2
+}
+rules_text = "La primera vez por ronda que juegues una Resonancia +0, roba 1 Resonancia y descarta 1."
+trigger_tags = PackedStringArray("pending_f44")

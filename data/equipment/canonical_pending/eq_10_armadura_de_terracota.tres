@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-10"
+display_name = "Armadura de Terracota"
+rarity = 0
+cost = {
+1: 2,
+0: 1
+}
+rules_text = "La primera vez por ronda que pierdas contra una Bestia, pierde 2 recursos basicos menos."
+trigger_tags = PackedStringArray("pending_f44")

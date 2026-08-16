@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-27"
+display_name = "Mapa de las Derivas"
+rarity = 2
+cost = {
+3: 1,
+0: 2
+}
+rules_text = "Antes de Explorar una loseta Nivel 3, mira hasta 2 losetas Nivel 3 ocultas adyacentes y elige cual explorar."
+trigger_tags = PackedStringArray("pending_f44")

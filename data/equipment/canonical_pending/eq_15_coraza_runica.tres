@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KarmanyEquipmentData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+equipment_id = &"EQ-15"
+display_name = "Coraza Runica"
+rarity = 1
+cost = {
+1: 2,
+2: 2
+}
+rules_text = "Una vez por ronda, ignora el efecto negativo de una cara 1 o 2 del Dado de Riesgo."
+trigger_tags = PackedStringArray("pending_f44")
