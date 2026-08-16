@@ -33,22 +33,22 @@ func _check_alpha() -> bool:
 func _check_repeatability() -> bool:
 	var signatures: Array[String] = []
 	for index in range(2):
-		var match := MATCH_SCENE.instantiate() as KarmanyPhase24FullMatchBridge
-		if match == null:
+		var match_bridge := MATCH_SCENE.instantiate() as KarmanyPhase24FullMatchBridge
+		if match_bridge == null:
 			return false
-		add_child(match)
+		add_child(match_bridge)
 		await get_tree().process_frame
 		await get_tree().process_frame
-		if not match.setup_ok or not match.run_complete_match_fast():
-			match.queue_free()
+		if not match_bridge.setup_ok or not match_bridge.run_complete_match_fast():
+			match_bridge.queue_free()
 			return false
-		if not match.coordinator.is_finished or match.coordinator.final_evaluation == null:
-			match.queue_free()
+		if not match_bridge.coordinator.is_finished or match_bridge.coordinator.final_evaluation == null:
+			match_bridge.queue_free()
 			return false
-		var p1: int = match.legacy_points.get_total(match.player_1.player_id)
-		var p2: int = match.legacy_points.get_total(match.player_2.player_id)
-		signatures.append("%d:%d:%d" % [p1, p2, match.turn_manager.current_round])
-		print("Run %d · PL %d-%d · ronda %d: OK" % [index + 1, p1, p2, match.turn_manager.current_round])
-		match.queue_free()
+		var p1: int = match_bridge.legacy_points.get_total(match_bridge.player_1.player_id)
+		var p2: int = match_bridge.legacy_points.get_total(match_bridge.player_2.player_id)
+		signatures.append("%d:%d:%d" % [p1, p2, match_bridge.turn_manager.current_round])
+		print("Run %d · PL %d-%d · ronda %d: OK" % [index + 1, p1, p2, match_bridge.turn_manager.current_round])
+		match_bridge.queue_free()
 		await get_tree().process_frame
 	return signatures.size() == 2 and signatures[0] == signatures[1]
