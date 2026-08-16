@@ -24,5 +24,5 @@ reward_effects = Array[ExtResource("2_effect")]([SubResource("RewardFA")])
 reward_consequence_ids = null
 defeat_consequence_ids = PackedStringArray("discard_3_basic_resources_choice")
 reward_text = "5 PL + 1 FA"
-defeat_text = "Descarta 3 recursos basicos de tu eleccion y retrocede 1 loseta."
+defeat_text = "Descarta 3 recursos basicos de tu eleccion y retrocedes 1 loseta."
 rules_text = "Solo puede enfrentarse con Libro II o superior."

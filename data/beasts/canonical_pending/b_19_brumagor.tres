@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-19"
+display_name = "Brumagor"
+classification = "Titan de Niebla"
+tier = 2
+base_defense = 16
+combat_tags = PackedStringArray("beast", "complex", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 3
+reward_text = "3 PL + 2 EK + roba 3 Resonancias y descarta 1"
+defeat_text = "Descarta 2 Resonancias."
+rules_text = "Si ganas usando carta +3 o mayor, gana +1 PL."

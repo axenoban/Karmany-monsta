@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-24"
+display_name = "Eco de Aeterna"
+classification = "Sombra de Memoria"
+tier = 3
+base_defense = 23
+combat_tags = PackedStringArray("beast", "boss", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 5
+reward_text = "5 PL + roba 2 Resonancias y conserva 1"
+defeat_text = "Descarta 1 Resonancia y pierde 2 EK."
+rules_text = "Si tienes Libro III, gana +2 Poder contra esta Bestia."

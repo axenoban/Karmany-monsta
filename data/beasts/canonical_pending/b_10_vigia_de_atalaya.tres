@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-10"
+display_name = "Vigia de Atalaya"
+classification = "Guardian Salvaje"
+tier = 1
+base_defense = 14
+combat_tags = PackedStringArray("beast", "medium", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 2
+reward_text = "2 PL + mira una loseta oculta adyacente"
+defeat_text = "Retrocede 1 loseta."
+rules_text = "-"

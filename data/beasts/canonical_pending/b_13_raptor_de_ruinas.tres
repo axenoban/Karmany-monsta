@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-13"
+display_name = "Raptor de Ruinas"
+classification = "Depredador Antiguo"
+tier = 1
+base_defense = 14
+combat_tags = PackedStringArray("beast", "medium", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 2
+reward_text = "2 PL + puedes renovar 1 carta de Equipo del mercado"
+defeat_text = "Pierdes 2 recursos basicos y retrocedes."
+rules_text = "Si usas Herramienta equipada, gana +2 Poder contra esta Bestia."

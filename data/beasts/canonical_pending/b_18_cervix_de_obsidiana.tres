@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-18"
+display_name = "Cervix de Obsidiana"
+classification = "Bestia de Cristal Negro"
+tier = 2
+base_defense = 18
+combat_tags = PackedStringArray("beast", "complex", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 3
+reward_text = "3 PL + roba 2 Equipo y conserva 1 del mazo; puedes dejarlo en mercado"
+defeat_text = "Pierdes 2 MR y retrocedes."
+rules_text = "Los efectos de Proteccion no evitan el retroceso contra esta Bestia."

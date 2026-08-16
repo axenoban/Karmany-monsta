@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="KarmanyBeastData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/beast_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+beast_id = &"B-20"
+display_name = "Raiz Devora"
+classification = "Planta Karmica Salvaje"
+tier = 2
+base_defense = 18
+combat_tags = PackedStringArray("beast", "complex", "canonical_pending")
+special_rule_ids = PackedStringArray("pending_f44")
+reward_legacy_points = 3
+reward_text = "3 PL + 2 MN + 1 FA"
+defeat_text = "Pierdes 1 recurso y no puedes moverte en tu siguiente accion."
+rules_text = "Si tu Karmany es Recolector, esta Bestia gana +1 Defensa."
