@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-28"
+display_name = "Camino Abierto"
+resonance_type = 2
+printed_power = 2
+use_windows = PackedStringArray("exploration")
+rules_text = "Despues de explorar, puedes moverte a una loseta revelada adyacente."
+tags = PackedStringArray("canonical_v074", "pending_f44")

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-30"
+display_name = "Llamado Sereno"
+resonance_type = 3
+printed_power = 0
+use_windows = PackedStringArray("bond")
+rules_text = "Mira 3 Karmany del mazo compatible con tu nivel actual; revela 1 y devuelve los otros abajo. Si no revelas o no puedes revelar un Karmany, gana 1 EK."
+tags = PackedStringArray("canonical_v074", "pending_f44")

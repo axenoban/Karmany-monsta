@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-31"
+display_name = "Cambio de Guardia"
+resonance_type = 3
+printed_power = 0
+use_windows = PackedStringArray("reaction")
+rules_text = "Antes de combatir, cambia tu Karmany activo por uno en reserva sin gastar accion. El nuevo Karmany gana +1 Poder en este combate."
+tags = PackedStringArray("canonical_v074", "pending_f44")

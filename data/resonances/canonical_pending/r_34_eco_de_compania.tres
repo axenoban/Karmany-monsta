@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-34"
+display_name = "Eco de Compania"
+resonance_type = 3
+printed_power = 0
+use_windows = PackedStringArray("end_turn")
+rules_text = "Si tienes 2 o mas Karmany, roba 2 Resonancias y descarta 1."
+tags = PackedStringArray("canonical_v074", "pending_f44")

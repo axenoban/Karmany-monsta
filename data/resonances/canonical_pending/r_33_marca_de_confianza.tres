@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-33"
+display_name = "Marca de Confianza"
+resonance_type = 3
+printed_power = 0
+use_windows = PackedStringArray("bond")
+rules_text = "Al vincular un Karmany, paga 1 recurso comun menos. No reduce FA. Despues roba 1 Resonancia."
+tags = PackedStringArray("canonical_v074", "pending_f44")

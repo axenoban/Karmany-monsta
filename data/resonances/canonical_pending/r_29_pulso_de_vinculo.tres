@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-29"
+display_name = "Pulso de Vinculo"
+resonance_type = 3
+printed_power = 2
+use_windows = PackedStringArray("combat", "bond")
+rules_text = "Si usas esta carta al derrotar un Karmany, paga 1 EK menos para vincularlo."
+tags = PackedStringArray("canonical_v074", "pending_f44")

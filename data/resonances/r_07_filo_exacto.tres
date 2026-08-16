@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_data")
 resonance_id = &"R-07"
-display_name = "Filo Exacto"
+display_name = "Golpe Certero"
 resonance_type = 0
 printed_power = 4
 use_windows = PackedStringArray("combat")
-rules_text = "Combate: +4 Poder. Si el Poder final iguala exactamente la Defensa efectiva, roba 1 Resonancia."
-tags = PackedStringArray("ataque", "combate", "precision")
+rules_text = "Carta segura de buen valor. Si esta carta te hace igualar exactamente la Defensa, roba 1 Resonancia."
+tags = PackedStringArray("ataque", "combate", "precision", "canonical_v074")

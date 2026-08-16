@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_data")
 resonance_id = &"R-06"
-display_name = "Eco del Libro"
+display_name = "Chispa del Libro"
 resonance_type = 0
 printed_power = 3
 use_windows = PackedStringArray("combat")
-rules_text = "Combate: +3 Poder. Su efecto adicional depende del nivel del Libro y se resolvera por el controlador correspondiente."
-tags = PackedStringArray("combate", "libro")
+rules_text = "Si tienes Libro II o III, roba 2 Resonancias y descarta 1."
+tags = PackedStringArray("ataque", "combate", "libro", "canonical_v074")

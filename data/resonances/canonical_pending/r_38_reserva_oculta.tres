@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-38"
+display_name = "Reserva Oculta"
+resonance_type = 4
+printed_power = 0
+use_windows = PackedStringArray("reaction")
+rules_text = "Despues de descartar recursos basicos por una derrota, roba 1 Resonancia y descarta 1."
+tags = PackedStringArray("canonical_v074", "pending_f44")

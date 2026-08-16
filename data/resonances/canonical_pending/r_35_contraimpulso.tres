@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-35"
+display_name = "Contraimpulso"
+resonance_type = 4
+printed_power = 2
+use_windows = PackedStringArray("combat", "reaction")
+rules_text = "Despues de que el rival juegue Resonancia, juega esta carta y gana +2 Poder adicional."
+tags = PackedStringArray("canonical_v074", "pending_f44")

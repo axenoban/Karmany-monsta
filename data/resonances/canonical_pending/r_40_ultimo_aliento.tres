@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KarmanyResonanceData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/resonance_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+resonance_id = &"R-40"
+display_name = "Ultimo Aliento"
+resonance_type = 4
+printed_power = 4
+use_windows = PackedStringArray("reaction")
+rules_text = "Si estas perdiendo un combate por 4 o menos, juega esta carta para sumar +4 Poder. Alternativamente, puedes lanzar Dado de Riesgo 2.0 aunque tu Karmany no sea Salvaje; ese dado no puede repetirse ni modificarse por otro efecto."
+tags = PackedStringArray("canonical_v074", "pending_f44")
