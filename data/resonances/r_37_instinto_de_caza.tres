@@ -18,5 +18,5 @@ display_name = "Instinto de Caza"
 resonance_type = 4
 use_windows = PackedStringArray("combat")
 modifiers = Array[ExtResource("2_modifier")]([SubResource("R37BeastPower")])
-rules_text = "Combate contra Bestia: gana +2 Poder."
-tags = PackedStringArray("reaccion", "combate", "bestia")
+rules_text = "En un combate contra Bestia, gana +2 Poder."
+tags = PackedStringArray("reaccion", "combate", "bestia", "canonical_v074")
