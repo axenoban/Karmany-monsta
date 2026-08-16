@@ -28,6 +28,58 @@ static func build_legal_actions(
 	return result
 
 
+static func build_legal_move_candidates(
+	coordinator: KarmanyMatchCoordinator,
+	player: KarmanyPlayerState
+) -> Array[KarmanyAiActionCandidate]:
+	var result: Array[KarmanyAiActionCandidate] = []
+	if coordinator == null or player == null:
+		return result
+	if not coordinator.is_configured() or coordinator.is_finished:
+		return result
+	if coordinator.turn_manager == null or coordinator.board_state == null:
+		return result
+	if not coordinator.turn_manager.is_running:
+		return result
+	if coordinator.turn_manager.get_active_player() != player:
+		return result
+	if not coordinator.turn_manager.can_spend_action(1):
+		return result
+
+	for coord in coordinator.board_state.get_existing_neighbors(player.current_coord):
+		if not KarmanyMovementRules.is_move_valid(
+			coordinator.board_state,
+			coordinator.turn_manager,
+			player,
+			coord
+		):
+			continue
+		# F44.1B reutiliza la legalidad normal de Mover, pero no debe ofrecer
+		# un destino ocupado que el executor de F38 rechazaria despues.
+		if coordinator.board_state.get_occupying_unit_id(coord) != &"":
+			continue
+		var move := KarmanyAiActionCandidate.new()
+		move.action_type = KarmanyAiActionCandidate.ActionType.MOVE
+		move.target_coord = coord
+		move.debug_label = "Mover a %s" % str(coord)
+		move.base_utility = 1.0
+		move.exploration_value = 0.25
+		var tile: KarmanyTileData = coordinator.board_state.get_tile_data(coord)
+		if tile != null:
+			var entry_estimate := KarmanyAiResourceUtility.estimate_effects(
+				tile.entry_effects,
+				player,
+				coordinator
+			)
+			var entry_value: float = float(entry_estimate.get("value", 0.0))
+			move.economy_value = entry_value
+			move.opportunity_value = 0.5 + entry_value
+			move.progress_value = float(tile.level) * 0.25
+			move.payload["resource_utility"] = entry_estimate
+		result.append(move)
+	return result
+
+
 static func _append_move_and_explore(
 	result: Array[KarmanyAiActionCandidate],
 	coordinator: KarmanyMatchCoordinator,
