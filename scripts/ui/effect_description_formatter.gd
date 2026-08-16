@@ -32,6 +32,12 @@ static func describe_effect(effect: KarmanyEffectData) -> String:
 				maxi(effect.amount, 0),
 				card_source_label(effect.card_source_id, effect.amount)
 			]
+		KarmanyEffectData.EffectType.DRAW_DISCARD_CARDS:
+			return "Roba %d %s y descarta %d" % [
+				maxi(effect.amount, 0),
+				card_source_label(effect.card_source_id, effect.amount),
+				maxi(effect.secondary_amount, 0)
+			]
 		KarmanyEffectData.EffectType.MODIFY_STATE:
 			return _description_or(
 				effect,
