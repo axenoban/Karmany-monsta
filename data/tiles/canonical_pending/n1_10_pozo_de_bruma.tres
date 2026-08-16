@@ -1,6 +1,22 @@
 [gd_resource type="Resource" script_class="KarmanyTileData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/data/karmany_effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_later_ek"]
+script = ExtResource("2_effect")
+effect_type = 1
+amount = 2
+resource_type = 2
+description = "Uso posterior N1-10: +2 EK."
+
+[sub_resource type="Resource" id="Effect_later_filter"]
+script = ExtResource("2_effect")
+effect_type = 8
+amount = 1
+secondary_amount = 1
+card_source_id = &"resonance"
+description = "Uso posterior N1-10: roba 1 Resonancia y descarta 1."
 
 [resource]
 script = ExtResource("1_tile")
@@ -13,6 +29,7 @@ on_explore_text = "Elige: recolecta 2 EK; o roba 2 Resonancias y descarta 1."
 entry_bonus_text = "Entrada: Roba 1 Resonancia y descarta 1."
 later_use_text = "Recolectar 2 EK o robar 1 Resonancia y descartar 1."
 limit_text = "-"
-interaction_profile_id = &"pending_f44"
+interaction_profile_id = &"effect"
+later_use_effects = Array[ExtResource("2_effect")]([SubResource("Effect_later_ek"), SubResource("Effect_later_filter")])
 starts_revealed = false
 can_rotate_visual = true
