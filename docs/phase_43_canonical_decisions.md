@@ -1,33 +1,29 @@
-# Fase 43 — Decisiones canónicas posteriores a F43.0
+# Fase 43 — Decisiones canonicas vigentes
 
-Fecha de decisión: 2026-08-15.
+Fecha de decision original: 2026-08-15.
+Actualizado al cierre de F43.
 
-Este documento complementa `docs/phase_43_canonical_content_audit.md` y registra decisiones explícitas del autor posteriores a la auditoría F43.0. No crea Resources ni modifica gameplay por sí mismo.
+## Regla de precedencia
 
-## Regla de precedencia para F43
+1. El **documento maestro reciente v0.74** es la fuente canonica principal para contenido, nombres, valores, textos, costes, recompensas, condiciones y comportamiento documentado.
+2. Si existe una desigualdad entre el maestro reciente y contenido previo del repositorio, **prevalece v0.74**, salvo una excepcion explicita registrada por el autor.
+3. No se reconstruye informacion ausente desde memoria, conversaciones anteriores ni IDs del repositorio. Un dato realmente ausente o ambiguo se marca pendiente en lugar de inventarse.
 
-1. El **documento maestro más reciente v0.74** es la fuente canónica principal para contenido, nombres, valores, textos, costes, recompensas, condiciones y comportamiento documentado.
-2. Si existe una desigualdad entre el documento maestro reciente y contenido ya presente en el repositorio, **se aplicará el documento maestro reciente**, salvo una excepción explícita registrada por el autor.
-3. No se reconstruirá contenido ausente desde memoria, conversaciones anteriores ni IDs del repositorio. Si un dato no aparece o sigue siendo ambiguo en el maestro, se marcará como `PENDIENTE/CONFLICTO` y no se inventará.
+## Excepcion canonica — repeticion de Explorar
 
-## Excepción canónica explícita — repetición de Explorar
+La unica excepcion explicita registrada durante F43 es la repeticion de `Explorar`:
 
-La redacción del documento maestro v0.74 que indica que `Explorar` no puede repetirse dentro del mismo turno se considera una aplicación incompleta/desactualizada de la regla prevista.
+- `Explorar` **puede realizarse mas de una vez en un mismo turno**.
+- Cada uso debe ser legal y consumir una de las acciones disponibles.
+- Se conserva el comportamiento aprobado de F38–F42.
+- Esta decision prevalece sobre la frase contradictoria del documento maestro que indica `excepto Explorar` / `No se repite en el mismo turno`.
+- F44 tampoco debe introducir un limitador de una sola exploracion por turno.
 
-Decisión canónica del autor para el proyecto digital:
-
-- `Explorar` **sí puede realizarse más de una vez en un mismo turno**, siempre que cada uso sea legal y consuma una de las acciones disponibles.
-- Se preserva por tanto el comportamiento aprobado de F38–F42 que permite múltiples exploraciones legales en un turno.
-- Esta decisión tiene prioridad sobre las líneas contradictorias del documento maestro que dicen `excepto Explorar` o `No se repite en el mismo turno`.
-- F43 no debe introducir un limitador de una sola exploración por turno.
-
-## Resolución de conflictos R-06 y R-07
-
-Para estas dos Resonancias se aplica sin excepción el documento maestro v0.74.
+## Resonancias R-06 y R-07 — resueltas
 
 ### R-06
 
-Canónico para F43:
+Canónico y ya alineado en F43.5:
 
 - ID: `R-06`
 - Nombre: `Chispa del Libro`
@@ -35,11 +31,11 @@ Canónico para F43:
 - Poder impreso: `+3`
 - Efecto: si tienes Libro II o III, roba 2 Resonancias y descarta 1.
 
-El Resource persistente actual que usa el nombre `Eco del Libro` se considera no fiel al maestro y deberá corregirse en la subfase correspondiente, preservando el ID canónico `R-06`.
+El nombre anterior `Eco del Libro` queda obsoleto.
 
 ### R-07
 
-Canónico para F43:
+Canonico y ya alineado en F43.5:
 
 - ID: `R-07`
 - Nombre: `Golpe Certero`
@@ -47,15 +43,31 @@ Canónico para F43:
 - Poder impreso: `+4`
 - Efecto: si esta carta hace que el Poder iguale exactamente la Defensa, roba 1 Resonancia.
 
-El Resource persistente actual que usa el nombre `Filo Exacto` se considera no fiel al maestro y deberá corregirse en la subfase correspondiente, preservando el ID canónico `R-07`.
+El nombre anterior `Filo Exacto` queda obsoleto.
 
-## Aplicación futura
+## Misiones corregidas al maestro
 
-Estas decisiones deben usarse como criterio de revisión en todas las subfases F43.x:
+- `ME-M1` — `Resonancia Decisiva`.
+- `ME-S1` — `Cartografia Viva`.
 
-- Maestro v0.74 prevalece sobre contenido previo del repositorio.
-- La única excepción registrada hasta ahora es la repetición de `Explorar`, que permanece permitida más de una vez por turno cuando cada uso sea legal.
-- Cualquier nueva contradicción maestro ↔ repositorio se resolverá aplicando el maestro reciente, salvo que el autor dé una excepción explícita equivalente a la anterior.
-- La automatización se realizará incrementalmente; esta decisión no autoriza implementar categorías no solicitadas ni inventar comportamiento ausente.
+Los fallbacks runtime asociados fueron alineados al maestro durante F43.6 sin ampliar artificialmente su cobertura logica.
 
-F43.1 no se inicia mediante este documento.
+## Estado al cierre
+
+F43 deja materializadas las ocho categorias canonicas v0.74:
+
+- 8 Entrenadores;
+- 41 Losetas MAP41;
+- 28 Karmany;
+- 24 Bestias;
+- 36 Equipos;
+- 40 Resonancias;
+- 12 Objetivos Publicos;
+- 16 Misiones de Entrenador.
+
+Total: **205 identidades canonicas**.
+
+La existencia de un Resource no implica automatizacion completa. El contenido `canonical_pending` permanece aislado hasta que F44 implemente y pruebe su logica correspondiente.
+
+Documento de auditoria final: `docs/phase_43_canonical_content_audit.md`.
+Test transversal de cierre: `res://tests/phase_43_closure_audit_test.tscn`.
