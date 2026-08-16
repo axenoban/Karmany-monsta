@@ -18,14 +18,26 @@ R-10, R-11, R-12, R-14, R-15, R-16, R-17, R-18, R-19, R-21, R-23, R-24, R-25, R-
 
 Cada Resource conserva ID, nombre, tipo, valor impreso, ventana de uso y texto completo del efecto v0.74. Los 27 nuevos usan `tags = PackedStringArray("canonical_v074", "pending_f44")` y mantienen `modifiers` y `effect_blocks` vacios: la identidad/regla queda materializada sin declarar automatizacion inexistente.
 
-## Correcciones canonicas R-06 y R-07
+## Correcciones canonicas y normalizacion de Resources existentes
 
-Por decision explicita del autor, el documento maestro reciente prevalece sobre los Resources antiguos:
+Por decision explicita del autor, el documento maestro reciente prevalece sobre los Resources antiguos.
+
+Correcciones de identidad:
 
 - R-06 se corrige de `Eco del Libro` a **`Chispa del Libro`**, +3, Combate, con efecto `Si tienes Libro II o III, roba 2 Resonancias y descarta 1.`
 - R-07 se corrige de `Filo Exacto` a **`Golpe Certero`**, +4, Combate, con efecto `Carta segura de buen valor. Si esta carta te hace igualar exactamente la Defensa, roba 1 Resonancia.`
 
-Se conservan sus IDs R-06/R-07 y sus rutas fisicas actuales para evitar churn de referencias; el contenido visible/canonico queda corregido.
+Ademas, durante la auditoria completa de los 13 Resources preexistentes se detectaron textos resumidos respecto del campo `Efecto v0.74`. Se normalizaron sin eliminar sus estructuras automatizadas existentes:
+
+- R-02 Golpe Salvaje: recupera el texto completo del Dado de Riesgo 2.0 y su prohibicion de repeticion/modificacion.
+- R-05 Furia Controlada: recupera la redaccion completa de uso PvP, penalizacion y autorizacion del Dado de Riesgo.
+- R-20 Ultima Defensa: recupera la condicion canonica `Si pierdes de todos modos`.
+- R-22 Mirada del Sendero: el `rules_text` queda alineado literalmente con el efecto del maestro.
+- R-37 Instinto de Caza: el `rules_text` queda alineado literalmente con `En un combate contra Bestia, gana +2 Poder.`
+
+R-01, R-03, R-04, R-08, R-09 y R-13 ya contenian el efecto completo del maestro dentro de su `rules_text`; sus estructuras automatizadas se preservan.
+
+Se conservan los IDs y las rutas fisicas actuales de los 13 Resources directos para evitar churn de referencias. Ninguna de estas normalizaciones agrega automatizacion nueva: solo alinea identidad/texto con v0.74 y conserva los `modifiers`/`effect_blocks` ya existentes.
 
 ## Runtime y fallback
 
