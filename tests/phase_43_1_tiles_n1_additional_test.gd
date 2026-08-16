@@ -90,9 +90,11 @@ func _test_canonical_resources() -> bool:
 			return _fail("Nombre no canonico en %s: %s." % [tile.tile_id, tile.display_name])
 		if tile.level != KarmanyTileData.TileLevel.N1:
 			return _fail("%s no esta clasificada como N1." % tile.tile_id)
-		if tile.function_tags != (row["function_tags"] as PackedStringArray):
+		var expected_function_tags: PackedStringArray = row["function_tags"]
+		var expected_icon_tags: PackedStringArray = row["icon_tags"]
+		if tile.function_tags != expected_function_tags:
 			return _fail("Funcion difiere del maestro en %s." % tile.tile_id)
-		if tile.icon_tags != (row["icon_tags"] as PackedStringArray):
+		if tile.icon_tags != expected_icon_tags:
 			return _fail("Iconos difieren del maestro en %s." % tile.tile_id)
 		if tile.on_explore_text != String(row["on_explore"]):
 			return _fail("Al explorar difiere del maestro en %s." % tile.tile_id)
