@@ -38,5 +38,5 @@ display_name = "Mirada del Sendero"
 resonance_type = 2
 use_windows = PackedStringArray("exploration")
 effect_blocks = Array[ExtResource("2_block")]([SubResource("R22OnPlay")])
-rules_text = "Exploracion: mira 1 loseta oculta adyacente antes de explorar. Si es Nivel 1, puedes mirar otra Nivel 1 adyacente. Despues roba 1 Resonancia y descarta 1."
-tags = PackedStringArray("exploracion", "mirar", "robo", "descarte")
+rules_text = "Mira 1 loseta oculta adyacente antes de explorar. Si es Nivel 1, puedes mirar otra Nivel 1 adyacente. Despues roba 1 Resonancia y descarta 1."
+tags = PackedStringArray("exploracion", "mirar", "robo", "descarte", "canonical_v074")
