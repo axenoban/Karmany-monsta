@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-11"
+display_name = "Rocas del Alba"
+level = 1
+function_tags = PackedStringArray("Mineral", "conversion")
+icon_tags = PackedStringArray("MR")
+on_explore_text = "Elige: recolecta 2 MR; o cambia 2 MN por 2 MR."
+entry_bonus_text = "Entrada: Obten 1 MR."
+later_use_text = "Recolectar 2 MR."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true
