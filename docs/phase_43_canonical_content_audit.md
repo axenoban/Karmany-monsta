@@ -1,348 +1,304 @@
-# Fase 43.0 — Auditoría documento maestro ↔ repositorio
+# Fase 43 — Auditoria canonica final v0.74
 
-## Alcance
+## Fuente de verdad
 
-Esta auditoría compara exclusivamente el documento maestro **Karmany Monsta: Forja de Resonancia — Libro de Reglas e Información Completa v0.74, Movimiento, Progresión e Instinto** con el estado del repositorio al iniciar F43.
+Fuente primaria: **Karmany Monsta: Forja de Resonancia — Libro de Reglas v0.74, Movimiento, Progresion e Instinto**.
 
-Baseline verificado: `dev/karmany-core` @ `de5ff2c5cd11710c333eaea449694a9c452ae3d1`.
+Baseline historico de F43: `dev/karmany-core` @ `de5ff2c5cd11710c333eaea449694a9c452ae3d1`.
 
-Rama de auditoría: `feature/phase-43-canonical-content`, creada desde ese mismo SHA.
+Rama de trabajo: `feature/phase-43-canonical-content`.
 
-F43.0 no crea Resources, no modifica pools, fallback, gameplay, IA, mapa, scoring, lifecycle F42 ni `project.godot`.
+Esta version del documento reemplaza la matriz preliminar de F43.0. La auditoria inicial contenia etiquetas provisionales anteriores al contraste completo con las tablas maestras; esas etiquetas se eliminan aqui para que la documentacion F43 quede sincronizada con v0.74.
 
-## Criterio A/B/C/D
+## Regla de precedencia
 
-- **A** — Canónico + materializado + ejecutable, con automatización completa demostrable para el contrato actual.
-- **B** — Canónico y materializable, pero falta Resource, integración o automatización total/parcial.
-- **C** — Canónico pero el documento no aporta datos suficientes para materializar sin asumir.
-- **D** — No canónico / no encontrado en el documento: no crear.
+1. El documento maestro v0.74 reciente prevalece sobre contenido previo del repositorio para nombres, valores, textos, costes, recompensas, condiciones y comportamiento documentado.
+2. Excepcion explicita del autor: **Explorar puede repetirse mas de una vez en el mismo turno**, siempre que cada uso sea legal y consuma una accion. Esta decision prevalece sobre la frase contradictoria del maestro que limita Explorar a una vez por turno.
+3. No se inventa contenido que el maestro no defina. La materializacion de F43 no equivale a automatizacion completa; lo no automatizado permanece aislado para F44.
 
-En F43.0 se aplica criterio conservador: que un Resource sea runtime-safe no basta para declararlo A si no se certificó la automatización completa de su habilidad/efecto.
+## Cobertura final
 
-## Resumen de cobertura
+| Categoria | Canonico v0.74 | Materializado F43 | Estado al cierre |
+|---|---:|---:|---|
+| Entrenadores | 8 | 8 | 3 PARTIAL / 5 DATA_ONLY; ninguna carta declarada totalmente EXECUTABLE |
+| Losetas MAP41 | 41 | 41 | 13 runtime previas + 28 `canonical_pending` |
+| Karmany | 28 | 28 | 13 directos + 15 `canonical_pending` |
+| Bestias | 24 | 24 | 7 directas + 17 `canonical_pending`; 5 en pool seguro actual |
+| Equipo | 36 | 36 | 9 directos + 27 `canonical_pending`; 6 en mercado seguro actual |
+| Resonancias | 40 | 40 | 13 directas + 27 `canonical_pending`; R-06/R-07 alineadas al maestro |
+| Objetivos Publicos | 12 | 12 | 8 directos + 4 `canonical_pending` |
+| Misiones de Entrenador | 16 | 16 | 9 directas + 7 `canonical_pending` |
+| **TOTAL** | **205** | **205** | **205 identidades canonicas materializadas** |
 
-| Categoría | Canónico v0.74 | `.tres` actual | Runtime utilizable/identidad | Automatización completa certificada F43.0 | Pendiente principal |
-|---|---:|---:|---:|---:|---|
-| Entrenadores | 8 | 8 | 8 | 0 cartas completas* | 5 bonus de setup y cobertura integral de pasivas/activas |
-| Losetas MAP41 | 41 | 13 | 13 | 0 integrales** | 28 `.tres`; revisar tres campos funcionales y efectos estructurados |
-| Karmany | 28 | 13 | 13 | 0 habilidades integrales certificadas | 15 `.tres` + automatización de habilidades |
-| Bestias | 24 | 7 | 5 en mazos seguros | 0 integrales certificadas | 17 `.tres`; 2 Resources existentes aún fuera del runtime seguro |
-| Equipos | 36 | 9 | 6 en mercado seguro | 0 integrales certificadas | 27 `.tres`; 3 Resources existentes aún fuera del runtime seguro |
-| Resonancias | 40 | 13 | 40 identidades / 13 marcadas automatizadas | 11 sin conflicto detectado | 27 `.tres`; R-06/R-07 tienen discrepancia de nombre del Resource |
-| Objetivos Públicos | 12 | 8 | 8 | 8 | 4 `.tres` + tracker/eventos |
-| Misiones | 16 | 9 | 11 (9 Resources + 2 fallbacks) | 9 Resources | 7 `.tres`; 2 de esos 7 tienen fallback runtime |
+## Contrato comprobado por categoria
 
-\* Dorian, Maelis y Oryn sí tienen bonificación inicial automatizada; esto no certifica toda su carta como A.
+- Entrenadores: ID, entrenador/titulo, estilo/dificultad, pasiva, activa, bonificacion inicial y funcion/balance.
+- Losetas: ID, nombre, funcion, iconos/tags, Al explorar, Uso posterior, Bonificacion de entrada y limite.
+- Karmany: ID, nombre, subtitulo, nivel, tipo, Poder, Defensa de vinculo, PL directo, obtencion y habilidad.
+- Bestias: ID, nombre, clasificacion, nivel, Defensa base, recompensa, derrota y efecto.
+- Equipo: ID, nombre, rareza, coste y efecto.
+- Resonancias: ID, nombre, tipo, valor, uso y efecto.
+- Objetivos: ID, nombre, condicion y recompensa.
+- Misiones: ID, entrenador/mision, condicion, recompensa y marca recomendada de primera partida.
 
-\** Las 13 losetas actuales sí tienen el contrato universal F39 de `Interactuar/Uso posterior`; F43.0 no equipara eso con automatización integral de todos los campos v0.74.
+Las pruebas F43.1–F43.7 verifican estos contratos contra los Resources. El test final `phase_43_closure_audit_test.tscn` agrega la comprobacion transversal de conteos, set exacto de IDs y duplicados entre las ocho categorias.
 
-No se detectó ningún ID canónico del maestro que deba clasificarse D. Tampoco se ha necesitado C por falta de definición tabular: las tablas 16.1–16.13 aportan identidad y texto para las ocho categorías; los conflictos encontrados son documento ↔ repositorio y se mantienen como B hasta decisión/corrección en su subfase.
+## Inventario canonico de identidades
 
-## Matrices por categoría
+### Entrenadores — 8
 
-### Entrenadores
+- E-01 — Alderion, Explorador Errante
+- E-02 — Lyra, Guardiana de Vinculo
+- E-03 — Dorian, Duelista de Vael
+- E-04 — Nara, Forjadora Karmica
+- E-05 — Maelis, Tejedora de Resonancia
+- E-06 — Kael, Cazador del Umbral
+- E-07 — Saira, Cartografa de Terrenos
+- E-08 — Oryn, Apostador del Eco
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| E-01 | Alderion, Explorador Errante | Sí | Sí | Sí | Sí | Parcial; setup peek pendiente | Bonificación inicial de peek + automatización integral no certificada | B |
-| E-02 | Lyra, Guardiana de Vinculo | Sí | Sí | Sí | Sí | Parcial; setup peek pendiente | Bonificación inicial de peek + automatización integral no certificada | B |
-| E-03 | Dorian, Duelista de Vael | Sí | Sí | Sí | Sí | Parcial; setup sí | Automatización integral pasiva/activa no certificada en F43.0 | B |
-| E-04 | Nara, Forjadora Karmica | Sí | Sí | Sí | Sí | Parcial; setup peek pendiente | Bonificación inicial de peek + automatización integral no certificada | B |
-| E-05 | Maelis, Tejedora de Resonancia | Sí | Sí | Sí | Sí | Parcial; setup sí | Automatización integral pasiva/activa no certificada en F43.0 | B |
-| E-06 | Kael, Cazador del Umbral | Sí | Sí | Sí | Sí | Parcial; setup peek pendiente | Bonificación inicial de peek + automatización integral no certificada | B |
-| E-07 | Saira, Cartografa de Terrenos | Sí | Sí | Sí | Sí | Parcial; setup peek pendiente | Bonificación inicial de peek + automatización integral no certificada | B |
-| E-08 | Oryn, Apostador del Eco | Sí | Sí | Sí | Sí | Parcial; setup sí | Automatización integral pasiva/activa no certificada en F43.0 | B |
+### Losetas MAP41 — 41
 
-### Losetas
+- I-01 — Refugio del Valle Jade
+- I-02 — Campamento del Rio Bruma
+- I-03 — Puesto Rocoso
+- I-04 — Sendero del Primer Vinculo
+- N1-01 — Bosque de Raices
+- N1-02 — Mina Pequena
+- N1-03 — Arroyo Karmico
+- N1-04 — Campamento Antiguo
+- N1-05 — Sendero Verde
+- N1-06 — Claro de Resonancia
+- N1-07 — Ruinas del Eco
+- N1-08 — Puente de Musgo
+- N1-09 — Pradera de Luma
+- N1-10 — Pozo de Bruma
+- N1-11 — Rocas del Alba
+- N1-12 — Sendero Partido
+- N1-13 — Refugio Menor
+- N1-14 — Hierbas de Vael
+- N1-15 — Taller Improvisado
+- N1-16 — Fuente Serena
+- N1-17 — Colina de Guardia
+- N1-18 — Cruce de Raices
+- N2-01 — Nido de Bruma
+- N2-02 — Bosque de Vinculo
+- N2-03 — Ruinas del Eco
+- N2-04 — Atalaya Exterior
+- N2-05 — Paso de Cristal
+- N2-06 — Santuario Quebrado
+- N2-07 — Garganta del Aullido
+- N2-08 — Refugio de Karmany
+- N2-09 — Mercado de Ruinas
+- N2-10 — Puente de Atalaya
+- N2-11 — Nido Salvaje
+- N2-12 — Obelisco Menor
+- N3-01 — Arena de Ruinas
+- N3-02 — Forja Antigua
+- N3-03 — Cueva de Cristal Ancestral
+- L-01 — Santuario de Aeterna
+- N3-04 — Puerta del Santuario
+- N3-05 — Santuario del Eco Ancestral
+- N3-06 — Fisura Ancestral
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| I-01 | Refugio del Valle Jade | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| I-02 | Campamento del Rio Bruma | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| I-03 | Atalaya de Neblina | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| I-04 | Puesto de Montana | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N1-01 | Bosque de Raices | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N1-02 | Mina Pequena | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N1-03 | Cristales Susurrantes | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N1-04 | Campamento Perdido | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N1-05 | Claro de Vinculo | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-06 | Sendero de Bruma | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-07 | Taller Abandonado | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-08 | Ruinas del Primer Eco | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-09 | Pradera de Luma | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-10 | Pozo de Bruma | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-11 | Arboleda del Eco | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-12 | Cantera Antigua | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-13 | Paso de Ceniza | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-14 | Manantial Karmico | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-15 | Refugio del Peregrino | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-16 | Santuario Menor | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-17 | Quebrada Resonante | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N1-18 | Linde de Vael | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-01 | Nido de Bruma | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N2-02 | Bosque de Vinculo | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-03 | Taller Runico | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-04 | Mirador del Eco | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-05 | Paso de Cristal | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N2-06 | Lago de Esencia | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-07 | Garganta del Aullido | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-08 | Refugio de Karmany | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-09 | Taller de Bronce | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-10 | Ruinas Resonantes | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-11 | Campo de Cristales | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N2-12 | Umbral de Bruma | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N3-01 | Arena de Ruinas | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N3-02 | Forja Antigua | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N3-03 | Cueva de Cristal | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| L-01 | Santuario de Aeterna | Sí | Sí | Sí | Sí | Parcial; Interactuar F39 sí | Fidelidad estructurada integral v0.74 por campo | B |
-| N3-04 | Puerta del Santuario | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N3-05 | Santuario del Eco Ancestral | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
-| N3-06 | Cripta de los Primeros | Sí | No | - | No | No | Falta .tres y efectos estructurados | B |
+### Karmany — 28
 
-### Karmany
+- K-01 — Terrakor
+- K-02 — Aquaris
+- K-03 — Pyrox
+- K-04 — Lumirra
+- K-05 — Floravia
+- K-06 — Brisu
+- K-07 — Rocerno
+- K-08 — Mistolin
+- K-09 — Verdan
+- K-10 — Brumak
+- K-11 — Rauk Colmillo
+- K-12 — Nimbara
+- K-13 — Ferrak
+- K-14 — Selenix
+- K-15 — Lignar
+- K-16 — Volcrin
+- K-17 — Orial
+- K-18 — Torkal
+- K-19 — Velkar
+- K-20 — Dravok
+- K-21 — Celestia
+- K-22 — Runakar
+- K-23 — Eryndra
+- K-24 — Aeterna Draconis
+- K-25 — Zephyr
+- K-26 — Umbrio
+- K-27 — Gemmir
+- K-28 — Vulkai
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| K-01 | Terrakor | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-02 | Aquaris | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-03 | Flareon | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-04 | Zephyris | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-05 | Noctis | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-06 | Mossel | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-07 | Cindrel | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-08 | Bubbler | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-09 | Verdan | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-10 | Runix | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-11 | Brumak | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-12 | Pyral | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-13 | Lumira | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-14 | Thornix | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-15 | Glacir | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-16 | Voltra | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-17 | Nimbel | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-18 | Rokkarn | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-19 | Ferrox | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-20 | Sylphra | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-21 | Duskryn | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-22 | Ignivar | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-23 | Marinox | Sí | No | - | No | No | Falta .tres y automatización de habilidad | B |
-| K-24 | Terralux | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-25 | Zephyr | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-26 | Umbrio | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-27 | Solara | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
-| K-28 | Aeterna Draconis | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de habilidad | B |
+### Bestias — 24
 
-### Bestias
+- B-01 — Garravol
+- B-02 — Picorroca
+- B-03 — Raicillo Feral
+- B-04 — Murcielago Bruma
+- B-05 — Cuernillo Verde
+- B-06 — Limo de Runa
+- B-07 — Terranuk
+- B-08 — Brumacerno
+- B-09 — Garraespina
+- B-10 — Vigia de Atalaya
+- B-11 — Escarabajo Runico
+- B-12 — Aullador de Bruma
+- B-13 — Raptor de Ruinas
+- B-14 — Feraluz
+- B-15 — Vermis de Cristal
+- B-16 — Colmillo de Ceniza
+- B-17 — Guardian del Umbral
+- B-18 — Cervix de Obsidiana
+- B-19 — Brumagor
+- B-20 — Raiz Devora
+- B-21 — Centinela Runico
+- B-22 — Custodio del Santuario
+- B-23 — Drakmaw
+- B-24 — Eco de Aeterna
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| B-01 | Garravol | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de efecto/condición | B |
-| B-02 | Picorroca | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de efecto/condición | B |
-| B-03 | Musgardo | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-04 | Brumorro | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de efecto/condición | B |
-| B-05 | Cangrox | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-06 | Fauzarin | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-07 | Terranuk | Sí | Sí | Sí | No | No | Resource existe pero no entra al mazo runtime seguro; automatización pendiente | B |
-| B-08 | Luminox | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-09 | Aullador de Bruma | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-10 | Colmillo Runico | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-11 | Aracnida Karmica | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-12 | Caparazon de Cristal | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-13 | Rocabruta | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-14 | Sirena de Niebla | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-15 | Gargantuan | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de efecto/condición | B |
-| B-16 | Espectro Runico | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-17 | Titan de Raiz | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-18 | Draco de Bruma | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-19 | Quimera Karmica | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-20 | Guardián de la Forja | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-21 | Leviatan del Eco | Sí | No | - | No | No | Falta .tres y automatización | B |
-| B-22 | Centinela de Aeterna | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa de efecto/condición | B |
-| B-23 | Devorador Ancestral | Sí | Sí | Sí | No | No | Resource existe pero no entra al mazo runtime seguro; automatización pendiente | B |
-| B-24 | Coloso del Umbral | Sí | No | - | No | No | Falta .tres y automatización | B |
+### Equipo — 36
 
-### Equipos
+- EQ-01 — Cristal de Crecimiento
+- EQ-02 — Guante Runico
+- EQ-03 — Baculo de Bruma
+- EQ-04 — Daga de Resonancia
+- EQ-05 — Nucleo Luminico
+- EQ-06 — Sello de Impacto
+- EQ-07 — Anillo del Eco
+- EQ-08 — Prisma Ancestral
+- EQ-09 — Catalizador de Aeterna
+- EQ-10 — Armadura de Terracota
+- EQ-11 — Capa de Bruma
+- EQ-12 — Escudo de Raiz
+- EQ-13 — Brazal de Piedra
+- EQ-14 — Manto de Serenidad
+- EQ-15 — Coraza Runica
+- EQ-16 — Guardia del Libro
+- EQ-17 — Placa Ancestral
+- EQ-18 — Velo de Aeterna
+- EQ-19 — Pico Runico
+- EQ-20 — Botas Ligeras
+- EQ-21 — Brujula de Vael
+- EQ-22 — Mochila Reforzada
+- EQ-23 — Lampara de Ruinas
+- EQ-24 — Cuerda de Atalaya
+- EQ-25 — Kit de Artesano
+- EQ-26 — Taladro de Cristal
+- EQ-27 — Mapa de las Derivas
+- EQ-28 — Colgante de Armonia
+- EQ-29 — Piedra de Calma
+- EQ-30 — Amuleto de Raiz
+- EQ-31 — Medallon del Eco
+- EQ-32 — Reliquia de Vinculo
+- EQ-33 — Totem del Guardian
+- EQ-34 — Sello del Santuario
+- EQ-35 — Fragmento del Libro
+- EQ-36 — Corona de Resonancia
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| EQ-01 | Cristal de Crecimiento | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-02 | Guante Runico | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-03 | Botas de Bruma | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-04 | Amuleto de Vinculo | Sí | Sí | Sí | No | No | Resource existe pero no entra al mercado runtime seguro; automatización pendiente | B |
-| EQ-05 | Casco de Raices | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-06 | Filo de Ceniza | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-07 | Orbe de Bruma | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-08 | Capa de Explorador | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-09 | Martillo Runico | Sí | Sí | Sí | Sí | Parcial/no certificada | Automatización completa del efecto/timing | B |
-| EQ-10 | Brazalete Karmico | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-11 | Placa de Cristal | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-12 | Lente de Vael | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-13 | Collar del Eco | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-14 | Garra de Bestia | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-15 | Vial de Esencia | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-16 | Grebas del Sendero | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-17 | Medallon del Vinculo | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-18 | Escudo Runico | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-19 | Filo de Resonancia | Sí | Sí | Sí | No | No | Resource existe pero no entra al mercado runtime seguro; automatización pendiente | B |
-| EQ-20 | Botas del Umbral | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-21 | Capa Ancestral | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-22 | Guantelete de Forja | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-23 | Corona de Bruma | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-24 | Coraza Karmica | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-25 | Prisma del Eco | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-26 | Hoja de Cristal | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-27 | Amuleto del Santuario | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-28 | Botas de Aeterna | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-29 | Baston Runico | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-30 | Orbe Ancestral | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-31 | Manto del Primer Eco | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-32 | Martillo de Aeterna | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-33 | Escudo del Umbral | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-34 | Corona del Legado | Sí | Sí | Sí | No | No | Resource existe pero no entra al mercado runtime seguro; automatización pendiente | B |
-| EQ-35 | Prisma Ancestral | Sí | No | - | No | No | Falta .tres y automatización | B |
-| EQ-36 | Reliquia de Vael | Sí | No | - | No | No | Falta .tres y automatización | B |
+### Resonancias — 40
 
-### Resonancias
+- R-01 — Impulso Luminico
+- R-02 — Golpe Salvaje
+- R-03 — Corte de Bruma
+- R-04 — Embate de Raiz
+- R-05 — Furia Controlada
+- R-06 — Chispa del Libro
+- R-07 — Golpe Certero
+- R-08 — Resonancia Creciente
+- R-09 — Ruptura Runica
+- R-10 — Pulso de Batalla
+- R-11 — Destello Final
+- R-12 — Ira del Santuario
+- R-13 — Defensa Instintiva
+- R-14 — Guardia de Raiz
+- R-15 — Reflejo Karmico
+- R-16 — Escudo Breve
+- R-17 — Paso Cubierto
+- R-18 — Calma Interior
+- R-19 — Piel de Bruma
+- R-20 — Ultima Defensa
+- R-21 — Paso Silencioso
+- R-22 — Mirada del Sendero
+- R-23 — Visita Segura
+- R-24 — Avance Ligero
+- R-25 — Rastreo de Vael
+- R-26 — Eco del Bosque
+- R-27 — Brujula Espiritual
+- R-28 — Camino Abierto
+- R-29 — Pulso de Vinculo
+- R-30 — Llamado Sereno
+- R-31 — Cambio de Guardia
+- R-32 — Resonancia Compartida
+- R-33 — Marca de Confianza
+- R-34 — Eco de Compania
+- R-35 — Contraimpulso
+- R-36 — Mano Rapida
+- R-37 — Instinto de Caza
+- R-38 — Reserva Oculta
+- R-39 — Destino Cambiante
+- R-40 — Ultimo Aliento
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| R-01 | Impulso Luminico | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-02 | Golpe Salvaje | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-03 | Corte de Bruma | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-04 | Embate de Raiz | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-05 | Furia Controlada | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-06 | Chispa del Libro | Sí | Sí | Estructural sí / canónico no | Sí | Sí | Nombre del .tres no canónico; rules_text del Resource no expresa el efecto completo aunque catálogo runtime sí. | B |
-| R-07 | Golpe Certero | Sí | Sí | Estructural sí / canónico no | Sí | Sí | Nombre del .tres no canónico; efecto coincide con v0.74. | B |
-| R-08 | Resonancia Creciente | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-09 | Ruptura Runica | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-10 | Pulso de Batalla | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-11 | Destello Final | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-12 | Ira del Santuario | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-13 | Defensa Instintiva | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-14 | Guardia de Raiz | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-15 | Reflejo Karmico | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-16 | Escudo Breve | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-17 | Paso Cubierto | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-18 | Calma Interior | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-19 | Piel de Bruma | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-20 | Ultima Defensa | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-21 | Paso Silencioso | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-22 | Mirada del Sendero | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-23 | Visita Segura | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-24 | Avance Ligero | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-25 | Rastreo de Vael | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-26 | Eco del Bosque | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-27 | Brujula Espiritual | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-28 | Camino Abierto | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-29 | Pulso de Vinculo | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-30 | Llamado Sereno | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-31 | Cambio de Guardia | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-32 | Resonancia Compartida | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-33 | Marca de Confianza | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-34 | Eco de Compania | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-35 | Contraimpulso | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-36 | Reflejo de Apuesta | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-37 | Giro del Destino | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| R-38 | Eco de Oportunidad | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-39 | Ruptura del Azar | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
-| R-40 | Resonancia Ancestral | Sí | No | - | Parcial: identidad runtime | No; secundaria pendiente | Falta .tres y automatización secundaria. | B |
+### Objetivos Publicos — 12
 
-### Objetivos Públicos
+- OP-E01 — Cartografo Experto
+- OP-E02 — Explorador de Ruinas
+- OP-E03 — Caminante de Vael
+- OP-D01 — Primer Vinculo
+- OP-D02 — Forja Consistente
+- OP-D03 — Libro Despierto
+- OP-C01 — Cazador de Bruma
+- OP-C02 — Mano Resonante
+- OP-C03 — Duelista del Eco
+- OP-A01 — Dominio Territorial
+- OP-A02 — Rumbo al Santuario
+- OP-A03 — Preparacion Final
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| OP-E01 | Cartografo Experto | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-E02 | Explorador de Ruinas | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-E03 | Caminante de Tres Niveles | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| OP-D01 | Maestro Artesano | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-D02 | Libro Avanzado | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-D03 | Coleccionista de Ecos | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-C01 | Cazador de Bestias | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-C02 | Duelista Victorioso | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| OP-C03 | Fuerza del Vinculo | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| OP-A01 | Dominio Territorial | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| OP-A02 | Rumbo al Santuario | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| OP-A03 | Forja del Legado | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
+### Misiones de Entrenador — 16
 
-### Misiones de Entrenador
+El asterisco de la tabla maestra es metadato `recommended_first_game`; no forma parte de `mission_id`.
 
-| ID | Nombre canónico | Documento | `.tres` | Resource válido | Runtime ejecutable | Automatización completa | Datos faltantes / nota | Estado |
-|---|---|---|---|---|---|---|---|:---:|
-| ME-A1 | Alderion - Cartografo del Primer Eco | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-A2 | Alderion - Mapa de Legado | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-L1 | Lyra - Vinculos del Camino | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-L2 | Lyra - Guardian de Dos Ecos | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-D1 | Dorian - Rival de Vael | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-D2 | Dorian - Duelo Preparado | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-N1 | Nara - Forja Personal | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-N2 | Nara - Arsenal Escalonado | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| ME-M1 | Maelis - Resonancia Decisiva | Sí | No | - | Sí | Sí, fallback runtime | Falta .tres canónico | B |
-| ME-M2 | Maelis - Eco Transformado | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| ME-K1 | Kael - Cazador del Umbral | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-K2 | Kael - Camino del Cazador | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| ME-S1 | Saira - Cartografia Viva | Sí | No | - | Sí | Sí, fallback runtime | Falta .tres canónico | B |
-| ME-S2 | Saira - Ruta al Centro | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
-| ME-O1 | Oryn - Apuesta Victoriosa | Sí | Sí | Sí | Sí | Sí | Ninguno detectado en F43.0 | A |
-| ME-O2 | Oryn - Riesgo Calculado | Sí | No | - | No | No | Falta .tres + tracker/evento | B |
+- ME-A1* — Alderion - Cartografo del Primer Eco
+- ME-A2 — Alderion - Mapa de Legado
+- ME-L1* — Lyra - Vinculos del Camino
+- ME-L2 — Lyra - Guardian de Dos Ecos
+- ME-D1* — Dorian - Rival de Vael
+- ME-D2 — Dorian - Duelo Preparado
+- ME-N1* — Nara - Forja Personal
+- ME-N2 — Nara - Arsenal Escalonado
+- ME-M1* — Maelis - Resonancia Decisiva
+- ME-M2 — Maelis - Eco Transformado
+- ME-K1* — Kael - Cazador del Umbral
+- ME-K2 — Kael - Camino del Cazador
+- ME-S1* — Saira - Cartografia Viva
+- ME-S2 — Saira - Ruta al Centro
+- ME-O1* — Oryn - Apuesta Victoriosa
+- ME-O2 — Oryn - Riesgo Calculado
 
-## Conflictos canónicos detectados
+## Resoluciones canonicas cerradas durante F43
 
-### CONFLICTO CANÓNICO 1 — repetición de Explorar
+- R-06 se corrigio a **Chispa del Libro**, Ataque +3, Combate; con Libro II o III roba 2 Resonancias y descarta 1.
+- R-07 se corrigio a **Golpe Certero**, Ataque +4, Combate; si hace igualar exactamente la Defensa, roba 1 Resonancia.
+- ME-M1 se alinea a **Resonancia Decisiva**.
+- ME-S1 se alinea a **Cartografia Viva**.
+- Los textos abreviados o campos mal separados detectados en Resources anteriores se normalizaron en sus subfases correspondientes usando el maestro v0.74.
 
-**Documento maestro:** la secuencia de turno v0.74 indica que Acción 2 puede repetir una acción salvo Explorar; otras referencias del mismo documento también expresan que Explorar no se repite en el mismo turno.
+## IDs y duplicados
 
-**Repositorio aprobado F38–F42:** el baseline digital permite múltiples `Explorar` en un mismo turno cuando cada exploración es legal.
+El set canonico esperado contiene **205 IDs**. El cierre exige:
 
-**Impacto:** diferencia de regla central de acciones. No debe alterarse en F43.0 porque rompería un baseline aprobado y porque F43 trata materialización de contenido, no rebalance/reglas.
+1. exactamente 205 Resources canónicos entre las ocho categorias;
+2. ningun ID repetido dentro de una categoria;
+3. ningun ID repetido entre categorias;
+4. igualdad exacta entre los IDs materializados y los IDs definidos por v0.74.
 
-**Recomendación:** decisión explícita del usuario antes de cualquier fase que pretenda alinear esta regla; no tocar F38–F42 desde F43.0.
+Test transversal: `res://tests/phase_43_closure_audit_test.tscn`.
 
-### CONFLICTO CANÓNICO 2 — R-06
+Resultado esperado:
 
-**Documento maestro:** `R-06 Chispa del Libro`, Ataque +3, Combate; si tienes Libro II o III, roba 2 Resonancias y descarta 1.
+`FASE 43 OK - 205/205 identidades canonicas, 8 categorias y 0 IDs duplicados; listo para F44.`
 
-**Repositorio:** `R-06` existe como `data/resonances/r_06_eco_del_libro.tres`, cuyo `display_name` es `Eco del Libro`; el `rules_text` declara +3 y deriva el efecto adicional al controlador. El catálogo runtime sí conserva la definición canónica `Chispa del Libro`.
+## Limite de F43 y entrada a F44
 
-**Impacto:** el ID coincide y la definición runtime canónica existe, pero el Resource persistente no es canónicamente fiel en nombre/texto.
-
-**Recomendación:** corregir de forma explícita en F43.5; no renombrar ni editar Resource en F43.0.
-
-### CONFLICTO CANÓNICO 3 — R-07
-
-**Documento maestro:** `R-07 Golpe Certero`, Ataque +4, Combate; si iguala exactamente la Defensa, roba 1 Resonancia.
-
-**Repositorio:** `R-07` existe como `data/resonances/r_07_filo_exacto.tres`, con `display_name = Filo Exacto`; el efecto sí coincide semánticamente con v0.74. El catálogo runtime usa el nombre canónico `Golpe Certero`.
-
-**Impacto:** discrepancia de identidad visible/nombre entre Resource y maestro, aunque la lógica textual coincide.
-
-**Recomendación:** corregir explícitamente en F43.5, preservando ID y efecto; no tocar en F43.0.
-
-## Gaps de cobertura (no son conflicto de identidad)
-
-1. **Elección de Misión en setup:** el maestro da 2 Misiones del Entrenador y el jugador elige 1 en secreto; en primera partida recomienda la marcada `*`. F41 automatiza una recomendada para el Alpha y no presenta todavía esa elección 1-de-2.
-2. **Mulligan suave:** el maestro permite descartar toda la mano inicial y robar 4 cuando hay más de 2 cartas situacionales sin uso inicial. El setup digital actual no expone esa decisión.
-3. **Bonificaciones iniciales de Entrenador:** los 8 textos del Resource coinciden con la tabla v0.74 auditada; Dorian, Maelis y Oryn tienen resolución inicial automática. Alderion, Lyra, Nara, Kael y Saira siguen pendientes porque requieren peek/orden privado o una presentación segura de información.
-4. **Resonancias faltantes como `.tres`:** el runtime conoce las 40 identidades canónicas y puede construir representación en memoria, pero eso no equivale a automatización completa ni a materialización persistente.
-5. **Bestias/Equipos materializados pero fuera del pool seguro:** B-07 y B-23; EQ-04, EQ-19 y EQ-34. Se conservan fuera hasta que su efecto pueda ejecutarse sin mentir al runtime.
-
-## Fuentes del repositorio inspeccionadas
-
-- `data/tiles/`, `data/karmanys/`, `data/beasts/`, `data/equipment/`, `data/resonances/`, `data/objectives/`, `data/missions/`, `data/trainers/`.
-- `scripts/content/v074_canonical_runtime_catalog.gd` (`KarmanyV074CanonicalRuntimeCatalog`).
-- `scripts/content/phase_37_alpha_content_catalog.gd` (`KarmanyPhase37AlphaContentCatalog`).
-- `scripts/content/phase_29_content_catalog.gd` y catálogos previos usados por F37/F38.
-- `scripts/board/map_41_tile_pools.gd` (`KarmanyMap41TilePools`), `map_41_content_generator.gd`, `map_41_content_session.gd`, `canonical_map_41_layout.gd` y `alpha_tile_pool_fallback.gd`. El pool actual carga dinámicamente los `.tres` por nivel N1/N2/N3; F43.0 no lo modifica.
-- Data classes en `scripts/data/`: Tile, Karmany, Ability, Beast, Equipment, Resonance, Objective, Mission, Trainer y Effect.
-- Resolvers/controladores usados por F38–F42 para combate, contenido, objetivos/misiones, setup y acciones.
-- Tests F38, F39, F40, F41, F42 Game Shell y F42 Restart.
-- `docs/phase_38_v074_content_audit.md`, `docs/phase_39_tile_interaction_audit.md`, `docs/phase_40_map41_content_audit.md`, `docs/phase_41_human_setup_audit.md`, `docs/phase_42_alpha_game_shell_audit.md`.
-
-## Orden recomendado después de F43.0
-
-No se inicia ninguna subfase automáticamente. Si el usuario mantiene el orden previsto, la primera candidata es **F43.1 Losetas**, porque el déficit absoluto es 28/41 y F39 ya dejó un contrato de interacción común. Sin embargo, antes de materializar debe revisarse el conflicto de regla `Explorar` solo como dependencia de contrato, sin modificar el baseline de gameplay de manera silenciosa.
-
-Luego: Karmany → Bestias → Equipos → Resonancias → Objetivos/Misiones → Entrenadores pendientes → auditoría final, siempre bloque por bloque con test y validación local.
-
-## Resultado de F43.0
-
-La fuente maestra v0.74 es suficientemente completa para iniciar materialización incremental sin inventar identidades. El repositorio conserva un subconjunto jugable deliberadamente conservador. F43.0 deja registrados los faltantes y conflictos, pero no crea `.tres`, no modifica pools y no cambia gameplay.
+F43 certifica **contenido canonico materializado**, no automatizacion total. Los Resources `canonical_pending` continúan fuera de los pools runtime donde corresponde. F44 debe implementar y certificar la logica pendiente de forma incremental, sin inventar reglas ni contaminar los sistemas aprobados de F38–F42.
