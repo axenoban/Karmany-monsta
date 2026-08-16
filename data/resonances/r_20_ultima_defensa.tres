@@ -27,4 +27,5 @@ resonance_type = 1
 printed_power = 5
 use_windows = PackedStringArray("combat")
 effect_blocks = Array[ExtResource("2_block")]([SubResource("AfterLoss")])
-rules_text = "Combate: +5 Poder. Si pierdes, roba 2 Resonancias y descarta 1."
+rules_text = "Si pierdes de todos modos, roba 2 Resonancias y descarta 1."
+tags = PackedStringArray("defensa", "combate", "canonical_v074")
