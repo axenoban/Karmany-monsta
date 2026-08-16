@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-02"
+display_name = "Bosque de Vinculo"
+level = 2
+function_tags = PackedStringArray("Vinculo guiado N2")
+icon_tags = PackedStringArray("Karmany", "EK")
+on_explore_text = "Elige: mira 2 Karmany N2, deja 1 visible y devuelve el otro al fondo; o recolecta 2 EK."
+entry_bonus_text = "Entrada: Mira la primera carta de Karmany N2; dejala arriba o abajo."
+later_use_text = "Vinculo guiado N2: mira 2 Karmany N2, elige 1 y puedes intentar vincularlo inmediatamente; si ya hay uno visible, puedes intentar vincular ese. Tambien puedes recolectar 2 EK."
+limit_text = "Vinculo guiado maximo 1 vez por turno."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

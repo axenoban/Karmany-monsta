@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-03"
+display_name = "Ruinas del Eco"
+level = 2
+function_tags = PackedStringArray("Bestia Media", "Resonancia")
+icon_tags = PackedStringArray("Bestia", "EK", "Resonancia")
+on_explore_text = "Elige: revela 1 Bestia Media y combatela; si la derrotas, roba 2 Resonancias y conserva 1; o recolecta 2 EK."
+entry_bonus_text = "Entrada: Roba 1 Resonancia y descarta 1."
+later_use_text = "Enfrentar 1 Bestia Media o robar 2 Resonancias y conservar 1; descarta la otra."
+limit_text = "Si la Bestia no es derrotada, permanece bloqueando la loseta."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

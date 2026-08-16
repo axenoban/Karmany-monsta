@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N3-01"
+display_name = "Arena de Ruinas"
+level = 3
+function_tags = PackedStringArray("PvP", "Resonancia")
+icon_tags = PackedStringArray("Duelo", "Legado", "Resonancia")
+on_explore_text = "Elige: inicia Duelo contra un jugador en la misma loseta o adyacente; o roba 3 Resonancias, conserva 2 y descarta 1."
+entry_bonus_text = "Entrada: Roba 1 Resonancia y descarta 1."
+later_use_text = "Iniciar Duelo contra jugador en la misma loseta o adyacente; o robar 2 Resonancias, conservar 1 y descartar 1."
+limit_text = "Si pierdes un Duelo iniciado desde esta loseta, el ganador puede elegir recompensa PvP normal y ademas hacerte retroceder 1 loseta."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

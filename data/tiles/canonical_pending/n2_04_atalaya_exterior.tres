@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-04"
+display_name = "Atalaya Exterior"
+level = 2
+function_tags = PackedStringArray("Posicion estrategica", "PvP inicial")
+icon_tags = PackedStringArray("Duelo", "Legado")
+on_explore_text = "Elige: roba 1 Resonancia y mira una loseta N3 adyacente; o si hay jugador adyacente, puedes iniciar Duelo."
+entry_bonus_text = "Entrada: +1 Poder en tu proximo PvP este turno; si no hay rival legal, roba 1 y descarta 1 Resonancia."
+later_use_text = "Mirar una loseta oculta adyacente o iniciar Duelo contra jugador en la misma loseta o adyacente."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

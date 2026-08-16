@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-12"
+display_name = "Obelisco Menor"
+level = 2
+function_tags = PackedStringArray("Interactuar: Libro", "EK")
+icon_tags = PackedStringArray("Interactuar: Libro", "EK")
+on_explore_text = "Elige: recolecta 2 EK; o mejora tu Libro pagando su costo normal."
+entry_bonus_text = "Entrada: Obten 1 EK."
+later_use_text = "Recolectar 2 EK o mejorar Libro."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

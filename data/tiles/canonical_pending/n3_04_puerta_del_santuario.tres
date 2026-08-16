@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N3-04"
+display_name = "Puerta del Santuario"
+level = 3
+function_tags = PackedStringArray("Resonancia", "preparacion final")
+icon_tags = PackedStringArray("Resonancia")
+on_explore_text = "Roba 3 Resonancias, conserva 2 y descarta 1."
+entry_bonus_text = "Entrada: Roba 1 Resonancia y descarta 1."
+later_use_text = "Roba 2 Resonancias, conserva 1 y descarta 1."
+limit_text = "-"
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

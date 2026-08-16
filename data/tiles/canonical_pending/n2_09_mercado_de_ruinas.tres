@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-09"
+display_name = "Mercado de Ruinas"
+level = 2
+function_tags = PackedStringArray("Interactuar: Equipo", "mercado")
+icon_tags = PackedStringArray("Equipo", "Taller")
+on_explore_text = "Elige: mira 2 cartas de Equipo, deja 1 visible; o craftea 1 Equipo basico."
+entry_bonus_text = "Entrada: Mira 1 carta de Equipo del mazo; dejala arriba o abajo."
+later_use_text = "Craftear 1 Equipo basico o renovar 1 carta del mercado de Equipo."
+limit_text = "Solo 1 crafteo por turno."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

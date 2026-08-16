@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N2-07"
+display_name = "Garganta del Aullido"
+level = 2
+function_tags = PackedStringArray("Bestia Media", "mano")
+icon_tags = PackedStringArray("Bestia", "Resonancia")
+on_explore_text = "Elige: revela 1 Bestia Media y combatela; o roba 2 Resonancias y descarta 1."
+entry_bonus_text = "Entrada: +1 Poder contra tu proxima Bestia Media o superior este turno."
+later_use_text = "Enfrentar 1 Bestia Media o robar 2 Resonancias y descartar 1."
+limit_text = "Si la Bestia no es derrotada, permanece bloqueando la loseta."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

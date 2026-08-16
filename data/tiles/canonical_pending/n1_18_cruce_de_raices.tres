@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-18"
+display_name = "Cruce de Raices"
+level = 1
+function_tags = PackedStringArray("Conexion", "recurso")
+icon_tags = PackedStringArray("MN")
+on_explore_text = "Elige: recolecta 2 MN, 2 MR o 2 EK."
+entry_bonus_text = "Entrada: Obten 1 recurso comun a eleccion."
+later_use_text = "Recolectar 2 MN."
+limit_text = "Uso posterior solo da MN; Al explorar y Entrada permiten recurso flexible."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true

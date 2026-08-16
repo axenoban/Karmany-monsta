@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="KarmanyTileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tile_data.gd" id="1_tile"]
+
+[resource]
+script = ExtResource("1_tile")
+tile_id = "N1-17"
+display_name = "Colina de Guardia"
+level = 1
+function_tags = PackedStringArray("Bestia Basica", "informacion")
+icon_tags = PackedStringArray("Bestia", "Ojo", "MR")
+on_explore_text = "Elige: revela 1 Bestia Basica y combatela; o mira una loseta Nivel 2 adyacente sin revelarla."
+entry_bonus_text = "Entrada: Mira 1 loseta oculta adyacente."
+later_use_text = "Enfrentar 1 Bestia Basica o recolectar 2 MR."
+limit_text = "Si la Bestia no es derrotada, permanece bloqueando la loseta."
+interaction_profile_id = &"pending_f44"
+starts_revealed = false
+can_rotate_visual = true
