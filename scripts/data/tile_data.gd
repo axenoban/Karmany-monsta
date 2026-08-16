@@ -39,6 +39,11 @@ enum TileLevel {
 @export var on_explore_effects: Array[KarmanyEffectData] = []
 @export var entry_effects: Array[KarmanyEffectData] = []
 @export var later_use_effects: Array[KarmanyEffectData] = []
+# F44: a single interaction choice may require more than one ordered effect
+# (for example draw 2 Resonances, then discard 1). Each bundle is exposed as
+# one legal candidate so AI and the future human ChoiceRequest select the
+# canonical option rather than individual internal steps.
+@export var later_use_options: Array[KarmanyTileInteractionOptionData] = []
 
 @export_group("Board State")
 
@@ -50,7 +55,14 @@ func has_universal_interaction_definition() -> bool:
 	if later_use_text.strip_edges().is_empty() or interaction_profile_id == &"":
 		return false
 	# The generic profile has no specialized resolver to fall back to: at
-	# least one structured later-use effect is therefore mandatory.
-	if interaction_profile_id == &"effect" and later_use_effects.is_empty():
+	# least one structured later-use effect or ordered option is mandatory.
+	if (
+		interaction_profile_id == &"effect"
+		and later_use_effects.is_empty()
+		and later_use_options.is_empty()
+	):
 		return false
+	for option in later_use_options:
+		if option == null or not option.is_valid_definition():
+			return false
 	return true
