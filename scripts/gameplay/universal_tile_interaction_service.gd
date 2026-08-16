@@ -11,6 +11,7 @@ const PROFILE_CRYSTAL_PASS: StringName = &"crystal_pass"
 const PROFILE_FORGE: StringName = &"forge"
 const PROFILE_CRYSTAL_CAVE: StringName = &"crystal_cave"
 const PROFILE_AETERNA: StringName = &"aeterna"
+const PROFILE_FREE_MOVE: StringName = &"free_move"
 
 const PAYLOAD_KIND: StringName = &"phase39_interaction_kind"
 const PAYLOAD_KEY: StringName = &"phase39_interaction_key"
@@ -121,6 +122,9 @@ func execute_candidate(
 	var success: bool = false
 	var raw_result: Variant = null
 	var option_index: int = int(resolved_option.get("effect_index", -1))
+	# Un UNDERLYING puede mover al jugador. Conservamos la loseta origen para
+	# que el resultado de Interactuar siga atribuido al Uso posterior activado.
+	var source_tile := runtime.get_public_tile_data(player.current_coord)
 
 	if kind == KIND_EFFECT:
 		raw_result = KarmanyTileInteractionResolver.interact_effect_option(
@@ -163,7 +167,7 @@ func execute_candidate(
 			"La opcion de Interactuar fue rechazada durante su resolucion."
 		)
 
-	var tile := runtime.get_public_tile_data(player.current_coord)
+	var tile := source_tile
 	if (
 		tile != null
 		and tile.interaction_profile_id == PROFILE_CRYSTAL_CAVE
@@ -307,6 +311,20 @@ func _build_current_options(player: KarmanyPlayerState) -> Array[Dictionary]:
 			"legal": legal,
 			"reason": reason
 		})
+
+	if common_legal and tile.interaction_profile_id == PROFILE_FREE_MOVE:
+		for underlying in KarmanyAiLegalActionGenerator.build_legal_move_candidates(
+			runtime.coordinator,
+			player
+		):
+			result.append({
+				"key": _underlying_key(underlying),
+				"kind": KIND_UNDERLYING,
+				"label": "Movimiento gratuito · %s" % underlying.debug_label,
+				"legal": true,
+				"reason": "",
+				"underlying": underlying
+			})
 
 	if common_legal:
 		var special_value: Variant = _special_builder.call(player)
@@ -494,6 +512,8 @@ func _candidate_matches_profile(
 			]
 		PROFILE_AETERNA:
 			return candidate.action_type == KarmanyAiActionCandidate.ActionType.AETERNA
+		PROFILE_FREE_MOVE:
+			return candidate.action_type == KarmanyAiActionCandidate.ActionType.MOVE
 	return false
 
 
@@ -511,6 +531,8 @@ func _profile_block_reason(tile: KarmanyTileData) -> String:
 			return "No hay una opcion de Bestia/recoleccion legal en el estado actual. El FA se limita a una vez por jugador por ronda."
 		PROFILE_AETERNA:
 			return "El Santuario evalua Aeterna, Sintonizar y la recoleccion post-Aeterna segun el estado actual."
+		PROFILE_FREE_MOVE:
+			return "No hay una loseta revelada adyacente y desocupada a la que puedas moverte legalmente."
 		PROFILE_EFFECT:
 			return "El efecto esta definido, pero sus requisitos actuales no permiten ejecutarlo."
 	return "Perfil de Interactuar no reconocido."
@@ -546,7 +568,8 @@ func _is_known_profile(profile_id: StringName) -> bool:
 		PROFILE_CRYSTAL_PASS,
 		PROFILE_FORGE,
 		PROFILE_CRYSTAL_CAVE,
-		PROFILE_AETERNA
+		PROFILE_AETERNA,
+		PROFILE_FREE_MOVE
 	]
 
 
