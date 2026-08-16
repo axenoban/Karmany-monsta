@@ -17,4 +17,4 @@ balance_text = "Especialista de riesgo: mantiene picos altos, pero puede neutral
 passive_id = &"oryn_risk_passive"
 active_id = &"oryn_risk_authorization"
 setup_bonus_id = &"oryn_setup_resonance"
-automation_status = 0
+automation_status = 1
