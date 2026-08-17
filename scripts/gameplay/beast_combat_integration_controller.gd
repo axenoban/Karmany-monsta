@@ -90,11 +90,31 @@ static func fight_with_existing_systems(
 		if played_card != null and played_card.tags.has("risk_authorization"):
 			context.risk_authorized = true
 
+	# F44.2: aplica solamente reglas Karmany con hook de combate demostrado.
+	# Las habilidades PARTIAL conservan su contrato y no se simulan fuera de
+	# las ramas implementadas por KarmanyAbilityRuntimeService.
+	var active_state := player.get_active_karmany()
+	var target_tile: KarmanyTileData = coordinator.board_state.get_tile_data(target_coord)
+	var ability_token: Dictionary = {}
+	if active_state != null and active_state.karmany_data != null:
+		ability_token = KarmanyAbilityRuntimeService.apply_beast_combat_preflight(
+			active_state.karmany_data,
+			beast_state.beast_data,
+			target_tile,
+			coordinator.turn_manager.current_round,
+			coordinator.turn_manager.get_instance_id(),
+			context
+		)
+
 	var result: KarmanyBeastCombatResult = coordinator.fight_beast(
 		player,
 		target_coord,
 		deck,
 		context
+	)
+	KarmanyAbilityRuntimeService.commit_beast_combat(
+		ability_token,
+		result.is_resolved()
 	)
 
 	if played_card != null:
