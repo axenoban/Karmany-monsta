@@ -41,10 +41,14 @@ static func fight_with_existing_systems(
 	context.round_number = coordinator.turn_manager.current_round
 	context.match_scope_id = coordinator.turn_manager.get_instance_id()
 
-	# Reutiliza el traductor de Equipo de Fase 12. No recalcula efectos aqui.
+	# Reutiliza el traductor de Equipo de Fase 12. F44.4 distingue Jefe de
+	# Bestia basica/compleja para no perder modificadores canonicos target boss.
+	var equipment_target_type: int = KarmanyEquipmentAbilityRuntimeService.resolve_beast_target_type(
+		beast_state.beast_data
+	)
 	KarmanyEquipmentCombatRules.apply_to_combat_modifiers(
 		player.equipment_inventory,
-		KarmanyCombatRequest.TargetType.BEAST,
+		equipment_target_type,
 		context.combat_modifiers
 	)
 
