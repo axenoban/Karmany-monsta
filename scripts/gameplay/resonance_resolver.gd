@@ -35,9 +35,28 @@ static func play_from_hand(
 			KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED,
 			"La Resonancia no puede jugarse en esta ventana."
 		)
+
+	var effective_context_tags: PackedStringArray = context.context_tags.duplicate()
+	var active_state: KarmanyRuntimeState = player.get_active_karmany()
+	if active_state != null and active_state.karmany_data != null:
+		effective_context_tags = KarmanyResonanceAbilityRuntimeService.enrich_combat_context_tags(
+			effective_context_tags,
+			active_state.karmany_data
+		)
+
+	var runtime_error := KarmanyResonanceAbilityRuntimeService.validate_play_context(
+		card,
+		effective_context_tags
+	)
+	if not runtime_error.is_empty():
+		return _result(
+			KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED,
+			runtime_error
+		)
+
 	# Algunas cartas comparten la ventana tecnica de combate, pero su texto
 	# restringe el contexto. R-05, por ejemplo, es exclusivamente PvP.
-	if card.tags.has("pvp") and not context.context_tags.has("pvp"):
+	if card.tags.has("pvp") and not effective_context_tags.has("pvp"):
 		return _result(
 			KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED,
 			"Esta Resonancia solo puede jugarse en un PvP legal."
@@ -56,7 +75,7 @@ static func play_from_hand(
 	if not _can_resolve_matching_effects(
 		card,
 		TIMING_ON_PLAY,
-		context.context_tags,
+		effective_context_tags,
 		context.effect_context
 	):
 		return _result(
@@ -65,7 +84,7 @@ static func play_from_hand(
 		)
 
 	var power_bonus: int = card.get_power_bonus(
-		context.context_tags
+		effective_context_tags
 	)
 	if power_bonus != 0 and context.combat_modifiers == null:
 		return _result(
@@ -101,7 +120,7 @@ static func play_from_hand(
 		card,
 		player,
 		TIMING_ON_PLAY,
-		context.context_tags,
+		effective_context_tags,
 		context.effect_context
 	)
 
