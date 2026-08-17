@@ -27,13 +27,10 @@ func _execute_candidate(
 		var spawn_result := runtime.spawn_beast_from_current_tile(player, false)
 		if spawn_result == null or not spawn_result.is_spawned():
 			return false
-	var coord_before: Vector2i = player.current_coord
 	var execution := KarmanyAiActionExecutor.execute(runtime.coordinator, player, candidate)
 	var success: bool = execution != null and execution.was_executed()
 	if not success:
 		return false
-	if candidate.action_type == KarmanyAiActionCandidate.ActionType.MOVE:
-		_record_level_entry(player, coord_before)
 	if candidate.action_type == KarmanyAiActionCandidate.ActionType.BOND_PAYMENT:
 		statistics["karmany_links"] = int(statistics.get("karmany_links", 0)) + 1
 	elif candidate.action_type == KarmanyAiActionCandidate.ActionType.FIGHT_BEAST:
