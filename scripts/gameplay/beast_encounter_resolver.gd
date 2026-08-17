@@ -13,29 +13,67 @@ static func spawn_from_deck(
 	result.requires_immediate_combat = requires_immediate_combat
 
 	if board_state == null or deck == null:
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.INVALID_REQUEST, "BoardState y mazo de Bestias son obligatorios.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.INVALID_REQUEST,
+			"BoardState y mazo de Bestias son obligatorios."
+		)
 	if not board_state.has_coord(coord):
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.INVALID_REQUEST, "La coordenada no existe en el tablero.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.INVALID_REQUEST,
+			"La coordenada no existe en el tablero."
+		)
 	if not board_state.is_revealed(coord):
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.TILE_NOT_REVEALED, "Una Bestia revelada debe colocarse sobre una loseta revelada.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.TILE_NOT_REVEALED,
+			"Una Bestia revelada debe colocarse sobre una loseta revelada."
+		)
 	if board_state.has_beast(coord):
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.TILE_ALREADY_HAS_BEAST, "La loseta ya tiene una Bestia; no se revela otra.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.TILE_ALREADY_HAS_BEAST,
+			"La loseta ya tiene una Bestia; no se revela otra."
+		)
 
 	var beast_data := deck.draw_card()
 	if beast_data == null:
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.DECK_EMPTY, "No quedan Bestias disponibles en ese mazo.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.DECK_EMPTY,
+			"No quedan Bestias disponibles en ese mazo."
+		)
 	if KarmanyBeastAbilityRuntimeService.is_runtime_excluded(beast_data.beast_id):
 		deck.discard_card(beast_data)
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.INVALID_REQUEST, "La Bestia %s esta excluida del runtime F44.3." % String(beast_data.beast_id))
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.INVALID_REQUEST,
+			"La Bestia %s esta excluida del runtime F44.3." % String(beast_data.beast_id)
+		)
 
 	var beast_state := KarmanyBeastRuntimeState.new()
-	var instance_id := StringName("%s@%d,%d" % [String(beast_data.beast_id), coord.x, coord.y])
+	var instance_id := StringName(
+		"%s@%d,%d" % [
+			String(beast_data.beast_id),
+			coord.x,
+			coord.y
+		]
+	)
 	if not beast_state.configure(beast_data, instance_id, coord):
 		deck.discard_card(beast_data)
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.INVALID_REQUEST, "No se pudo crear el estado runtime de la Bestia.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.INVALID_REQUEST,
+			"No se pudo crear el estado runtime de la Bestia."
+		)
 	if not board_state.set_beast(coord, beast_state):
 		deck.discard_card(beast_data)
-		return _spawn_error(result, KarmanyBeastSpawnResult.Status.INVALID_REQUEST, "No se pudo colocar la Bestia sobre la loseta.")
+		return _spawn_error(
+			result,
+			KarmanyBeastSpawnResult.Status.INVALID_REQUEST,
+			"No se pudo colocar la Bestia sobre la loseta."
+		)
 
 	result.status = KarmanyBeastSpawnResult.Status.SPAWNED
 	result.beast_state = beast_state
@@ -52,7 +90,15 @@ static func resolve_combat(
 	context: KarmanyBeastCombatContext
 ) -> KarmanyBeastCombatResult:
 	var result := KarmanyBeastCombatResult.new()
-	var validation := _validate_combat(player, attacker_karmany, board_state, target_coord, deck, context)
+
+	var validation := _validate_combat(
+		player,
+		attacker_karmany,
+		board_state,
+		target_coord,
+		deck,
+		context
+	)
 	if validation != "":
 		result.status = KarmanyBeastCombatResult.Status.INVALID_REQUEST
 		result.message = validation
@@ -61,13 +107,20 @@ static func resolve_combat(
 	var beast_state := board_state.get_beast(target_coord)
 	var beast_data := beast_state.beast_data
 	result.beast_state = beast_state
-	KarmanyBeastAbilityRuntimeService.apply_combat_preflight(beast_data, context)
+	KarmanyBeastAbilityRuntimeService.apply_combat_preflight(
+		beast_data,
+		context
+	)
 
 	var request := KarmanyCombatRequest.new()
 	request.attacker_player_id = player.player_id
 	request.attacker_karmany = attacker_karmany
 	request.target_id = beast_data.beast_id
-	request.target_type = KarmanyCombatRequest.TargetType.BOSS if beast_data.is_boss() else KarmanyCombatRequest.TargetType.BEAST
+	request.target_type = (
+		KarmanyCombatRequest.TargetType.BOSS
+		if beast_data.is_boss()
+		else KarmanyCombatRequest.TargetType.BEAST
+	)
 	request.base_defense = beast_data.base_defense + context.beast_defense_bonus
 	request.uses_instinct = true
 	request.instinct_roll = context.instinct_roll
@@ -82,16 +135,34 @@ static func resolve_combat(
 		return result
 
 	if context.action_cost > 0:
-		if not context.turn_manager.spend_action_for(context.action_id, context.action_cost):
+		if not context.turn_manager.spend_action_for(
+			context.action_id,
+			context.action_cost
+		):
 			result.status = KarmanyBeastCombatResult.Status.ACTION_NOT_AVAILABLE
 			result.message = "No se pudo consumir la accion de Combatir."
 			return result
 		result.action_consumed = true
 
 	result.combat_result = combat_result
+
 	if combat_result.is_victory():
-		return _resolve_victory(result, player, attacker_karmany, board_state, target_coord, deck, context)
-	return _resolve_defeat(result, player, attacker_karmany, context)
+		return _resolve_victory(
+			result,
+			player,
+			attacker_karmany,
+			board_state,
+			target_coord,
+			deck,
+			context
+		)
+
+	return _resolve_defeat(
+		result,
+		player,
+		attacker_karmany,
+		context
+	)
 
 
 static func _validate_combat(
@@ -122,13 +193,20 @@ static func _validate_combat(
 		return "Estado de Bestia invalido."
 	if deck.tier != beast_state.beast_data.tier:
 		return "El mazo no corresponde a la categoria de la Bestia."
-	var beast_rule_error := KarmanyBeastAbilityRuntimeService.validate_combat_preflight(beast_state.beast_data, context)
+	var beast_rule_error := KarmanyBeastAbilityRuntimeService.validate_combat_preflight(
+		beast_state.beast_data,
+		context
+	)
 	if not beast_rule_error.is_empty():
 		return beast_rule_error
 
 	var origin := player.current_coord
-	if origin != target_coord and not board_state.are_existing_coords_adjacent(origin, target_coord):
+	if origin != target_coord and not board_state.are_existing_coords_adjacent(
+		origin,
+		target_coord
+	):
 		return "El jugador debe estar sobre la loseta o adyacente para combatir esta Bestia."
+
 	if context.enter_after_victory:
 		if origin == target_coord:
 			return "No se requiere entrada posterior si el jugador ya esta en la loseta."
@@ -136,6 +214,7 @@ static func _validate_combat(
 			return "La loseta de la Bestia contiene otra unidad."
 		if board_state.get_occupying_unit_id(origin) != context.moving_unit_id:
 			return "La unidad indicada no ocupa la loseta de origen."
+
 	if context.action_cost > 0:
 		if not context.turn_manager.is_running:
 			return "La partida no esta activa."
@@ -143,6 +222,7 @@ static func _validate_combat(
 			return "No es el turno de este jugador."
 		if not context.turn_manager.can_spend_action(context.action_cost):
 			return "No quedan acciones suficientes para Combatir."
+
 	return ""
 
 
@@ -164,7 +244,10 @@ static func _resolve_victory(
 			result.status = KarmanyBeastCombatResult.Status.ENTRY_FAILED
 			result.message = "No se pudo liberar la ocupacion de origen."
 			return result
-		if not board_state.set_unit_occupant(target_coord, context.moving_unit_id):
+		if not board_state.set_unit_occupant(
+			target_coord,
+			context.moving_unit_id
+		):
 			board_state.set_unit_occupant(origin, context.moving_unit_id)
 			result.status = KarmanyBeastCombatResult.Status.ENTRY_FAILED
 			result.message = "No se pudo ocupar la loseta tras derrotar la Bestia."
@@ -195,7 +278,11 @@ static func _resolve_victory(
 		result.entry_bonus_allowed = true
 		var tile_data := board_state.get_tile_data(target_coord)
 		if tile_data != null:
-			result.entry_effect_results = KarmanyEffectResolver.apply_effects(tile_data.entry_effects, player, context.effect_context)
+			result.entry_effect_results = KarmanyEffectResolver.apply_effects(
+				tile_data.entry_effects,
+				player,
+				context.effect_context
+			)
 
 	result.status = KarmanyBeastCombatResult.Status.RESOLVED
 	result.message = "Bestia derrotada; la loseta deja de estar bloqueada."
@@ -203,8 +290,16 @@ static func _resolve_victory(
 	result.remains_blocking = false
 	result.reward_legacy_points_pending = beast_data.reward_legacy_points
 	result.reward_consequence_ids = beast_data.reward_consequence_ids.duplicate()
-	result.reward_effect_results = KarmanyEffectResolver.apply_effects(beast_data.reward_effects, player, context.effect_context)
-	KarmanyBeastAbilityRuntimeService.apply_victory_specials(beast_data, attacker_karmany, player)
+	result.reward_effect_results = KarmanyEffectResolver.apply_effects(
+		beast_data.reward_effects,
+		player,
+		context.effect_context
+	)
+	KarmanyBeastAbilityRuntimeService.apply_victory_specials(
+		beast_data,
+		attacker_karmany,
+		player
+	)
 	return result
 
 
@@ -222,7 +317,11 @@ static func _resolve_defeat(
 	result.retreat_required = true
 	result.attacker_exhaustion_pending = not attacker_karmany.is_starting_karmany
 	result.defeat_consequence_ids = beast_data.defeat_consequence_ids.duplicate()
-	result.defeat_effect_results = KarmanyEffectResolver.apply_effects(beast_data.defeat_effects, player, context.effect_context)
+	result.defeat_effect_results = KarmanyEffectResolver.apply_effects(
+		beast_data.defeat_effects,
+		player,
+		context.effect_context
+	)
 	return result
 
 
