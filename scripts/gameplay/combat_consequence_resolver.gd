@@ -57,6 +57,55 @@ static func resolve_risk_win_legacy_point(
 	return award
 
 
+static func apply_beast_basic_resource_loss_policy(
+	result: KarmanyBeastCombatResult,
+	policy: Dictionary
+) -> bool:
+	if result == null or not result.is_defeat():
+		return false
+	var original_amount: int = int(policy.get("original_amount", 0))
+	var effective_amount: int = int(policy.get("effective_amount", original_amount))
+	var reduction: int = int(policy.get("reduction", 0))
+	if original_amount < 0 or effective_amount < 0 or effective_amount > original_amount:
+		return false
+	if reduction != original_amount - effective_amount:
+		return false
+
+	result.basic_resource_loss_original = original_amount
+	result.basic_resource_loss_pending = effective_amount
+	result.basic_resource_loss_reduction = reduction
+	result.basic_resource_loss_consequence_id = StringName(policy.get("consequence_id", &""))
+	result.basic_resource_loss_mitigation_id = StringName(policy.get("karmany_id", &""))
+
+	if original_amount > 0 and effective_amount == 0:
+		_remove_beast_consequence(result, result.basic_resource_loss_consequence_id)
+	return true
+
+
+static func resolve_beast_basic_resource_loss_choice(
+	player: KarmanyPlayerState,
+	result: KarmanyBeastCombatResult,
+	selected_resources: Array
+) -> bool:
+	if player == null or result == null or not result.has_pending_basic_resource_loss():
+		return false
+	if selected_resources.size() != result.basic_resource_loss_pending:
+		return false
+
+	var costs: Dictionary = {}
+	for resource_value in selected_resources:
+		var resource_type: int = int(resource_value)
+		if not _is_basic(resource_type):
+			return false
+		costs[resource_type] = int(costs.get(resource_type, 0)) + 1
+	if not player.spend_resources(costs):
+		return false
+
+	result.basic_resource_loss_pending = 0
+	_remove_beast_consequence(result, result.basic_resource_loss_consequence_id)
+	return true
+
+
 static func _is_basic(resource_type: int) -> bool:
 	return (
 		resource_type == KarmanyEffectData.ResourceType.MN
@@ -69,6 +118,17 @@ static func _remove_consequence(result: KarmanyCombatResult, consequence: String
 	var index: int = result.pending_consequences.find(consequence)
 	if index >= 0:
 		result.pending_consequences.remove_at(index)
+
+
+static func _remove_beast_consequence(
+	result: KarmanyBeastCombatResult,
+	consequence_id: StringName
+) -> void:
+	if result == null or consequence_id == &"":
+		return
+	var index: int = result.defeat_consequence_ids.find(String(consequence_id))
+	if index >= 0:
+		result.defeat_consequence_ids.remove_at(index)
 
 
 static func _award_error(message: String) -> KarmanyLegacyPointsAwardResult:

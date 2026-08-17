@@ -38,6 +38,8 @@ static func fight_with_existing_systems(
 		if effective_book_state != null
 		else KarmanyBookProgressState.MIN_LEVEL
 	)
+	context.round_number = coordinator.turn_manager.current_round
+	context.match_scope_id = coordinator.turn_manager.get_instance_id()
 
 	# Reutiliza el traductor de Equipo de Fase 12. No recalcula efectos aqui.
 	KarmanyEquipmentCombatRules.apply_to_combat_modifiers(
@@ -125,6 +127,31 @@ static func fight_with_existing_systems(
 		ability_token,
 		result.is_resolved()
 	)
+
+	# F44.2B: las perdidas de recursos basicos por derrota se convierten en una
+	# consecuencia estructurada. La habilidad solo modifica la cantidad; nunca
+	# elige automaticamente que MN/MR/EK descarta el jugador.
+	if (
+		result.is_defeat()
+		and active_state != null
+		and active_state.karmany_data != null
+	):
+		var defeat_policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
+			active_state.karmany_data,
+			beast_state.beast_data,
+			player.player_id,
+			context.round_number,
+			context.match_scope_id,
+			result.defeat_consequence_ids
+		)
+		if KarmanyCombatConsequenceResolver.apply_beast_basic_resource_loss_policy(
+			result,
+			defeat_policy
+		):
+			KarmanyAbilityRuntimeService.commit_beast_defeat_resource_policy(
+				defeat_policy,
+				true
+			)
 
 	if played_card != null:
 		var after_tags: PackedStringArray = combat_tags.duplicate()

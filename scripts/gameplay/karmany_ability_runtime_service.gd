@@ -7,6 +7,9 @@ const STATUS_PARTIAL: StringName = &"PARTIAL"
 const STATUS_DATA_ONLY: StringName = &"DATA_ONLY"
 const STATUS_PENDING: StringName = &"PENDING"
 
+const CONSEQUENCE_DISCARD_2_BASIC: StringName = &"discard_2_basic_resources_choice"
+const CONSEQUENCE_DISCARD_3_BASIC: StringName = &"discard_3_basic_resources_choice"
+
 # F44.2: contrato explicito para los 28 Karmany canonicos v0.74.
 # PARTIAL significa que el Resource conserva la regla canonica, pero el flujo
 # indicado en reason aun no posee un punto de integracion seguro en runtime.
@@ -18,12 +21,12 @@ const CONTRACTS: Dictionary = {
 	&"K-04": {"status": STATUS_PARTIAL, "hook": &"combat_resonance_filter", "reason": "falta flujo de descartar/robar/elegir Resonancia en combate"},
 	&"K-05": {"status": STATUS_PARTIAL, "hook": &"collect_mn", "reason": "efecto estructurado existe; falta evento central de recoleccion Karmany"},
 	&"K-06": {"status": STATUS_PARTIAL, "hook": &"after_explore_n1", "reason": "falta selector privado de loseta oculta adyacente"},
-	&"K-07": {"status": STATUS_PARTIAL, "hook": &"defeat_resource_loss", "reason": "falta pipeline central de perdida por derrota"},
+	&"K-07": {"status": STATUS_PARTIAL, "hook": &"defeat_resource_loss", "reason": "mitigacion estructurada contra derrota de Bestia cubierta; falta extender el trigger generico a otras derrotas"},
 	&"K-08": {"status": STATUS_PARTIAL, "hook": &"resonance_draw", "reason": "falta evento central robar+descartar Resonancia"},
 	&"K-09": {"status": STATUS_FULLY, "hook": &"passive_none", "reason": ""},
 	&"K-10": {"status": STATUS_FULLY, "hook": &"beast_combat_n2", "reason": ""},
 	&"K-11": {"status": STATUS_PARTIAL, "hook": &"beast_combat_risk", "reason": "falta recompensa PL unica y decision de Riesgo"},
-	&"K-12": {"status": STATUS_PARTIAL, "hook": &"defeat_beast_resource_loss", "reason": "falta pipeline central de perdida por derrota"},
+	&"K-12": {"status": STATUS_PARTIAL, "hook": &"defeat_beast_resource_loss", "reason": "mitigacion para consecuencias estructuradas cubierta; faltan Bestias canonical_pending sin consequence IDs ejecutables"},
 	&"K-13": {"status": STATUS_FULLY, "hook": &"beast_combat_medium", "reason": ""},
 	&"K-14": {"status": STATUS_PARTIAL, "hook": &"combat_won", "reason": "falta evento post-combate para robo de Resonancia"},
 	&"K-15": {"status": STATUS_PARTIAL, "hook": &"tile_collect_conversion", "reason": "requiere eleccion de recurso obtenido y destino"},
@@ -32,7 +35,7 @@ const CONTRACTS: Dictionary = {
 	&"K-18": {"status": STATUS_PARTIAL, "hook": &"beast_defeat_choice", "reason": "requiere elegir descarte de Resonancia en lugar de recursos"},
 	&"K-19": {"status": STATUS_PARTIAL, "hook": &"pvp_resonance_order", "reason": "falta ventana PvP secuencial de declaracion"},
 	&"K-20": {"status": STATUS_PARTIAL, "hook": &"beast_combat_risk", "reason": "autoriza Riesgo; falta eleccion/aplicacion de 2 recursos al ganar con 6"},
-	&"K-21": {"status": STATUS_PARTIAL, "hook": &"combat_loss", "reason": "falta pipeline central de perdida por combate"},
+	&"K-21": {"status": STATUS_PARTIAL, "hook": &"combat_loss", "reason": "primera derrota de Bestia por ronda cubierta; falta extender la misma ventana a PvP"},
 	&"K-22": {"status": STATUS_PARTIAL, "hook": &"beast_combat_high_tier", "reason": "Bestia compleja/jefe cubierta; falta rama Legendaria/Aeterna"},
 	&"K-23": {"status": STATUS_PARTIAL, "hook": &"combat_resonance_zero", "reason": "falta adaptador de Resonancia +0 a +4 una vez por combate"},
 	&"K-24": {"status": STATUS_PARTIAL, "hook": &"combat_resonance_replay", "reason": "falta replay seguro de Resonancia usada una vez por partida"},
@@ -130,3 +133,98 @@ static func commit_beast_combat(token: Dictionary, combat_resolved: bool) -> voi
 	var usage_key: String = String(token.get("usage_key", ""))
 	if not usage_key.is_empty():
 		_used_round_keys[usage_key] = true
+
+
+static func apply_beast_defeat_resource_policy(
+	karmany_data: KarmanyData,
+	beast_data: KarmanyBeastData,
+	player_id: StringName,
+	round_number: int,
+	match_scope_id: int,
+	consequence_ids: PackedStringArray
+) -> Dictionary:
+	var consequence_id: StringName = _find_basic_resource_loss_consequence(consequence_ids)
+	var original_amount: int = _basic_resource_loss_amount(consequence_id)
+	var policy: Dictionary = {
+		"karmany_id": &"",
+		"consequence_id": consequence_id,
+		"original_amount": original_amount,
+		"effective_amount": original_amount,
+		"reduction": 0,
+		"usage_key": "",
+	}
+	if karmany_data == null or beast_data == null:
+		return policy
+	if player_id == &"" or round_number <= 0:
+		return policy
+	var karmany_id: StringName = karmany_data.karmany_id
+	policy["karmany_id"] = karmany_id
+	if not has_contract(karmany_id):
+		return policy
+
+	var effective_amount: int = original_amount
+	var reduction: int = 0
+	var usage_key: String = ""
+	match karmany_id:
+		&"K-07":
+			if original_amount > 0:
+				usage_key = "%d:%s:%s:r%d:defeat_resource_loss" % [
+					match_scope_id,
+					String(player_id),
+					String(karmany_id),
+					round_number,
+				]
+				if not _used_round_keys.has(usage_key):
+					reduction = mini(2, original_amount)
+					effective_amount = original_amount - reduction
+				else:
+					usage_key = ""
+		&"K-12":
+			if (
+				original_amount > 0
+				and beast_data.tier in [KarmanyBeastData.Tier.MEDIUM, KarmanyBeastData.Tier.COMPLEX]
+			):
+				reduction = mini(2, original_amount)
+				effective_amount = original_amount - reduction
+		&"K-21":
+			usage_key = "%d:%s:%s:r%d:first_combat_loss" % [
+				match_scope_id,
+				String(player_id),
+				String(karmany_id),
+				round_number,
+			]
+			if not _used_round_keys.has(usage_key):
+				reduction = original_amount
+				effective_amount = 0
+			else:
+				usage_key = ""
+
+	policy["effective_amount"] = effective_amount
+	policy["reduction"] = reduction
+	policy["usage_key"] = usage_key
+	return policy
+
+
+static func commit_beast_defeat_resource_policy(policy: Dictionary, combat_defeat_resolved: bool) -> void:
+	if not combat_defeat_resolved:
+		return
+	var usage_key: String = String(policy.get("usage_key", ""))
+	if not usage_key.is_empty():
+		_used_round_keys[usage_key] = true
+
+
+static func _find_basic_resource_loss_consequence(consequence_ids: PackedStringArray) -> StringName:
+	for consequence_value in consequence_ids:
+		var consequence_id := StringName(consequence_value)
+		if _basic_resource_loss_amount(consequence_id) > 0:
+			return consequence_id
+	return &""
+
+
+static func _basic_resource_loss_amount(consequence_id: StringName) -> int:
+	match consequence_id:
+		CONSEQUENCE_DISCARD_2_BASIC:
+			return 2
+		CONSEQUENCE_DISCARD_3_BASIC:
+			return 3
+	return 0

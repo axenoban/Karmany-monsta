@@ -19,6 +19,11 @@ var beast_defense_bonus: int = 0
 var risk_repeat_locked: bool = false
 var risk_modify_locked: bool = false
 
+# F44.2B: scope explicito para limites por ronda de consecuencias post-combate.
+# El IntegrationController los completa desde el TurnManager real.
+var round_number: int = 1
+var match_scope_id: int = 0
+
 var enter_after_victory: bool = false
 var moving_unit_id: StringName = &""
 
@@ -31,6 +36,8 @@ func is_valid() -> bool:
 	if book_level < KarmanyBookProgressState.MIN_LEVEL or book_level > KarmanyBookProgressState.MAX_LEVEL:
 		return false
 	if beast_defense_bonus < 0:
+		return false
+	if round_number <= 0:
 		return false
 	if action_cost < 0:
 		return false
