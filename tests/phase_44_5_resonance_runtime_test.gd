@@ -100,6 +100,38 @@ func _test_canonical_runtime_hooks() -> bool:
 	if r08.get_power_bonus(wild_tags) != 3:
 		return _fail("R-08 aplica el bono Estable a un Karmany no Estable.")
 
+	var stable_player := KarmanyPlayerState.new()
+	stable_player.setup_new_game(&"f44_5_stable", Vector2i.ZERO)
+	stable.karmany_id = &"F44-5-STABLE"
+	stable.display_name = "Fixture Estable F44.5"
+	stable.power = 5
+	stable.compatible_ranks = PackedInt32Array([KarmanyData.Rank.N1])
+	stable.is_starting_karmany = true
+	var stable_runtime := KarmanyRuntimeState.new()
+	if not stable_runtime.configure(stable, &"f44_5_stable_instance"):
+		return _fail("No se pudo configurar Karmany Estable para el resolver.")
+	stable_runtime.set_owner_player_id(stable_player.player_id)
+	if not stable_runtime.set_bond_state(KarmanyRuntimeState.BondState.LINKED):
+		return _fail("No se pudo vincular fixture Estable.")
+	if not stable_player.add_linked_karmany(stable_runtime):
+		return _fail("No se pudo agregar fixture Estable al jugador.")
+	if not stable_player.set_active_karmany(stable_runtime.instance_id):
+		return _fail("No se pudo activar fixture Estable.")
+	if not stable_player.resonance_hand.add_card(r08):
+		return _fail("No se pudo preparar R-08 en mano.")
+	var stable_deck := _new_deck(4453)
+	if stable_deck == null:
+		return _fail("No se pudo preparar mazo para R-08.")
+	var stable_context := _combat_context(&"f44_5_r08_stable", PackedStringArray(["combat", "pvp"]))
+	var stable_play := KarmanyResonanceResolver.play_from_hand(
+		stable_player, &"R-08", stable_deck, stable_context
+	)
+	if not stable_play.is_success() or stable_play.power_applied != 5:
+		return _fail("ResonanceResolver no propaga el tipo Estable a R-08.")
+	KarmanyResonanceResolver.finish_combat(
+		stable_context.combat_id, stable_context.usage_tracker, stable_deck
+	)
+
 	if not KarmanyResonanceAbilityRuntimeService.validate_play_context(
 		r37, PackedStringArray(["combat", "pvp"])
 	).contains("solo puede"):
