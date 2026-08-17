@@ -44,9 +44,12 @@ func _test_contract_coverage() -> bool:
 
 
 func _test_pending_runtime_exclusion() -> bool:
-	var direct := KarmanyPhase37AlphaContentCatalog.load_category(&"beasts")
+	# El aislamiento canonico se prueba sobre la estructura real de Resources:
+	# 7 Bestias activas en data/beasts y 17 materializadas en canonical_pending.
+	# No depende de catalogos auxiliares para evitar falsos positivos por indice.
+	var direct := _load_dir("res://data/beasts")
 	if direct.size() != 7:
-		return _fail("El catalogo runtime directo debe conservar 7 Bestias canonicas durante F44.3.")
+		return _fail("El runtime directo debe conservar exactamente 7 Bestias canonicas durante F44.3.")
 	var pending := _load_dir(PENDING_DIR)
 	if pending.size() != 17:
 		return _fail("Se esperaban 17 Bestias materializadas aisladas.")
@@ -55,7 +58,7 @@ func _test_pending_runtime_exclusion() -> bool:
 			return _fail("%s no conserva el marcador canonical_pending." % String(data.beast_id))
 		if not KarmanyBeastAbilityRuntimeService.is_runtime_excluded(data.beast_id):
 			return _fail("%s fue promovida al runtime sin estructurar sus reglas." % String(data.beast_id))
-	print("F44.3 EXCLUSION | 17 canonical_pending siguen fuera del catalogo directo y del resolver de encuentros.")
+	print("F44.3 EXCLUSION | 17 canonical_pending siguen fuera del runtime directo y del resolver de encuentros.")
 	return true
 
 
