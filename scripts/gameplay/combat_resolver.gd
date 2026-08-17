@@ -23,12 +23,16 @@ static func resolve(
 	result.target_id = request.target_id
 	result.target_type = request.target_type
 
+	var karmany_power_bonus: int = KarmanyAbilityRuntimeService.get_legendary_combat_power_bonus(
+		request.attacker_karmany,
+		request.target_type
+	)
 	result.base_power = request.attacker_karmany.power
 	result.equipment_power = request.modifiers.equipment_power
 	result.resonance_power = request.modifiers.resonance_power
 	result.trainer_power = request.modifiers.trainer_power
 	result.book_power = request.modifiers.book_power
-	result.other_power = request.modifiers.other_power
+	result.other_power = request.modifiers.other_power + karmany_power_bonus
 
 	result.risk_roll = request.risk_roll
 	result.risk_power_adjustment = get_risk_power_adjustment(
@@ -37,6 +41,7 @@ static func resolve(
 	result.total_power = (
 		result.base_power
 		+ request.modifiers.get_total()
+		+ karmany_power_bonus
 		+ result.risk_power_adjustment
 	)
 
