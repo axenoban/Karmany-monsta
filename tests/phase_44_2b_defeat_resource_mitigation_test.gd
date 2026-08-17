@@ -1,9 +1,8 @@
 extends Node
 
 
-const LOSS_2 := PackedStringArray(["discard_2_basic_resources_choice"])
-const LOSS_3 := PackedStringArray(["discard_3_basic_resources_choice"])
-const NO_RESOURCE_LOSS := PackedStringArray()
+const LOSS_2_ID: StringName = &"discard_2_basic_resources_choice"
+const LOSS_3_ID: StringName = &"discard_3_basic_resources_choice"
 
 
 func _ready() -> void:
@@ -33,20 +32,20 @@ func _test_k07_once_per_round() -> bool:
 		return _fail("No se pudieron cargar K-07/B-07.")
 
 	var first := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, terranuk, &"P1", 2, 4402, LOSS_2
+		rocerno, terranuk, &"P1", 2, 4402, _loss_2()
 	)
 	if int(first.get("original_amount", -1)) != 2 or int(first.get("effective_amount", -1)) != 0:
 		return _fail("K-07 no redujo en 2 la primera perdida de la ronda.")
 	KarmanyAbilityRuntimeService.commit_beast_defeat_resource_policy(first, true)
 
 	var second := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, terranuk, &"P1", 2, 4402, LOSS_2
+		rocerno, terranuk, &"P1", 2, 4402, _loss_2()
 	)
 	if int(second.get("effective_amount", -1)) != 2:
 		return _fail("K-07 se activo dos veces en la misma ronda.")
 
 	var next_round := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, terranuk, &"P1", 3, 4402, LOSS_2
+		rocerno, terranuk, &"P1", 3, 4402, _loss_2()
 	)
 	if int(next_round.get("effective_amount", -1)) != 0:
 		return _fail("K-07 no se reactivo en una ronda nueva.")
@@ -69,16 +68,16 @@ func _test_k12_beast_tiers() -> bool:
 		return _fail("No se pudo cargar K-12.")
 
 	var medium_policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		nimbara, medium, &"P1", 2, 4412, LOSS_2
+		nimbara, medium, &"P1", 2, 4412, _loss_2()
 	)
 	var complex_policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		nimbara, complex, &"P1", 2, 4412, LOSS_3
+		nimbara, complex, &"P1", 2, 4412, _loss_3()
 	)
 	var basic_policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		nimbara, basic, &"P1", 2, 4412, LOSS_2
+		nimbara, basic, &"P1", 2, 4412, _loss_2()
 	)
 	var boss_policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		nimbara, boss, &"P1", 2, 4412, LOSS_3
+		nimbara, boss, &"P1", 2, 4412, _loss_3()
 	)
 	if int(medium_policy.get("effective_amount", -1)) != 0:
 		return _fail("K-12 no redujo en 2 contra Bestia media.")
@@ -103,20 +102,20 @@ func _test_k21_first_combat_loss() -> bool:
 	# La regla dice primera derrota de combate, no primera perdida de recursos.
 	# Una derrota sin perdida consume correctamente la ventana de esa ronda.
 	var first_loss := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		celestia, basic, &"P1", 4, 4421, NO_RESOURCE_LOSS
+		celestia, basic, &"P1", 4, 4421, PackedStringArray()
 	)
 	if String(first_loss.get("usage_key", "")).is_empty():
 		return _fail("K-21 no registro la primera derrota sin recursos.")
 	KarmanyAbilityRuntimeService.commit_beast_defeat_resource_policy(first_loss, true)
 
 	var second_loss := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		celestia, basic, &"P1", 4, 4421, LOSS_2
+		celestia, basic, &"P1", 4, 4421, _loss_2()
 	)
 	if int(second_loss.get("effective_amount", -1)) != 2:
-		return _fail("K-21 protegió una segunda derrota de la misma ronda.")
+		return _fail("K-21 protegio una segunda derrota de la misma ronda.")
 
 	var next_round := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		celestia, basic, &"P1", 5, 4421, LOSS_3
+		celestia, basic, &"P1", 5, 4421, _loss_3()
 	)
 	if int(next_round.get("effective_amount", -1)) != 0:
 		return _fail("K-21 no anulo la perdida en la primera derrota de la nueva ronda.")
@@ -132,11 +131,11 @@ func _test_player_scope_isolated() -> bool:
 	if rocerno == null:
 		return _fail("No se pudo cargar K-07 para scope multijugador.")
 	var p1 := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, medium, &"P1", 2, 4499, LOSS_2
+		rocerno, medium, &"P1", 2, 4499, _loss_2()
 	)
 	KarmanyAbilityRuntimeService.commit_beast_defeat_resource_policy(p1, true)
 	var p2 := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, medium, &"P2", 2, 4499, LOSS_2
+		rocerno, medium, &"P2", 2, 4499, _loss_2()
 	)
 	if int(p2.get("effective_amount", -1)) != 0:
 		return _fail("El limite de K-07 se compartio entre jugadores.")
@@ -152,7 +151,7 @@ func _test_choice_resolver_preserves_player_choice() -> bool:
 		return _fail("No se pudieron cargar K-07/B-22 para resolver eleccion.")
 
 	var policy := KarmanyAbilityRuntimeService.apply_beast_defeat_resource_policy(
-		rocerno, custodio, &"P1", 2, 4477, LOSS_3
+		rocerno, custodio, &"P1", 2, 4477, _loss_3()
 	)
 	if int(policy.get("effective_amount", -1)) != 1:
 		return _fail("Fixture K-07/B-22 no produjo perdida efectiva de 1 recurso.")
@@ -163,7 +162,7 @@ func _test_choice_resolver_preserves_player_choice() -> bool:
 	var beast_result := KarmanyBeastCombatResult.new()
 	beast_result.status = KarmanyBeastCombatResult.Status.RESOLVED
 	beast_result.combat_result = combat
-	beast_result.defeat_consequence_ids = LOSS_3.duplicate()
+	beast_result.defeat_consequence_ids = _loss_3()
 	if not KarmanyCombatConsequenceResolver.apply_beast_basic_resource_loss_policy(beast_result, policy):
 		return _fail("No se pudo estructurar la consecuencia reducida.")
 	if beast_result.basic_resource_loss_pending != 1:
@@ -184,10 +183,18 @@ func _test_choice_resolver_preserves_player_choice() -> bool:
 		return _fail("El resolver rechazo la eleccion valida del jugador.")
 	if player.mr != mr_before - 1:
 		return _fail("La eleccion MR no desconto exactamente 1 MR.")
-	if beast_result.defeat_consequence_ids.has("discard_3_basic_resources_choice"):
+	if beast_result.defeat_consequence_ids.has(String(LOSS_3_ID)):
 		return _fail("La consecuencia resuelta siguio pendiente despues del pago.")
 	print("F44.2B CHOICE | mitigacion cambia cantidad; MN/MR/EK sigue siendo decision del jugador: OK")
 	return true
+
+
+func _loss_2() -> PackedStringArray:
+	return PackedStringArray([String(LOSS_2_ID)])
+
+
+func _loss_3() -> PackedStringArray:
+	return PackedStringArray([String(LOSS_3_ID)])
 
 
 func _fail(message: String) -> bool:
