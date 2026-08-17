@@ -15,7 +15,7 @@ func _ready() -> void:
 	print("")
 	print("========================================")
 	if ok:
-		print("FASE 44.5 OK - 40/40 Resonancias con contrato runtime explicito; 6 FULLY_EXECUTABLE y 34 PARTIAL sin promociones falsas.")
+		print("FASE 44.5 OK - 40/40 Resonancias con contrato runtime explicito; 5 FULLY_EXECUTABLE y 35 PARTIAL sin promociones falsas.")
 	else:
 		push_error("FASE 44.5 ERROR - revisar el primer fallo real.")
 	print("========================================")
@@ -36,11 +36,11 @@ func _test_contract_coverage() -> bool:
 		if status == KarmanyResonanceAbilityRuntimeService.STATUS_PARTIAL and String(contract.get("reason", "")).is_empty():
 			return _fail("%s es PARTIAL sin motivo explicito." % String(data.resonance_id))
 	var counts := KarmanyResonanceAbilityRuntimeService.get_contract_counts()
-	if int(counts.get(KarmanyResonanceAbilityRuntimeService.STATUS_FULLY, 0)) != 6:
-		return _fail("Se esperaban 6 contratos FULLY_EXECUTABLE: %s." % str(counts))
-	if int(counts.get(KarmanyResonanceAbilityRuntimeService.STATUS_PARTIAL, 0)) != 34:
-		return _fail("Se esperaban 34 contratos PARTIAL: %s." % str(counts))
-	print("F44.5 CONTRACTS | 40/40 | FULLY=6 PARTIAL=34 DATA_ONLY=0 PENDING=0")
+	if int(counts.get(KarmanyResonanceAbilityRuntimeService.STATUS_FULLY, 0)) != 5:
+		return _fail("Se esperaban 5 contratos FULLY_EXECUTABLE: %s." % str(counts))
+	if int(counts.get(KarmanyResonanceAbilityRuntimeService.STATUS_PARTIAL, 0)) != 35:
+		return _fail("Se esperaban 35 contratos PARTIAL: %s." % str(counts))
+	print("F44.5 CONTRACTS | 40/40 | FULLY=5 PARTIAL=35 DATA_ONLY=0 PENDING=0")
 	return true
 
 
@@ -132,16 +132,10 @@ func _test_canonical_runtime_hooks() -> bool:
 		stable_context.combat_id, stable_context.usage_tracker, stable_deck
 	)
 
-	if not KarmanyResonanceAbilityRuntimeService.validate_play_context(
-		r37, PackedStringArray(["combat", "pvp"])
-	).contains("solo puede"):
-		return _fail("R-37 no rechaza un combate que no sea contra Bestia.")
-	if not KarmanyResonanceAbilityRuntimeService.validate_play_context(
-		r37, PackedStringArray(["combat", "target_beast"])
-	).is_empty():
-		return _fail("R-37 rechaza incorrectamente un combate contra Bestia.")
 	if r37.get_power_bonus(PackedStringArray(["combat", "target_beast"])) != 2:
 		return _fail("R-37 no aplica +2 Poder contra Bestia.")
+	if r37.get_power_bonus(PackedStringArray(["combat", "pvp"])) != 0:
+		return _fail("R-37 aplica Poder fuera del contexto contra Bestia.")
 
 	if r04.get_power_bonus(PackedStringArray(["combat", "target_beast"])) != 5:
 		return _fail("R-04 no aplica +3 base +2 contra Bestia.")
@@ -161,16 +155,12 @@ func _test_canonical_runtime_hooks() -> bool:
 	var deck := _new_deck(4452)
 	if deck == null:
 		return _fail("No se pudo preparar mazo para R-37.")
-	var invalid_context := _combat_context(&"f44_5_r37_invalid", PackedStringArray(["combat", "pvp"]))
-	var invalid_play := KarmanyResonanceResolver.play_from_hand(player, &"R-37", deck, invalid_context)
-	if invalid_play.status != KarmanyResonancePlayResult.Status.WINDOW_NOT_ALLOWED:
-		return _fail("ResonanceResolver permite R-37 fuera de combate contra Bestia.")
-	var valid_context := _combat_context(&"f44_5_r37_valid", PackedStringArray(["combat", "target_beast"]))
+	var valid_context := _combat_context(&"f44_5_r37_beast", PackedStringArray(["combat", "target_beast"]))
 	var valid_play := KarmanyResonanceResolver.play_from_hand(player, &"R-37", deck, valid_context)
 	if not valid_play.is_success() or valid_play.power_applied != 2:
 		return _fail("ResonanceResolver no ejecuta R-37 con +2 contra Bestia.")
 	KarmanyResonanceResolver.finish_combat(valid_context.combat_id, valid_context.usage_tracker, deck)
-	print("F44.5 HOOKS | R-08 aplica +2 Estable; R-37 solo Bestia; R-01/R-04/R-09/R-20 conservan efectos data-driven.")
+	print("F44.5 HOOKS | R-08 +2 Estable ejecutable; R-37 +2 contra Bestia estructurado; R-01/R-04/R-09/R-20 data-driven.")
 	return true
 
 
