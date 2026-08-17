@@ -14,7 +14,7 @@ func _ready() -> void:
 	print("")
 	print("========================================")
 	if ok:
-		print("FASE 44.2 OK - 28/28 Karmany con contrato runtime explicito; 4 FULLY_EXECUTABLE y 24 PARTIAL sin promociones falsas.")
+		print("FASE 44.2 OK - 28/28 Karmany con contrato runtime explicito; 6 FULLY_EXECUTABLE y 22 PARTIAL sin promociones falsas.")
 	else:
 		push_error("FASE 44.2 ERROR - revisar el primer fallo real.")
 	print("========================================")
@@ -34,11 +34,17 @@ func _test_contract_coverage() -> bool:
 		if status == KarmanyAbilityRuntimeService.STATUS_PARTIAL and String(contract.get("reason", "")).is_empty():
 			return _fail("%s es PARTIAL sin exclusion explicita." % String(data.karmany_id))
 	var counts := KarmanyAbilityRuntimeService.get_contract_counts()
-	if int(counts.get(KarmanyAbilityRuntimeService.STATUS_FULLY, 0)) != 4:
-		return _fail("Se esperaban 4 contratos FULLY_EXECUTABLE: %s." % str(counts))
-	if int(counts.get(KarmanyAbilityRuntimeService.STATUS_PARTIAL, 0)) != 24:
-		return _fail("Se esperaban 24 contratos PARTIAL: %s." % str(counts))
-	print("F44.2 CONTRACTS | 28/28 | FULLY=4 PARTIAL=24 DATA_ONLY=0 PENDING=0")
+	if int(counts.get(KarmanyAbilityRuntimeService.STATUS_FULLY, 0)) != 6:
+		return _fail("Se esperaban 6 contratos FULLY_EXECUTABLE: %s." % str(counts))
+	if int(counts.get(KarmanyAbilityRuntimeService.STATUS_PARTIAL, 0)) != 22:
+		return _fail("Se esperaban 22 contratos PARTIAL: %s." % str(counts))
+	if KarmanyAbilityRuntimeService.get_status(&"K-17") != KarmanyAbilityRuntimeService.STATUS_FULLY:
+		return _fail("K-17 debe estar FULLY tras integrar su defensa PvP.")
+	if KarmanyAbilityRuntimeService.get_status(&"K-22") != KarmanyAbilityRuntimeService.STATUS_FULLY:
+		return _fail("K-22 debe estar FULLY tras cubrir Bestias altas y Legendaria.")
+	if KarmanyAbilityRuntimeService.get_status(&"K-21") != KarmanyAbilityRuntimeService.STATUS_PARTIAL:
+		return _fail("K-21 debe seguir PARTIAL hasta cubrir todas las derrotas de combate.")
+	print("F44.2 CONTRACTS | 28/28 | FULLY=6 PARTIAL=22 DATA_ONLY=0 PENDING=0")
 	return true
 
 
@@ -111,15 +117,15 @@ func _test_beast_combat_hooks() -> bool:
 	KarmanyAbilityRuntimeService.apply_beast_combat_preflight(runakar, complex, tile_n2, 2, 9001, context)
 	if context.combat_modifiers.other_power != 2:
 		return _fail("K-22 no cubre su rama Bestia compleja.")
-	if KarmanyAbilityRuntimeService.get_status(&"K-22") != KarmanyAbilityRuntimeService.STATUS_PARTIAL:
-		return _fail("K-22 no debe promoverse FULLY hasta cubrir Legendaria/Aeterna.")
+	if KarmanyAbilityRuntimeService.get_status(&"K-22") != KarmanyAbilityRuntimeService.STATUS_FULLY:
+		return _fail("K-22 debe quedar FULLY al cubrir Bestias altas y Legendaria/Aeterna.")
 
 	var pyrox := load("res://data/karmanys/k_03_pyrox.tres") as KarmanyData
 	context = KarmanyBeastCombatContext.new()
 	var risk_token := KarmanyAbilityRuntimeService.apply_beast_combat_preflight(pyrox, basic, tile_n1, 2, 9001, context)
 	if not context.risk_authorized or not bool(risk_token.get("risk_authorized", false)):
 		return _fail("K-03 no autoriza el Dado de Riesgo en preflight.")
-	print("F44.2 BEAST HOOKS | K-01/K-10/K-13 ejecutables; ramas parciales K-03/K-22 sin sobrepromocion.")
+	print("F44.2 BEAST HOOKS | K-01/K-10/K-13/K-22 ejecutables; K-03 conserva su rama Riesgo PARTIAL.")
 	return true
 
 
