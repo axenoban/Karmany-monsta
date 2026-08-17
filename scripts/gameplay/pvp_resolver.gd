@@ -117,11 +117,9 @@ static func resolve(
 
 	result.truce_applied = true
 	result.status = KarmanyPvpCombatResult.Status.RESOLVED
-	var loser_active: KarmanyRuntimeState = (
-		defender_active
-		if result.loser_player_id == defender.player_id
-		else attacker_active
-	)
+	var loser_active: KarmanyRuntimeState = attacker_active
+	if result.loser_player_id == defender.player_id:
+		loser_active = defender_active
 	KarmanyAbilityRuntimeService.commit_combat_loss(
 		loser_active.karmany_data,
 		result.loser_player_id,
