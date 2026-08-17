@@ -33,7 +33,11 @@ static func fight_with_existing_systems(
 	var effective_book_state: KarmanyBookProgressState = book_state
 	if effective_book_state == null:
 		effective_book_state = coordinator.get_book_state(player.player_id)
-	context.book_level = effective_book_state.level if effective_book_state != null else KarmanyBookProgressState.MIN_LEVEL
+	context.book_level = (
+		effective_book_state.level
+		if effective_book_state != null
+		else KarmanyBookProgressState.MIN_LEVEL
+	)
 
 	# Reutiliza el traductor de Equipo de Fase 12. No recalcula efectos aqui.
 	KarmanyEquipmentCombatRules.apply_to_combat_modifiers(
@@ -48,7 +52,10 @@ static func fight_with_existing_systems(
 		and effective_book_state.level >= 3
 		and beast_state.beast_data.tier == KarmanyBeastData.Tier.COMPLEX
 	):
-		context.combat_modifiers.book_power = maxi(context.combat_modifiers.book_power, 2)
+		context.combat_modifiers.book_power = maxi(
+			context.combat_modifiers.book_power,
+			2
+		)
 
 	var combat_id := StringName(
 		"beast:%s:r%d:%d" % [
@@ -58,7 +65,12 @@ static func fight_with_existing_systems(
 		]
 	)
 	var played_card: KarmanyResonanceData = null
-	var combat_tags := PackedStringArray(["combat", "pve", "beast", "target_beast"])
+	var combat_tags := PackedStringArray([
+		"combat",
+		"pve",
+		"beast",
+		"target_beast"
+	])
 	if beast_state.beast_data.tier == KarmanyBeastData.Tier.COMPLEX:
 		combat_tags.append("complex")
 
@@ -66,6 +78,7 @@ static func fight_with_existing_systems(
 		played_card = player.resonance_hand.get_card_by_id(resonance_id)
 		if played_card == null or not played_card.can_use_in(KarmanyResonanceUseContext.WINDOW_COMBAT):
 			return KarmanyBeastCombatResult.new()
+
 		var use_context := KarmanyResonanceUseContext.new()
 		use_context.window_id = KarmanyResonanceUseContext.WINDOW_COMBAT
 		use_context.context_tags = combat_tags
@@ -73,6 +86,7 @@ static func fight_with_existing_systems(
 		use_context.combat_modifiers = context.combat_modifiers
 		use_context.effect_context = coordinator.effect_context
 		use_context.usage_tracker = coordinator.resonance_usage_tracker
+
 		var play_result := KarmanyResonanceResolver.play_from_hand(
 			player,
 			resonance_id,
@@ -86,6 +100,8 @@ static func fight_with_existing_systems(
 			context.risk_authorized = true
 
 	# F44.2: aplica solamente reglas Karmany con hook de combate demostrado.
+	# Las habilidades PARTIAL conservan su contrato y no se simulan fuera de
+	# las ramas implementadas por KarmanyAbilityRuntimeService.
 	var active_state := player.get_active_karmany()
 	var target_tile: KarmanyTileData = coordinator.board_state.get_tile_data(target_coord)
 	var ability_token: Dictionary = {}
@@ -99,8 +115,16 @@ static func fight_with_existing_systems(
 			context
 		)
 
-	var result: KarmanyBeastCombatResult = coordinator.fight_beast(player, target_coord, deck, context)
-	KarmanyAbilityRuntimeService.commit_beast_combat(ability_token, result.is_resolved())
+	var result: KarmanyBeastCombatResult = coordinator.fight_beast(
+		player,
+		target_coord,
+		deck,
+		context
+	)
+	KarmanyAbilityRuntimeService.commit_beast_combat(
+		ability_token,
+		result.is_resolved()
+	)
 
 	if played_card != null:
 		var after_tags: PackedStringArray = combat_tags.duplicate()
@@ -108,6 +132,7 @@ static func fight_with_existing_systems(
 			after_tags.append("combat_won")
 		elif result.combat_result != null and result.combat_result.is_defeat():
 			after_tags.append("combat_lost")
+
 		KarmanyResonanceResolver.resolve_effects(
 			played_card,
 			player,
@@ -120,4 +145,5 @@ static func fight_with_existing_systems(
 			coordinator.resonance_usage_tracker,
 			coordinator.resonance_deck
 		)
+
 	return result
