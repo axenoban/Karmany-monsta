@@ -31,12 +31,12 @@ const CONTRACTS: Dictionary = {
 	&"K-14": {"status": STATUS_PARTIAL, "hook": &"combat_won", "reason": "falta evento post-combate para robo de Resonancia"},
 	&"K-15": {"status": STATUS_PARTIAL, "hook": &"tile_collect_conversion", "reason": "requiere eleccion de recurso obtenido y destino"},
 	&"K-16": {"status": STATUS_PARTIAL, "hook": &"beast_combat_risk", "reason": "autoriza Riesgo; falta descarte adicional de Resonancia en cara 1"},
-	&"K-17": {"status": STATUS_PARTIAL, "hook": &"pvp_defense", "reason": "falta integracion en preflight PvP"},
+	&"K-17": {"status": STATUS_FULLY, "hook": &"pvp_defense", "reason": ""},
 	&"K-18": {"status": STATUS_PARTIAL, "hook": &"beast_defeat_choice", "reason": "requiere elegir descarte de Resonancia en lugar de recursos"},
 	&"K-19": {"status": STATUS_PARTIAL, "hook": &"pvp_resonance_order", "reason": "falta ventana PvP secuencial de declaracion"},
 	&"K-20": {"status": STATUS_PARTIAL, "hook": &"beast_combat_risk", "reason": "autoriza Riesgo; falta eleccion/aplicacion de 2 recursos al ganar con 6"},
-	&"K-21": {"status": STATUS_PARTIAL, "hook": &"combat_loss", "reason": "primera derrota de Bestia por ronda cubierta; falta extender la misma ventana a PvP"},
-	&"K-22": {"status": STATUS_PARTIAL, "hook": &"beast_combat_high_tier", "reason": "Bestia compleja/jefe cubierta; falta rama Legendaria/Aeterna"},
+	&"K-21": {"status": STATUS_PARTIAL, "hook": &"combat_loss", "reason": "la mitigacion contra Bestia y el consumo de la primera derrota PvP estan integrados; faltan Aeterna y combate contra Karmany sin vincular"},
+	&"K-22": {"status": STATUS_FULLY, "hook": &"high_tier_combat", "reason": ""},
 	&"K-23": {"status": STATUS_PARTIAL, "hook": &"combat_resonance_zero", "reason": "falta adaptador de Resonancia +0 a +4 una vez por combate"},
 	&"K-24": {"status": STATUS_PARTIAL, "hook": &"combat_resonance_replay", "reason": "falta replay seguro de Resonancia usada una vez por partida"},
 	&"K-25": {"status": STATUS_PARTIAL, "hook": &"after_explore", "reason": "falta estado temporal +2 proximo combate / robo fin de turno"},
@@ -133,6 +133,48 @@ static func commit_beast_combat(token: Dictionary, combat_resolved: bool) -> voi
 	var usage_key: String = String(token.get("usage_key", ""))
 	if not usage_key.is_empty():
 		_used_round_keys[usage_key] = true
+
+
+static func get_pvp_defender_power_bonus(karmany_data: KarmanyData) -> int:
+	if karmany_data == null or karmany_data.karmany_id != &"K-17":
+		return 0
+	return 2
+
+
+static func get_legendary_combat_power_bonus(
+	karmany_data: KarmanyData,
+	target_type: int
+) -> int:
+	if karmany_data == null or karmany_data.karmany_id != &"K-22":
+		return 0
+	if target_type != KarmanyCombatRequest.TargetType.LEGENDARY:
+		return 0
+	return 2
+
+
+static func commit_combat_loss(
+	karmany_data: KarmanyData,
+	player_id: StringName,
+	round_number: int,
+	match_scope_id: int,
+	combat_defeat_resolved: bool
+) -> bool:
+	if not combat_defeat_resolved or karmany_data == null:
+		return false
+	if player_id == &"" or round_number <= 0 or match_scope_id <= 0:
+		return false
+	if karmany_data.karmany_id != &"K-21":
+		return false
+	var usage_key := "%d:%s:%s:r%d:first_combat_loss" % [
+		match_scope_id,
+		String(player_id),
+		String(karmany_data.karmany_id),
+		round_number,
+	]
+	if _used_round_keys.has(usage_key):
+		return false
+	_used_round_keys[usage_key] = true
+	return true
 
 
 static func apply_beast_defeat_resource_policy(
