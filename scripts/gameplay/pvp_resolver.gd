@@ -47,9 +47,13 @@ static func resolve(
 		+ context.attacker_modifiers.get_total()
 		+ result.attacker_risk_adjustment
 	)
+	var defender_karmany_bonus: int = KarmanyAbilityRuntimeService.get_pvp_defender_power_bonus(
+		defender_active.karmany_data
+	)
 	result.defender_power = (
 		defender_active.karmany_data.power
 		+ context.defender_modifiers.get_total()
+		+ defender_karmany_bonus
 		+ result.defender_risk_adjustment
 	)
 
@@ -113,6 +117,18 @@ static func resolve(
 
 	result.truce_applied = true
 	result.status = KarmanyPvpCombatResult.Status.RESOLVED
+	var loser_active: KarmanyRuntimeState = (
+		defender_active
+		if result.loser_player_id == defender.player_id
+		else attacker_active
+	)
+	KarmanyAbilityRuntimeService.commit_combat_loss(
+		loser_active.karmany_data,
+		result.loser_player_id,
+		context.turn_manager.current_round,
+		context.turn_manager.get_instance_id(),
+		true
+	)
 	if result.was_tie:
 		result.message = "Empate de Poder: gana el defensor; Resonancia Cruzada y Tregua aplicadas."
 	else:
