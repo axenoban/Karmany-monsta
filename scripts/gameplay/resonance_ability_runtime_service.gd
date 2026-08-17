@@ -47,7 +47,7 @@ const CONTRACTS: Dictionary = {
 	&"R-34": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
 	&"R-35": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
 	&"R-36": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
-	&"R-37": {"status": STATUS_FULLY, "hook": &"beast_only_power", "excluded": false, "reason": ""},
+	&"R-37": {"status": STATUS_PARTIAL, "hook": &"beast_only_power", "excluded": false, "reason": "+2 contra Bestia ejecutable; falta cerrar la restriccion de seleccion/uso exclusivo contra Bestia en todos los flujos automatizados"},
 	&"R-38": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
 	&"R-39": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
 	&"R-40": {"status": STATUS_PARTIAL, "hook": &"canonical_pending", "excluded": true, "reason": "Resource aislado en canonical_pending; regla aun no promovida a runtime directo"},
@@ -108,6 +108,4 @@ static func validate_play_context(
 		return "Resonancia invalida para F44.5."
 	if has_contract(card.resonance_id) and is_runtime_excluded(card.resonance_id):
 		return "La Resonancia %s permanece excluida del runtime F44.5." % String(card.resonance_id)
-	if card.resonance_id == &"R-37" and not context_tags.has("target_beast"):
-		return "R-37 Instinto de Caza solo puede jugarse contra Bestia."
 	return ""
