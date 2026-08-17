@@ -2,6 +2,9 @@ class_name KarmanyFullMatchActionSession
 extends KarmanyFullMatchSpecialSession
 
 
+const EVENT_COMBAT_WON_WITH_RISK: StringName = &"combat_won_with_risk"
+
+
 func _execute_candidate(
 	player: KarmanyPlayerState,
 	candidate: KarmanyAiActionCandidate
@@ -24,10 +27,13 @@ func _execute_candidate(
 		var spawn_result := runtime.spawn_beast_from_current_tile(player, false)
 		if spawn_result == null or not spawn_result.is_spawned():
 			return false
+	var coord_before: Vector2i = player.current_coord
 	var execution := KarmanyAiActionExecutor.execute(runtime.coordinator, player, candidate)
 	var success: bool = execution != null and execution.was_executed()
 	if not success:
 		return false
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.MOVE:
+		_record_level_entry(player, coord_before)
 	if candidate.action_type == KarmanyAiActionCandidate.ActionType.BOND_PAYMENT:
 		statistics["karmany_links"] = int(statistics.get("karmany_links", 0)) + 1
 	elif candidate.action_type == KarmanyAiActionCandidate.ActionType.FIGHT_BEAST:
@@ -54,6 +60,7 @@ func _execute_candidate(
 	var resonance_id: StringName = _candidate_resonance_id(candidate)
 	if resonance_id != &"" and _execution_is_victory(execution, player.player_id):
 		runtime.objectives_missions.record_event(player, EVENT_COMBAT_WON_WITH_RESONANCE, {"resonance_id": String(resonance_id)}, manager.current_round)
+	_record_risk_victory_if_needed(player, candidate, execution)
 	return true
 
 
@@ -202,11 +209,54 @@ func _candidate_resonance_id(candidate: KarmanyAiActionCandidate) -> StringName:
 		return StringName(candidate.payload.get("attacker_resonance_id", ""))
 	return StringName(candidate.payload.get("resonance_id", ""))
 
+
+func _record_risk_victory_if_needed(
+	player: KarmanyPlayerState,
+	candidate: KarmanyAiActionCandidate,
+	execution: KarmanyAiExecutionResult
+) -> void:
+	if player == null or candidate == null or execution == null:
+		return
+	if not _execution_is_victory(execution, player.player_id):
+		return
+
+	var risk_roll: int = 0
+	var raw: Variant = execution.raw_result
+	if raw is KarmanyBeastCombatResult:
+		var beast_result := raw as KarmanyBeastCombatResult
+		if beast_result.combat_result != null:
+			risk_roll = beast_result.combat_result.risk_roll
+	elif raw is KarmanyAeternaResult:
+		risk_roll = int(candidate.payload.get("risk_roll", 0))
+	else:
+		return
+
+	if risk_roll < 1 or risk_roll > 6:
+		return
+	runtime.objectives_missions.record_event(
+		player,
+		EVENT_COMBAT_WON_WITH_RISK,
+		{"risk_roll": risk_roll},
+		runtime.local_session.turn_manager.current_round
+	)
+
+
 func _record_level_entry(player: KarmanyPlayerState, coord_before: Vector2i) -> void:
 	if player == null or player.current_coord == coord_before:
 		return
 	_last_coord_by_player[player.player_id] = player.current_coord
 	var level: int = runtime.get_public_level(player.current_coord)
+	var payload: Dictionary = {
+		"coord_key": _coord_key(player.current_coord),
+		"tile_level": level,
+	}
+	if level >= KarmanyTileData.TileLevel.N2:
+		runtime.objectives_missions.record_event(
+			player,
+			KarmanyMatchCoordinator.EVENT_ENTERED_N2_OR_HIGHER,
+			payload,
+			runtime.local_session.turn_manager.current_round
+		)
 	if level == KarmanyTileData.TileLevel.N2:
 		runtime.objectives_missions.record_event(player, EVENT_ENTERED_N2, {"coord_key": _coord_key(player.current_coord)})
 	elif level == KarmanyTileData.TileLevel.N3:
