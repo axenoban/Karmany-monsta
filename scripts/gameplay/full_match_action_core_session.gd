@@ -4,6 +4,8 @@ extends KarmanyFullMatchSetupSession
 
 var _next_human_choice_request_id: int = 1
 var _pending_human_choice_request: KarmanyChoiceRequest = null
+var _next_human_resonance_discard_request_id: int = 1
+var _pending_human_resonance_discard_request: KarmanyResonanceDiscardChoiceRequest = null
 
 
 func build_full_legal_actions(
@@ -109,6 +111,53 @@ func build_human_action_choice_request() -> KarmanyChoiceRequest:
 	return request
 
 
+func get_pending_human_resonance_discard_request() -> KarmanyResonanceDiscardChoiceRequest:
+	if _pending_human_resonance_discard_request == null:
+		return null
+	if not _is_human_resonance_discard_request_current(
+		_pending_human_resonance_discard_request
+	):
+		_pending_human_resonance_discard_request = null
+		return null
+	return _pending_human_resonance_discard_request
+
+
+func build_human_resonance_discard_request() -> KarmanyResonanceDiscardChoiceRequest:
+	if not configured or match_state != MatchState.PLAYING or runtime == null:
+		return null
+	if runtime.ai_match_controller == null or runtime.local_session == null:
+		return null
+	var manager := runtime.local_session.turn_manager
+	if manager == null or not manager.is_running or manager.actions_remaining != 0:
+		return null
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return null
+	var pending: int = player.get_pending_resonance_discard_count()
+	if pending <= 0:
+		return null
+
+	if _pending_human_resonance_discard_request != null:
+		if _is_human_resonance_discard_request_current(
+			_pending_human_resonance_discard_request
+		):
+			return _pending_human_resonance_discard_request
+		_pending_human_resonance_discard_request = null
+
+	var request := KarmanyResonanceDiscardChoiceRequest.new()
+	if not request.configure(
+		_next_human_resonance_discard_request_id,
+		player.player_id,
+		manager.current_round,
+		pending,
+		player.get_resonance_hand()
+	):
+		return null
+	_next_human_resonance_discard_request_id += 1
+	_pending_human_resonance_discard_request = request
+	return request
+
+
 func resolve_human_action_choice(option_id: StringName) -> bool:
 	var request := get_pending_human_choice_request()
 	if request == null:
@@ -136,8 +185,30 @@ func resolve_human_action_choice(option_id: StringName) -> bool:
 	if candidate.action_type == KarmanyAiActionCandidate.ActionType.EXPLORE:
 		statistics["explorations"] = int(statistics.get("explorations", 0)) + 1
 	if manager.actions_remaining == 0 and manager.get_active_player() == player:
-		_end_turn_with_hand_limit(player)
+		return _finish_explicit_human_turn_or_request_discard(player)
 	return true
+
+
+func resolve_human_resonance_discard_choice(option_ids: Array[StringName]) -> bool:
+	var request := get_pending_human_resonance_discard_request()
+	if request == null:
+		return false
+	var manager := runtime.local_session.turn_manager
+	var player := manager.get_active_player()
+	if player == null:
+		_pending_human_resonance_discard_request = null
+		return false
+
+	var resonance_ids: Array[StringName] = request.resolve_options(option_ids)
+	if resonance_ids.size() != request.required_count:
+		# Igual que F45.1, una seleccion invalida no consume la solicitud.
+		return false
+
+	_pending_human_resonance_discard_request = null
+	if not runtime.coordinator.resolve_pending_resonance_discard(player, resonance_ids):
+		return false
+	_log("HAND LIMIT HUMAN | %s descarta %s" % [String(player.player_id), str(resonance_ids)])
+	return runtime.coordinator.end_turn()
 
 
 func _is_human_choice_request_current(request: KarmanyChoiceRequest) -> bool:
@@ -157,6 +228,29 @@ func _is_human_choice_request_current(request: KarmanyChoiceRequest) -> bool:
 		player.player_id == request.player_id
 		and manager.current_round == request.round_number
 		and manager.actions_remaining == request.actions_remaining
+	)
+
+
+func _is_human_resonance_discard_request_current(
+	request: KarmanyResonanceDiscardChoiceRequest
+) -> bool:
+	if request == null or request.is_resolved():
+		return false
+	if not configured or match_state != MatchState.PLAYING or runtime == null:
+		return false
+	if runtime.ai_match_controller == null or runtime.local_session == null:
+		return false
+	var manager := runtime.local_session.turn_manager
+	if manager == null or not manager.is_running or manager.actions_remaining != 0:
+		return false
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return false
+	return (
+		player.player_id == request.player_id
+		and manager.current_round == request.round_number
+		and player.get_pending_resonance_discard_count() == request.required_count
+		and request.matches_cards(player.get_resonance_hand())
 	)
 
 
@@ -287,7 +381,7 @@ func _full_move_executor(
 			runtime.board_state,
 			manager,
 			player,
-			target_coord
+				target_coord
 		)
 		!= KarmanyMovementRules.MoveValidation.OK
 	):
@@ -326,6 +420,25 @@ func _full_move_executor(
 			% [String(player.player_id), String(runtime.get_public_tile_data(target_coord).tile_id)]
 		)
 	return true
+
+
+func _finish_explicit_human_turn_or_request_discard(player: KarmanyPlayerState) -> bool:
+	if player == null or runtime == null or runtime.coordinator == null:
+		return false
+	var manager := runtime.local_session.turn_manager
+	if manager == null or manager.get_active_player() != player or manager.actions_remaining != 0:
+		return false
+	if runtime.ai_match_controller == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return false
+
+	var pending: int = player.get_pending_resonance_discard_count()
+	if pending <= 0:
+		pending = player.request_end_turn_resonance_discard()
+	if pending > 0:
+		return build_human_resonance_discard_request() != null
+
+	_pending_human_resonance_discard_request = null
+	return runtime.coordinator.end_turn()
 
 
 func _end_turn_with_hand_limit(player: KarmanyPlayerState) -> bool:
