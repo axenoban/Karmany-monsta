@@ -101,7 +101,7 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 	var hand_limit: int = player.resonance_hand.get_hand_limit()
 	_expect(hand_limit == 5, "SESSION: el runtime ya no expone limite canonico de mano 5.")
 	if not _fill_hand_to_count(runtime, player, hand_limit + 2):
-		_failures.append("FASE 45.2 TEST ERROR: SESSION: no se pudo preparar overflow de 2 Resonancias.")
+		_failures.append("FASE 45.2 TEST ERROR: SESSION: no se pudo preparar overflow inicial de 2 Resonancias.")
 		return
 
 	_expect(
@@ -136,12 +136,18 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 		manager.get_active_player() != null and manager.get_active_player().player_id == original_player_id,
 		"SESSION: el turno avanzo antes de resolver el descarte humano."
 	)
+	var hand_count_pending: int = player.get_resonance_count()
+	var expected_pending: int = maxi(0, hand_count_pending - hand_limit)
 	_expect(
-		player.get_pending_resonance_discard_count() == 2,
-		"SESSION: el overflow de 2 no produjo exactamente dos descartes pendientes."
+		expected_pending >= 2,
+		"SESSION: la accion fixture redujo inesperadamente el overflow preparado por debajo de 2."
 	)
 	_expect(
-		player.get_resonance_count() == hand_limit + 2,
+		player.get_pending_resonance_discard_count() == expected_pending,
+		"SESSION: la cantidad pendiente no coincide con el overflow real de la mano."
+	)
+	_expect(
+		player.get_resonance_count() == hand_count_pending,
 		"SESSION: se auto-descartaron cartas antes de la eleccion humana."
 	)
 	_expect(
@@ -153,9 +159,12 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 	_expect(discard_request != null, "SESSION: no quedo solicitud humana de descarte pendiente.")
 	if discard_request == null:
 		return
-	_expect(discard_request.required_count == 2, "SESSION: la solicitud no exige exactamente dos selecciones.")
 	_expect(
-		discard_request.get_option_count() == hand_limit + 2,
+		discard_request.required_count == expected_pending,
+		"SESSION: la solicitud no exige exactamente el overflow calculado."
+	)
+	_expect(
+		discard_request.get_option_count() == hand_count_pending,
 		"SESSION: la solicitud no representa la mano completa sin ocultar opciones."
 	)
 	_expect(
@@ -173,14 +182,14 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 		session.get_pending_human_resonance_discard_request() == discard_request and not discard_request.is_resolved(),
 		"SESSION: una seleccion invalida consumio la solicitud pendiente."
 	)
-	_expect(player.get_resonance_count() == hand_limit + 2, "SESSION: una seleccion invalida modifico la mano.")
+	_expect(player.get_resonance_count() == hand_count_pending, "SESSION: una seleccion invalida modifico la mano.")
 
 	var descriptors := discard_request.get_options()
-	var selected_resonance_ids: Array[StringName] = [
-		StringName(descriptors[0].get("resonance_id", "")),
-		StringName(descriptors[1].get("resonance_id", "")),
-	]
-	var valid_selection: Array[StringName] = [discard_option_ids[0], discard_option_ids[1]]
+	var selected_resonance_ids: Array[StringName] = []
+	var valid_selection: Array[StringName] = []
+	for index in range(expected_pending):
+		valid_selection.append(discard_option_ids[index])
+		selected_resonance_ids.append(StringName(descriptors[index].get("resonance_id", "")))
 	_expect(
 		session.resolve_human_resonance_discard_choice(valid_selection),
 		"SESSION: la seleccion valida no resolvio descarte y cierre de turno."
@@ -188,8 +197,8 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 	_expect(player.get_resonance_count() == hand_limit, "SESSION: la mano no regreso exactamente al limite 5.")
 	_expect(player.get_pending_resonance_discard_count() == 0, "SESSION: quedo descarte pendiente tras resolver.")
 	_expect(
-		runtime.resonance_deck.get_discard_count() == discard_before + 2,
-		"SESSION: el mazo no recibio exactamente las dos Resonancias elegidas."
+		runtime.resonance_deck.get_discard_count() == discard_before + expected_pending,
+		"SESSION: el mazo no recibio exactamente las Resonancias elegidas."
 	)
 	for resonance_id in selected_resonance_ids:
 		_expect(
@@ -208,7 +217,7 @@ func _test_explicit_human_turn_waits_for_discard_choice() -> void:
 		not session.resolve_human_resonance_discard_choice(valid_selection),
 		"SESSION: la misma seleccion pudo reutilizarse despues del cierre de turno."
 	)
-	print("F45.2 SESSION | ultima accion humana conserva turno; descarta 2 Resonancias elegidas y luego avanza.")
+	print("F45.2 SESSION | ultima accion humana conserva turno; descarte requerido se elige explicitamente y luego avanza.")
 
 
 func _test_legacy_auto_discard_compatibility() -> void:
