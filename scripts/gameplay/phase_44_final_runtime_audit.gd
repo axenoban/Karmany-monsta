@@ -9,6 +9,20 @@ const STATUS_PENDING: StringName = &"PENDING"
 
 const EXPECTED_TOTAL: int = 205
 
+# F44.1A aprobo estas ocho losetas como PARTIAL aunque sus Resources
+# permanezcan fisicamente bajo canonical_pending. F44.8 debe conservar
+# esa promocion logica; no debe degradarlas a DATA_ONLY por su ruta.
+const APPROVED_TILE_PENDING_PARTIAL_IDS = [
+	"N1-06",
+	"N1-10",
+	"N1-11",
+	"N1-16",
+	"N1-18",
+	"N2-03",
+	"N2-07",
+	"N2-11",
+]
+
 const FAMILY_ORDER = [
 	"tiles",
 	"karmany",
@@ -181,14 +195,16 @@ static func _build_service_family_report(total: int, counts: Dictionary) -> Dict
 
 static func _build_directory_family_report(root_path: String) -> Dictionary:
 	var row := _empty_counts()
-	_count_tres_recursive(root_path, false, row)
+	var tile_family: bool = root_path == "res://data/tiles"
+	_count_tres_recursive(root_path, false, row, tile_family)
 	return row
 
 
 static func _count_tres_recursive(
 	path: String,
 	inside_canonical_pending: bool,
-	row: Dictionary
+	row: Dictionary,
+	tile_family: bool
 ) -> void:
 	var dir := DirAccess.open(path)
 	if dir == null:
@@ -200,18 +216,30 @@ static func _count_tres_recursive(
 		if not entry.begins_with("."):
 			if dir.current_is_dir():
 				var child_pending := inside_canonical_pending or entry == "canonical_pending"
-				_count_tres_recursive(path.path_join(entry), child_pending, row)
+				_count_tres_recursive(path.path_join(entry), child_pending, row, tile_family)
 			elif entry.ends_with(".tres"):
 				row["total"] = int(row.get("total", 0)) + 1
+				var resource_path := path.path_join(entry)
 				if inside_canonical_pending:
-					row["data_only"] = int(row.get("data_only", 0)) + 1
+					if tile_family and _is_approved_tile_pending_partial(resource_path):
+						row["partial"] = int(row.get("partial", 0)) + 1
+					else:
+						row["data_only"] = int(row.get("data_only", 0)) + 1
 				else:
-					# F44.1 y F44.6 certificaron los Resources directos de estas
-					# familias como runtime parcial. Los Resources bajo
-					# canonical_pending permanecen materializados pero excluidos.
+					# Los Resources directos de estas familias conservan cobertura
+					# PARTIAL. En Losetas, F44.1A permite ademas ocho promociones
+					# explicitas aun ubicadas bajo canonical_pending.
 					row["partial"] = int(row.get("partial", 0)) + 1
 		entry = dir.get_next()
 	dir.list_dir_end()
+
+
+static func _is_approved_tile_pending_partial(resource_path: String) -> bool:
+	var data: Resource = load(resource_path) as Resource
+	if data == null:
+		return false
+	var tile_id: String = String(data.get("tile_id"))
+	return APPROVED_TILE_PENDING_PARTIAL_IDS.has(tile_id)
 
 
 static func _append_count_errors(
