@@ -193,5 +193,9 @@ func get_resonance_count() -> int:
 	return resonance_hand.get_count()
 
 
+func get_pending_resonance_discard_count() -> int:
+	return resonance_hand.get_pending_discard_count()
+
+
 func request_end_turn_resonance_discard() -> int:
 	return resonance_hand.request_end_turn_limit_discard()
