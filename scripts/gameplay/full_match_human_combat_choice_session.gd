@@ -51,6 +51,15 @@ func resolve_human_action_choice(option_id: StringName) -> bool:
 	_pending_human_choice_request = null
 	if not _is_human_combat_candidate(candidate):
 		return _complete_explicit_human_action(player, candidate)
+	return _begin_human_combat_decision(player, candidate)
+
+
+func _begin_human_combat_decision(
+	player: KarmanyPlayerState,
+	candidate: KarmanyAiActionCandidate
+) -> bool:
+	if player == null or candidate == null or not _is_human_combat_candidate(candidate):
+		return false
 
 	# Los candidatos se construyen tambien para IA/legacy y pueden traer una
 	# Resonancia automatica. En el flujo humano explicito esa eleccion nunca
@@ -60,6 +69,7 @@ func resolve_human_action_choice(option_id: StringName) -> bool:
 	if selectable_cards.is_empty():
 		return _complete_explicit_human_action(player, candidate)
 
+	var manager := runtime.local_session.turn_manager
 	var combat_request := KarmanyCombatResonanceChoiceRequest.new()
 	if not combat_request.configure(
 		_next_human_combat_resonance_request_id,
