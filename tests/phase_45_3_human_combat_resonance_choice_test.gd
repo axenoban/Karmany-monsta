@@ -1,9 +1,7 @@
 extends Node
 
 
-class Phase453FixtureSession:
-	extends KarmanyFullMatchHumanCombatChoiceSession
-
+class Phase453FixtureSession extends KarmanyFullMatchHumanCombatChoiceSession:
 	var execution_count: int = 0
 	var captured_candidate: KarmanyAiActionCandidate = null
 
@@ -118,8 +116,8 @@ func _test_beast_action_waits_and_filters_context() -> void:
 	var context := _new_fixture_session(451301, "BEAST")
 	if context.is_empty():
 		return
-	var runtime: KarmanyMultiAiAlphaRuntime = context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
-	var session: Phase453FixtureSession = context.get("session", null) as Phase453FixtureSession
+	var runtime := context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
+	var session := context.get("session", null) as Phase453FixtureSession
 	if runtime == null or session == null:
 		_failures.append("FASE 45.3 TEST ERROR: BEAST: fixture incompleto.")
 		return
@@ -193,8 +191,8 @@ func _test_no_resonance_executes_without_legacy_auto_pick() -> void:
 	var context := _new_fixture_session(451302, "NONE")
 	if context.is_empty():
 		return
-	var runtime: KarmanyMultiAiAlphaRuntime = context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
-	var session: Phase453FixtureSession = context.get("session", null) as Phase453FixtureSession
+	var runtime := context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
+	var session := context.get("session", null) as Phase453FixtureSession
 	if runtime == null or session == null:
 		return
 	var player := runtime.local_session.turn_manager.get_active_player()
@@ -233,8 +231,8 @@ func _test_pvp_keeps_ai_defender_and_uses_human_attacker_choice() -> void:
 	var context := _new_fixture_session(451303, "PVP")
 	if context.is_empty():
 		return
-	var runtime: KarmanyMultiAiAlphaRuntime = context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
-	var session: Phase453FixtureSession = context.get("session", null) as Phase453FixtureSession
+	var runtime := context.get("runtime", null) as KarmanyMultiAiAlphaRuntime
+	var session := context.get("session", null) as Phase453FixtureSession
 	if runtime == null or session == null:
 		return
 	var player := runtime.local_session.turn_manager.get_active_player()
