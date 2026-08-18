@@ -96,10 +96,13 @@ func resolve_human_instinct_roll() -> bool:
 	_last_human_instinct_result = request.get_result()
 	_pending_human_instinct_request = null
 	_pending_human_instinct_candidate = null
-	_log("INSTINTO HUMAN | %s | d6=%d | Defensa %+d" % [
+	var defense_adjustment: int = int(
+		_last_human_instinct_result.get("defense_adjustment", 0)
+	)
+	_log("INSTINTO HUMAN | %s | d6=%d | ajuste_defensa=%d" % [
 		String(player.player_id),
 		roll_value,
-		int(_last_human_instinct_result.get("defense_adjustment", 0))
+		defense_adjustment
 	])
 
 	# Secuencia canonica v0.74: declarar -> Instinto -> Resonancia -> resolver.
