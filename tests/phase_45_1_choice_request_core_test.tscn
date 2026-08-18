@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://tests/phase_45_1_choice_request_core_test.gd" type="Script" id="1"]
+
+[node name="Phase451ChoiceRequestCoreTest" type="Node"]
+script = ExtResource("1")

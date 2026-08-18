@@ -2,6 +2,10 @@ class_name KarmanyFullMatchActionCoreSession
 extends KarmanyFullMatchSetupSession
 
 
+var _next_human_choice_request_id: int = 1
+var _pending_human_choice_request: KarmanyChoiceRequest = null
+
+
 func build_full_legal_actions(
 	player: KarmanyPlayerState
 ) -> Array[KarmanyAiActionCandidate]:
@@ -58,6 +62,102 @@ func build_full_legal_actions(
 				)
 		filtered.append(candidate)
 	return filtered
+
+
+func get_pending_human_choice_request() -> KarmanyChoiceRequest:
+	if _pending_human_choice_request == null:
+		return null
+	if not _is_human_choice_request_current(_pending_human_choice_request):
+		_pending_human_choice_request = null
+		return null
+	return _pending_human_choice_request
+
+
+func build_human_action_choice_request() -> KarmanyChoiceRequest:
+	if not configured or match_state != MatchState.PLAYING or runtime == null:
+		return null
+	if runtime.ai_match_controller == null:
+		return null
+	var manager := runtime.local_session.turn_manager
+	if manager == null or not manager.is_running:
+		return null
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return null
+	if manager.actions_remaining <= 0:
+		return null
+
+	if _pending_human_choice_request != null:
+		if _is_human_choice_request_current(_pending_human_choice_request):
+			return _pending_human_choice_request
+		_pending_human_choice_request = null
+
+	var candidates := build_full_legal_actions(player)
+	if candidates.is_empty():
+		return null
+	var request := KarmanyChoiceRequest.new()
+	if not request.configure(
+		_next_human_choice_request_id,
+		player.player_id,
+		manager.current_round,
+		manager.actions_remaining,
+		candidates
+	):
+		return null
+	_next_human_choice_request_id += 1
+	_pending_human_choice_request = request
+	return request
+
+
+func resolve_human_action_choice(option_id: StringName) -> bool:
+	var request := get_pending_human_choice_request()
+	if request == null:
+		return false
+	var manager := runtime.local_session.turn_manager
+	var player := manager.get_active_player()
+	if player == null:
+		_pending_human_choice_request = null
+		return false
+
+	var candidate := request.resolve_option(option_id)
+	if candidate == null:
+		# Un option_id desconocido no consume la solicitud: la UI puede
+		# corregir la seleccion sin regenerar candidatos ni tiradas.
+		return false
+
+	# Desde este punto la solicitud es one-shot incluso si el ejecutor rechaza
+	# la accion por una mutacion externa inesperada del estado.
+	_pending_human_choice_request = null
+	var success: bool = _execute_candidate(player, candidate)
+	full_action_resolved.emit(player.player_id, candidate.debug_label, success)
+	if not success:
+		return false
+	statistics["actions"] = int(statistics.get("actions", 0)) + 1
+	if candidate.action_type == KarmanyAiActionCandidate.ActionType.EXPLORE:
+		statistics["explorations"] = int(statistics.get("explorations", 0)) + 1
+	if manager.actions_remaining == 0 and manager.get_active_player() == player:
+		_end_turn_with_hand_limit(player)
+	return true
+
+
+func _is_human_choice_request_current(request: KarmanyChoiceRequest) -> bool:
+	if request == null or request.is_resolved():
+		return false
+	if not configured or match_state != MatchState.PLAYING or runtime == null:
+		return false
+	if runtime.ai_match_controller == null or runtime.local_session == null:
+		return false
+	var manager := runtime.local_session.turn_manager
+	if manager == null or not manager.is_running:
+		return false
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		return false
+	return (
+		player.player_id == request.player_id
+		and manager.current_round == request.round_number
+		and manager.actions_remaining == request.actions_remaining
+	)
 
 
 func run_automated_current_turn() -> bool:
