@@ -1,5 +1,5 @@
 class_name KarmanyFullMatchResultSession
-extends KarmanyFullMatchHumanCombatChoiceSession
+extends KarmanyFullMatchHumanInstinctRollSession
 
 
 func _on_integration_event(message: String) -> void:
