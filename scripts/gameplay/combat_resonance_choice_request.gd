@@ -30,7 +30,12 @@ func configure(
 	p_cards: Array[KarmanyResonanceData],
 	p_hand_snapshot: Array[KarmanyResonanceData]
 ) -> bool:
-	if request_id != 0 or not _option_ids.is_empty() or not _card_by_option_id.is_empty():
+	if (
+		request_id != 0
+		or not _option_ids.is_empty()
+		or not _card_by_option_id.is_empty()
+		or not _snapshot_resonance_ids.is_empty()
+	):
 		return false
 	if p_request_id <= 0 or p_player_id == &"" or p_round_number <= 0 or p_actions_remaining <= 0:
 		return false
@@ -38,13 +43,14 @@ func configure(
 		return false
 
 	var hand_ids: Dictionary = {}
+	var snapshot_ids: Array[StringName] = []
 	for card in p_hand_snapshot:
 		if card == null or not card.is_valid_definition():
 			return false
 		if card.resonance_id == &"" or hand_ids.has(card.resonance_id):
 			return false
 		hand_ids[card.resonance_id] = true
-		_snapshot_resonance_ids.append(card.resonance_id)
+		snapshot_ids.append(card.resonance_id)
 
 	var selectable_ids: Dictionary = {}
 	for card in p_cards:
@@ -63,6 +69,7 @@ func configure(
 	action_type = p_action_type
 	action_label = p_action_label
 	target_coord = p_target_coord
+	_snapshot_resonance_ids.assign(snapshot_ids)
 
 	_none_option_id = StringName("combat_resonance_%d_none" % request_id)
 	_option_ids.append(_none_option_id)
