@@ -56,9 +56,13 @@ Mientras exista una consecuencia de Aeterna pendiente no se puede construir otra
 
 ## Pruebas
 
-Escena principal:
+Escena de componentes y contratos:
 
 `res://tests/phase_45_5_human_aeterna_decisions_test.tscn`
+
+Escena de integracion del flujo post-combate:
+
+`res://tests/phase_45_5_aeterna_post_choice_flow_test.tscn`
 
 Cobertura:
 
@@ -69,6 +73,9 @@ Cobertura:
 - retirada del mercado y reposicion de la cuarta carta;
 - inventario lleno y descarte humano previo;
 - validacion del descarte de recursos tras derrota;
+- bloqueo de nuevas acciones mientras existe una consecuencia de Aeterna pendiente;
+- ciclo de victoria Resonancias: roba 3 -> P1 descarta 1 -> continua;
+- ciclo de derrota: P1 elige recursos -> se aplican -> continua;
 - superficie de compatibilidad de `KarmanyFullMatchSession` con F45.3/F45.4 y automatizacion legacy.
 
 Regresiones obligatorias locales:
