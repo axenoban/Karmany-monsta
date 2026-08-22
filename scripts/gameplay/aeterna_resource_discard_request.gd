@@ -61,19 +61,24 @@ func matches_resources(player: KarmanyPlayerState) -> bool:
 
 
 func resolve_resources(resource_types: Array[int]) -> Array[int]:
+	var empty_result: Array[int] = []
 	if _resolved or resource_types.size() != required_count:
-		return []
+		return empty_result
 	var requested_counts: Dictionary = {}
 	for resource_type in resource_types:
 		if not _available_counts.has(resource_type):
-			return []
+			return empty_result
 		requested_counts[resource_type] = int(requested_counts.get(resource_type, 0)) + 1
 		if int(requested_counts[resource_type]) > int(_available_counts[resource_type]):
-			return []
-	_resolved_resources = resource_types.duplicate()
+			return empty_result
+	_resolved_resources.assign(resource_types)
 	_resolved = true
-	return _resolved_resources.duplicate()
+	var result: Array[int] = []
+	result.assign(_resolved_resources)
+	return result
 
 
 func get_resolved_resources() -> Array[int]:
-	return _resolved_resources.duplicate()
+	var result: Array[int] = []
+	result.assign(_resolved_resources)
+	return result
