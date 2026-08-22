@@ -84,6 +84,26 @@ func _render_snapshot(snapshot: Dictionary) -> void:
 			"Revelacion visual en curso: identidad y efectos temporalmente ocultos."
 		])
 	super._render_snapshot(safe_snapshot)
+	_append_public_scoreboard(safe_snapshot)
+
+
+func _append_public_scoreboard(snapshot: Dictionary) -> void:
+	if objective_label == null:
+		return
+	var rows: Array = snapshot.get("participants", [])
+	if rows.is_empty():
+		return
+	var score_parts := PackedStringArray()
+	for row_value in rows:
+		if not (row_value is Dictionary):
+			continue
+		var row: Dictionary = row_value
+		var player_id := String(row.get("player_id", "?"))
+		var pl: int = int(row.get("pl", 0))
+		score_parts.append("%s %d PL" % [player_id, pl])
+	if score_parts.is_empty():
+		return
+	objective_label.text += "\n\n[b]Marcador publico[/b]\n%s" % " · ".join(score_parts)
 
 
 func _on_inspect_tile() -> void:
