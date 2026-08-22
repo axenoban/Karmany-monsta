@@ -1,19 +1,101 @@
 extends Node
 
 
+class Phase455ActionFixtureSession extends KarmanyFullMatchHumanAeternaSession:
+	var execution_count: int = 0
+	var captured_candidate: KarmanyAiActionCandidate = null
+
+	func _execute_candidate(
+		player: KarmanyPlayerState,
+		candidate: KarmanyAiActionCandidate
+	) -> bool:
+		if player == null or candidate == null:
+			return false
+		if candidate.action_type != KarmanyAiActionCandidate.ActionType.AETERNA:
+			return false
+		if runtime == null or runtime.local_session == null:
+			return false
+		var manager := runtime.local_session.turn_manager
+		if manager == null or manager.get_active_player() != player:
+			return false
+		if not manager.spend_action_for(&"phase45_5_fixture_aeterna", 1):
+			return false
+		execution_count += 1
+		captured_candidate = candidate
+		var result := KarmanyAeternaResult.new()
+		result.status = KarmanyAeternaResult.Status.RESOLVED
+		result.outcome = KarmanyAeternaResult.Outcome.COMBAT_VICTORY
+		result.reward_choice_required = true
+		_resolve_aeterna_post_result(player, result)
+		return true
+
+
 var _failures: Array[String] = []
+var _action_request_serial: int = 455500
 
 
 func _ready() -> void:
+	_test_action_to_post_choice_lifecycle()
 	_test_victory_resonance_reward_lifecycle()
 	_test_defeat_resource_lifecycle()
 	if _failures.is_empty():
-		print("FASE 45.5 FLOW OK - consecuencias de Aeterna bloquean nuevas acciones hasta que P1 resuelve recompensa o descartes.")
+		print("FASE 45.5 FLOW OK - accion Aeterna atraviesa Instinto y bloquea nuevas acciones hasta resolver recompensa o descartes.")
 		get_tree().quit(0)
 		return
 	for failure in _failures:
 		push_error(failure)
 	get_tree().quit(1)
+
+
+func _test_action_to_post_choice_lifecycle() -> void:
+	var runtime := KarmanyMultiAiAlphaRuntime.new()
+	if not runtime.configure_new(4, 455500):
+		_failures.append("ACTION FLOW: no se pudo configurar runtime minimo.")
+		return
+	var session := Phase455ActionFixtureSession.new()
+	session.runtime = runtime
+	session.match_seed = runtime.match_seed
+	session.match_state = KarmanyFullMatchSessionBase.MatchState.PLAYING
+	session.configured = true
+	session._action_rng.seed = session._derive_seed(455500, 455077)
+	var manager := runtime.local_session.turn_manager
+	var player := manager.get_active_player()
+	if player == null or not runtime.ai_match_controller.is_human_player(player.player_id):
+		_failures.append("ACTION FLOW: P1 humano no esta activo.")
+		return
+	player.resonance_hand.clear()
+
+	var candidate := KarmanyAiActionCandidate.new()
+	candidate.action_type = KarmanyAiActionCandidate.ActionType.AETERNA
+	candidate.target_coord = player.current_coord
+	candidate.debug_label = "Combatir Aeterna Draconis"
+	candidate.payload["instinct_roll"] = 6
+	var option_id := _install_single_action_request(session, player, candidate)
+	if option_id == &"":
+		_failures.append("ACTION FLOW: no se pudo instalar ChoiceRequest de accion.")
+		return
+	var budget_before: int = manager.actions_remaining
+
+	_expect(session.resolve_human_action_choice(option_id), "ACTION FLOW: declarar Aeterna no abrio Instinto.")
+	_expect(session.execution_count == 0, "ACTION FLOW: ejecuto Aeterna antes de Instinto.")
+	_expect(manager.actions_remaining == budget_before, "ACTION FLOW: gasto accion antes de Instinto.")
+	_expect(int(candidate.payload.get("instinct_roll", -1)) == 0, "ACTION FLOW: sobrevivio la tirada automatica preconstruida.")
+	_expect(session.get_pending_human_instinct_roll_request() != null, "ACTION FLOW: falta InstinctRollRequest de Aeterna.")
+	_expect(session.build_human_action_choice_request() == null, "ACTION FLOW: ofrecio otra accion con Instinto pendiente.")
+
+	_expect(session.resolve_human_instinct_roll(), "ACTION FLOW: no resolvio Instinto humano.")
+	var applied_roll: int = int(candidate.payload.get("instinct_roll", 0))
+	_expect(applied_roll >= 1 and applied_roll <= 6, "ACTION FLOW: no inyecto un D6 valido.")
+	_expect(session.execution_count == 1, "ACTION FLOW: sin Resonancias no ejecuto exactamente una vez tras Instinto.")
+	_expect(manager.actions_remaining == budget_before - 1, "ACTION FLOW: Aeterna no consumio exactamente una accion.")
+	_expect(session.get_pending_human_aeterna_reward_request() != null, "ACTION FLOW: victoria fixture no abrio recompensa humana.")
+	_expect(session.build_human_action_choice_request() == null, "ACTION FLOW: ofrecio nueva accion con recompensa de Aeterna pendiente.")
+	if session.captured_candidate != null:
+		_expect(
+			int(session.captured_candidate.payload.get("instinct_roll", 0)) == applied_roll,
+			"ACTION FLOW: executor no recibio la tirada humana fijada."
+		)
+	print("F45.5 ACTION FLOW | ChoiceRequest -> Instinto -> ejecucion -> recompensa pendiente; sin gasto prematuro.")
 
 
 func _test_victory_resonance_reward_lifecycle() -> void:
@@ -119,6 +201,32 @@ func _test_defeat_resource_lifecycle() -> void:
 	_expect(player.mn == 1 and player.mr == 0, "DEFEAT: cantidades finales no coinciden con seleccion humana.")
 	_expect(not session._has_pending_human_aeterna_post_choice(), "DEFEAT: quedo consecuencia pendiente tras resolver recursos.")
 	print("F45.5 FLOW DEFEAT | P1 elige recursos -> se aplican exactamente -> desbloqueo.")
+
+
+func _install_single_action_request(
+	session: Phase455ActionFixtureSession,
+	player: KarmanyPlayerState,
+	candidate: KarmanyAiActionCandidate
+) -> StringName:
+	if session == null or player == null or candidate == null:
+		return &""
+	var manager := session.runtime.local_session.turn_manager
+	var candidates: Array[KarmanyAiActionCandidate] = [candidate]
+	var request := KarmanyChoiceRequest.new()
+	_action_request_serial += 1
+	if not request.configure(
+		_action_request_serial,
+		player.player_id,
+		manager.current_round,
+		manager.actions_remaining,
+		candidates
+	):
+		return &""
+	session._pending_human_choice_request = request
+	var ids := request.get_option_ids()
+	if ids.size() != 1:
+		return &""
+	return ids[0]
 
 
 func _new_fixture(seed_value: int, label: String) -> Dictionary:
