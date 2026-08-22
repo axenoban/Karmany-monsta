@@ -45,6 +45,8 @@ func _test_scene_contract() -> void:
 	_expect(prototype.hud_root.find_child("ChoicePanel", true, false) != null, "Falta ChoicePanel.")
 	_expect(prototype.hud_root.find_child("Inspector", true, false) != null, "Falta Inspector modal.")
 	_expect(prototype.hud_root.find_child("FeedbackBanner", true, false) != null, "Falta FeedbackBanner de exito/error/combate.")
+	_expect(prototype.hud_root.find_child("ContextStrip", true, false) != null, "Falta resumen visible de Entrenador/reserva/seleccion.")
+	_expect(prototype.hud_root.find_child("ContextInspector", true, false) != null, "Falta inspector contextual de loseta/Bestia/PvP/Aeterna.")
 	_expect(
 		prototype.hud_root.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"El Control transparente de pantalla completa interceptaria clicks destinados al tablero."
@@ -54,12 +56,17 @@ func _test_scene_contract() -> void:
 	if prototype.phase_38.full_session != null:
 		_expect(prototype.phase_38.full_session.start_playing(), "No pudo iniciar PLAYING para validar HUD.")
 		prototype._refresh(true)
+		await get_tree().process_frame
 		_expect(prototype.hud_root.visible, "HUD no se hizo visible durante PLAYING.")
 		_expect(not prototype.top_label.text.is_empty(), "TopBar no muestra ronda/acciones/jugador activo.")
 		_expect(not prototype.player_label.text.is_empty(), "Panel P1 no muestra informacion critica.")
 		_expect(not prototype.objective_label.text.is_empty(), "Panel de objetivos/mision no muestra datos.")
 		_expect(not prototype._choice_data.is_empty(), "HUD no construyo ChoiceRequest para el turno humano inicial.")
 		_expect(not prototype.choice_options.get_children().is_empty(), "ChoicePanel no tiene opciones interactivas.")
+		var context_summary := prototype.hud_root.find_child("ContextSummary", true, false) as Label
+		_expect(context_summary != null and context_summary.text.contains("Entrenador:"), "ContextStrip no expone Entrenador.")
+		_expect(context_summary != null and context_summary.text.contains("Reserva:"), "ContextStrip no expone Karmany de reserva.")
+		_expect(context_summary != null and context_summary.text.contains("Seleccion:"), "ContextStrip no expone loseta seleccionada.")
 
 	prototype.queue_free()
 	await get_tree().process_frame
