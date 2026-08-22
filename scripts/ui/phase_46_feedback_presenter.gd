@@ -22,6 +22,13 @@ func _attach() -> void:
 	# su propio mouse_filter y siguen siendo interactivos.
 	controller.hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+	# El panel derecho original terminaba por debajo del inicio del ChoicePanel.
+	# Al contener ScrollContainer puede reducirse sin perder informacion y deja
+	# una separacion vertical limpia a la resolucion Alpha 1152x648.
+	var objective_panel := controller.hud_root.find_child("ObjectivePanel", true, false) as PanelContainer
+	if objective_panel != null:
+		objective_panel.size = Vector2(340, 395)
+
 	var panel := PanelContainer.new()
 	panel.name = "FeedbackBanner"
 	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -69,5 +76,6 @@ func _on_log_event(message: String) -> void:
 		or upper.contains("VICTORY")
 		or upper.contains("DEFEAT")
 		or upper.contains("DERROTA")
+		or upper.contains("RETROCEDE")
 	):
 		feedback_label.text = message
