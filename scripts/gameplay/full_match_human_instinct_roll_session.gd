@@ -56,7 +56,9 @@ func _begin_human_combat_decision(
 	if not _clear_human_instinct_roll(candidate):
 		return false
 
-	var request := KarmanyInstinctRollRequest.new()
+	var request := _create_human_instinct_request(candidate)
+	if request == null:
+		return false
 	if not request.configure(
 		_next_human_instinct_request_id,
 		player.player_id,
@@ -71,6 +73,12 @@ func _begin_human_combat_decision(
 	_pending_human_instinct_candidate = candidate
 	_pending_human_instinct_request = request
 	return true
+
+
+func _create_human_instinct_request(
+	_candidate: KarmanyAiActionCandidate
+) -> KarmanyInstinctRollRequest:
+	return KarmanyInstinctRollRequest.new()
 
 
 func resolve_human_instinct_roll() -> bool:
