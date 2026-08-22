@@ -26,6 +26,19 @@ func _test_victory_resonance_reward_lifecycle() -> void:
 	if player == null:
 		_failures.append("VICTORY: no existe jugador activo.")
 		return
+
+	# La recompensa dice roba 3 y conserva 2. Una carta que ya estaba en mano
+	# no puede usarse como descarte para conservar las tres cartas nuevas.
+	_expect(
+		runtime.resonance_deck.draw_to_hand(player.resonance_hand, 1) == 1,
+		"VICTORY: no pudo preparar una Resonancia previa a la recompensa."
+	)
+	var old_hand := player.get_resonance_hand()
+	if old_hand.is_empty():
+		_failures.append("VICTORY: falta Resonancia previa tras preparacion.")
+		return
+	var old_resonance_id: StringName = old_hand[0].resonance_id
+
 	var result := KarmanyAeternaResult.new()
 	result.status = KarmanyAeternaResult.Status.RESOLVED
 	result.outcome = KarmanyAeternaResult.Outcome.COMBAT_VICTORY
@@ -50,6 +63,13 @@ func _test_victory_resonance_reward_lifecycle() -> void:
 	_expect(player.get_resonance_count() == hand_before + 3, "VICTORY: no robo exactamente 3 antes del descarte.")
 	if discard_request == null:
 		return
+	var options := discard_request.get_options()
+	_expect(options.size() == 3, "VICTORY: el descarte debe ofrecer exactamente las 3 Resonancias recien robadas.")
+	for option in options:
+		_expect(
+			StringName(option.get("resonance_id", "")) != old_resonance_id,
+			"VICTORY: permitio descartar una Resonancia previa para conservar las 3 nuevas."
+		)
 	var ids := discard_request.get_option_ids()
 	_expect(not ids.is_empty(), "VICTORY: descarte de Resonancia no tiene opciones.")
 	if ids.is_empty():
@@ -57,11 +77,15 @@ func _test_victory_resonance_reward_lifecycle() -> void:
 	var selected: Array[StringName] = [ids[0]]
 	_expect(
 		session.resolve_human_aeterna_resonance_discard_choice(selected),
-		"VICTORY: no resolvio descarte humano de una Resonancia."
+		"VICTORY: no resolvio descarte humano de una Resonancia nueva."
 	)
 	_expect(player.get_resonance_count() == hand_before + 2, "VICTORY: no conservo exactamente 2 de las 3 robadas netas.")
+	_expect(
+		player.resonance_hand.get_card_by_id(old_resonance_id) != null,
+		"VICTORY: la Resonancia previa desaparecio durante la recompensa."
+	)
 	_expect(not session._has_pending_human_aeterna_post_choice(), "VICTORY: quedo una consecuencia fantasma pendiente.")
-	print("F45.5 FLOW VICTORY | recompensa -> roba 3 -> P1 descarta 1 -> desbloqueo.")
+	print("F45.5 FLOW VICTORY | recompensa -> roba 3 -> P1 descarta 1 de esas 3 -> conserva 2 -> desbloqueo.")
 
 
 func _test_defeat_resource_lifecycle() -> void:
