@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/phase_38_full_match_prototype.tscn" id="1_phase38"]
-[ext_resource type="Script" path="res://scripts/ui/phase_46_alpha_hud_controller.gd" id="2_controller"]
+[ext_resource type="Script" path="res://scripts/ui/phase_46_presentation_safe_controller.gd" id="2_controller"]
 [ext_resource type="Script" path="res://scripts/ui/phase_46_feedback_presenter.gd" id="3_feedback"]
 [ext_resource type="Script" path="res://scripts/ui/phase_46_context_presenter.gd" id="4_context"]
 
