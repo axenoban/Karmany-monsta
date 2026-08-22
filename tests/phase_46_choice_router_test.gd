@@ -25,11 +25,13 @@ func _test_action_request_surface() -> void:
 	var router := KarmanyPhase46ChoiceRouter.new()
 	_expect(router.configure(session), "ACTION: router no configuro.")
 	var choice := router.get_pending_choice()
+	var options: Array = choice.get("options", [])
 	_expect(int(choice.get("kind", -1)) == KarmanyPhase46ChoiceRouter.ChoiceKind.ACTION, "ACTION: no presento ChoiceRequest legal.")
 	_expect(int(choice.get("required_count", 0)) == 1, "ACTION: cantidad requerida incorrecta.")
-	_expect(not (choice.get("options", []) as Array).is_empty(), "ACTION: no hay opciones visibles.")
-	for row in choice.get("options", []):
-		_expect(not String((row as Dictionary).get("label", "")).is_empty(), "ACTION: opcion sin etiqueta legible.")
+	_expect(not options.is_empty(), "ACTION: no hay opciones visibles.")
+	for row_value in options:
+		var row: Dictionary = row_value
+		_expect(not String(row.get("label", "")).is_empty(), "ACTION: opcion sin etiqueta legible.")
 
 
 func _test_aeterna_reward_and_followup_surface() -> void:
@@ -53,17 +55,20 @@ func _test_aeterna_reward_and_followup_surface() -> void:
 	var choice := router.get_pending_choice()
 	_expect(int(choice.get("kind", -1)) == KarmanyPhase46ChoiceRouter.ChoiceKind.AETERNA_REWARD, "AETERNA REWARD: no priorizo recompensa pendiente.")
 	var option_ids: Array[StringName] = []
-	for row in choice.get("options", []):
-		option_ids.append(StringName((row as Dictionary).get("option_id", "")))
+	var reward_options: Array = choice.get("options", [])
+	for row_value in reward_options:
+		var row: Dictionary = row_value
+		option_ids.append(StringName(row.get("option_id", "")))
 	_expect(option_ids.has(KarmanyAeternaRewardChoiceRequest.OPTION_RESONANCES), "AETERNA REWARD: falta opcion reglamentaria de Resonancias.")
 	if not option_ids.has(KarmanyAeternaRewardChoiceRequest.OPTION_RESONANCES):
 		return
 	var selected: Array[StringName] = [KarmanyAeternaRewardChoiceRequest.OPTION_RESONANCES]
 	_expect(router.resolve_choice(KarmanyPhase46ChoiceRouter.ChoiceKind.AETERNA_REWARD, selected), "AETERNA REWARD: HUD no pudo resolver recompensa elegida.")
 	var followup := router.get_pending_choice()
+	var followup_options: Array = followup.get("options", [])
 	_expect(int(followup.get("kind", -1)) == KarmanyPhase46ChoiceRouter.ChoiceKind.AETERNA_RESONANCE_DISCARD, "AETERNA REWARD: no mostro descarte de 1 de las 3 robadas.")
 	_expect(int(followup.get("required_count", 0)) == 1, "AETERNA REWARD: descarte posterior no requiere exactamente 1.")
-	_expect((followup.get("options", []) as Array).size() == 3, "AETERNA REWARD: HUD no limita opciones a las 3 Resonancias nuevas.")
+	_expect(followup_options.size() == 3, "AETERNA REWARD: HUD no limita opciones a las 3 Resonancias nuevas.")
 
 
 func _test_aeterna_defeat_resource_surface() -> void:
