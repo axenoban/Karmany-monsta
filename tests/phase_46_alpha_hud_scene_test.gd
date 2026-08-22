@@ -36,11 +36,19 @@ func _test_scene_contract() -> void:
 	_expect(prototype.phase_38.full_session != null, "FullMatchSession no esta disponible.")
 	_expect(prototype.hud_bridge.is_configured(), "Read model HUD no esta configurado.")
 	_expect(prototype.hud_root != null, "HUD root no fue creado.")
+	if prototype.hud_root == null:
+		prototype.queue_free()
+		return
 	_expect(prototype.hud_root.find_child("TopBar", true, false) != null, "Falta TopBar.")
 	_expect(prototype.hud_root.find_child("PlayerPanel", true, false) != null, "Falta PlayerPanel.")
 	_expect(prototype.hud_root.find_child("ObjectivePanel", true, false) != null, "Falta ObjectivePanel.")
 	_expect(prototype.hud_root.find_child("ChoicePanel", true, false) != null, "Falta ChoicePanel.")
 	_expect(prototype.hud_root.find_child("Inspector", true, false) != null, "Falta Inspector modal.")
+	_expect(prototype.hud_root.find_child("FeedbackBanner", true, false) != null, "Falta FeedbackBanner de exito/error/combate.")
+	_expect(
+		prototype.hud_root.mouse_filter == Control.MOUSE_FILTER_IGNORE,
+		"El Control transparente de pantalla completa interceptaria clicks destinados al tablero."
+	)
 	_expect(prototype.phase_38.controls_panel == null or not prototype.phase_38.controls_panel.visible, "Controles F38 obsoletos siguen visibles.")
 
 	if prototype.phase_38.full_session != null:
@@ -51,7 +59,7 @@ func _test_scene_contract() -> void:
 		_expect(not prototype.player_label.text.is_empty(), "Panel P1 no muestra informacion critica.")
 		_expect(not prototype.objective_label.text.is_empty(), "Panel de objetivos/mision no muestra datos.")
 		_expect(not prototype._choice_data.is_empty(), "HUD no construyo ChoiceRequest para el turno humano inicial.")
-		_expect(not prototype.confirm_button.disabled or not prototype.choice_options.get_children().is_empty(), "ChoicePanel no tiene opciones interactivas.")
+		_expect(not prototype.choice_options.get_children().is_empty(), "ChoicePanel no tiene opciones interactivas.")
 
 	prototype.queue_free()
 	await get_tree().process_frame
