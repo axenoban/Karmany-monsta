@@ -64,7 +64,6 @@ static func build_fresh_session_from_package(package: Dictionary) -> Dictionary:
 	var human_id := StringName(String(overlay.get("human_player_id", "player_1")))
 	if seed_value == 0 or human_id == &"":
 		return {"ok": false, "message": "Guardado F47 sin seed/jugador humano valido."}
-
 	var runtime := KarmanyMultiAiAlphaRuntime.new()
 	if not runtime.configure_new(4, seed_value, human_id):
 		return {"ok": false, "message": "No se pudo reconstruir runtime limpio."}
@@ -89,9 +88,7 @@ static func _restore_without_rollback(session: KarmanyFullMatchSession, package:
 	if StringName(String(overlay.get("human_player_id", ""))) != session.runtime.human_player_id:
 		return false
 	var context := _build_context(session)
-	if context == null:
-		return false
-	if not KarmanySaveGameService.restore(context, package.get("runtime", {})):
+	if context == null or not KarmanySaveGameService.restore(context, package.get("runtime", {})):
 		return false
 	if not _restore_session_overlay(session, overlay):
 		return false
@@ -101,7 +98,6 @@ static func _restore_without_rollback(session: KarmanyFullMatchSession, package:
 static func _build_context(session: KarmanyFullMatchSession) -> KarmanySaveGameContext:
 	if not _is_valid_session(session):
 		return null
-	var context := KarmanySaveGameContext.new()
 	var players: Array[KarmanyPlayerState] = []
 	for player in session.runtime.local_session.players:
 		if player is KarmanyPlayerState:
@@ -111,6 +107,7 @@ static func _build_context(session: KarmanyFullMatchSession) -> KarmanySaveGameC
 		var deck := session.runtime.beast_decks_by_tier.get(tier, null) as KarmanyBeastDeck
 		if deck != null:
 			beast_decks[tier] = deck
+	var context := KarmanySaveGameContext.new()
 	if not context.configure(
 		session.runtime.board_state,
 		session.runtime.local_session.turn_manager,
@@ -165,8 +162,7 @@ static func _restore_session_overlay(session: KarmanyFullMatchSession, data: Dic
 	session.final_result = _dictionary_copy(data.get("final_result", {}))
 	session.completed_mission_players = _restore_stringname_key_dictionary(data.get("completed_mission_players", {}))
 	session.forced_starting_choice_by_player = _restore_stringname_value_dictionary(data.get("forced_starting_choices", {}))
-	if not _restore_full_match_trackers(session, data.get("trackers", {})):
-		return false
+	_restore_full_match_trackers(session, data.get("trackers", {}))
 	_restore_request_counters(session, data.get("request_counters", {}))
 	_clear_pending_requests(session)
 	if not _restore_pending_decision(session, data.get("pending", {})):
@@ -203,14 +199,13 @@ static func _capture_ai_controllers(controller: KarmanyMultiAiMatchController) -
 		return result
 	for player_id in controller.get_ai_player_ids():
 		var turn_controller := controller.get_ai_controller(player_id)
-		if turn_controller == null:
-			continue
-		result.append({
-			"player_id": String(player_id),
-			"brain": _capture_brain(turn_controller.brain),
-			"last_turn_ended": turn_controller.last_turn_ended,
-			"last_choice_label": turn_controller.last_choice_label,
-		})
+		if turn_controller != null:
+			result.append({
+				"player_id": String(player_id),
+				"brain": _capture_brain(turn_controller.brain),
+				"last_turn_ended": turn_controller.last_turn_ended,
+				"last_choice_label": turn_controller.last_choice_label,
+			})
 	return result
 
 
@@ -222,8 +217,7 @@ static func _restore_ai_controllers(controller: KarmanyMultiAiMatchController, r
 		if not (value is Dictionary):
 			return false
 		var row: Dictionary = value
-		var player_id := StringName(String(row.get("player_id", "")))
-		var turn_controller := controller.get_ai_controller(player_id)
+		var turn_controller := controller.get_ai_controller(StringName(String(row.get("player_id", ""))))
 		if turn_controller == null or not _restore_brain(turn_controller.brain, row.get("brain", {})):
 			return false
 		turn_controller.last_turn_ended = bool(row.get("last_turn_ended", false))
@@ -242,13 +236,12 @@ static func _capture_full_match_trackers(session: KarmanyFullMatchSession) -> Di
 	}
 
 
-static func _restore_full_match_trackers(session: KarmanyFullMatchSession, data: Dictionary) -> bool:
+static func _restore_full_match_trackers(session: KarmanyFullMatchSession, data: Dictionary) -> void:
 	session._last_coord_by_player = _restore_coord_by_player(data.get("last_coord", []))
 	session._turn_start_coord_by_player = _restore_coord_by_player(data.get("turn_start_coord", []))
 	session._entry_bonus_coords_by_player = _restore_coord_set_by_player(data.get("entry_bonus_coords", []))
 	session._entry_bonus_count_by_player = _restore_stringname_key_dictionary(data.get("entry_bonus_count", {}))
 	session._explored_this_turn_by_player = _restore_stringname_key_dictionary(data.get("explored_this_turn", {}))
-	return true
 
 
 static func _capture_request_counters(session: KarmanyFullMatchSession) -> Dictionary:
@@ -274,22 +267,18 @@ static func _restore_request_counters(session: KarmanyFullMatchSession, data: Di
 
 
 static func _capture_pending_decision(session: KarmanyFullMatchSession) -> Dictionary:
-	var aeterna_reward := session.get_pending_human_aeterna_reward_request()
-	if aeterna_reward != null:
-		return _capture_aeterna_pending(session, STAGE_AETERNA_REWARD, aeterna_reward.request_id)
-	var aeterna_resource := session.get_pending_human_aeterna_resource_request()
-	if aeterna_resource != null:
-		return _capture_aeterna_pending(session, STAGE_AETERNA_RESOURCE, aeterna_resource.request_id)
-	var aeterna_resonance := session.get_pending_human_aeterna_resonance_request()
+	var reward := session.get_pending_human_aeterna_reward_request()
+	if reward != null:
+		return _capture_aeterna_pending(session, STAGE_AETERNA_REWARD, reward.request_id)
+	var resource := session.get_pending_human_aeterna_resource_discard_request()
+	if resource != null:
+		return _capture_aeterna_pending(session, STAGE_AETERNA_RESOURCE, resource.request_id)
+	var aeterna_resonance := session.get_pending_human_aeterna_resonance_discard_request()
 	if aeterna_resonance != null:
 		return _capture_aeterna_pending(session, STAGE_AETERNA_RESONANCE, aeterna_resonance.request_id)
 	var instinct := session.get_pending_human_instinct_roll_request()
 	if instinct != null and session._pending_human_instinct_candidate != null:
-		return {
-			"stage": STAGE_INSTINCT,
-			"request_id": instinct.request_id,
-			"candidate": _capture_candidate_descriptor(session._pending_human_instinct_candidate),
-		}
+		return {"stage": STAGE_INSTINCT, "request_id": instinct.request_id, "candidate": _capture_candidate_descriptor(session._pending_human_instinct_candidate)}
 	var combat := session.get_pending_human_combat_resonance_request()
 	if combat != null and session._pending_human_combat_candidate != null:
 		return {
@@ -300,11 +289,7 @@ static func _capture_pending_decision(session: KarmanyFullMatchSession) -> Dicti
 		}
 	var hand_discard := session.get_pending_human_resonance_discard_request()
 	if hand_discard != null:
-		return {
-			"stage": STAGE_HAND_DISCARD,
-			"request_id": hand_discard.request_id,
-			"required_count": hand_discard.required_count,
-		}
+		return {"stage": STAGE_HAND_DISCARD, "request_id": hand_discard.request_id, "required_count": hand_discard.required_count}
 	var action := session.get_pending_human_choice_request()
 	if action != null:
 		var descriptors: Array = []
@@ -312,11 +297,7 @@ static func _capture_pending_decision(session: KarmanyFullMatchSession) -> Dicti
 			var candidate := action._candidate_by_option_id.get(option_id, null) as KarmanyAiActionCandidate
 			if candidate != null:
 				descriptors.append(_capture_candidate_descriptor(candidate))
-		return {
-			"stage": STAGE_ACTION,
-			"request_id": action.request_id,
-			"candidates": descriptors,
-		}
+		return {"stage": STAGE_ACTION, "request_id": action.request_id, "candidates": descriptors}
 	return {"stage": STAGE_NONE}
 
 
@@ -363,7 +344,8 @@ static func _restore_action_request(session: KarmanyFullMatchSession, player: Ka
 		if not (descriptors[index] is Dictionary) or not _candidate_matches_descriptor(generated[index], descriptors[index], true):
 			return false
 	var request := KarmanyChoiceRequest.new()
-	if not request.configure(request_id, player.player_id, session.runtime.local_session.turn_manager.current_round, session.runtime.local_session.turn_manager.actions_remaining, generated):
+	var manager := session.runtime.local_session.turn_manager
+	if not request.configure(request_id, player.player_id, manager.current_round, manager.actions_remaining, generated):
 		return false
 	session._pending_human_choice_request = request
 	return true
@@ -374,7 +356,8 @@ static func _restore_instinct_request(session: KarmanyFullMatchSession, player: 
 	if candidate == null:
 		return false
 	session._clear_human_combat_resonance(candidate)
-	session._clear_human_instinct_roll(candidate)
+	if not session._clear_human_instinct_roll(candidate):
+		return false
 	var request := session._create_human_instinct_request(candidate)
 	if request == null:
 		return false
@@ -426,11 +409,11 @@ static func _restore_aeterna_pending(session: KarmanyFullMatchSession, player: K
 	match stage:
 		STAGE_AETERNA_REWARD:
 			session._next_human_aeterna_reward_request_id = request_id
-			if not session._open_human_aeterna_reward_request(player, result):
+			if not session._open_human_aeterna_reward_request(player):
 				return false
 		STAGE_AETERNA_RESOURCE:
 			session._next_human_aeterna_resource_request_id = request_id
-			if not session._open_human_aeterna_resource_request(player, result):
+			if not session._open_human_aeterna_resource_request(player):
 				return false
 		STAGE_AETERNA_RESONANCE:
 			session._next_human_aeterna_resonance_request_id = request_id
@@ -474,10 +457,11 @@ static func _capture_candidate_descriptor(candidate: KarmanyAiActionCandidate) -
 static func _candidate_matches_descriptor(candidate: KarmanyAiActionCandidate, descriptor: Dictionary, strict_label: bool) -> bool:
 	if candidate == null:
 		return false
-	var target := _array_to_coord(descriptor.get("target", []))
 	if candidate.action_type != int(descriptor.get("action_type", -1)):
 		return false
-	if candidate.target_coord != target or candidate.option_index != int(descriptor.get("option_index", -1)):
+	if candidate.target_coord != _array_to_coord(descriptor.get("target", [])):
+		return false
+	if candidate.option_index != int(descriptor.get("option_index", -1)):
 		return false
 	return not strict_label or candidate.debug_label == String(descriptor.get("debug_label", ""))
 
@@ -550,10 +534,7 @@ static func _validate_restored_session(session: KarmanyFullMatchSession) -> bool
 
 
 static func _is_valid_session(session: KarmanyFullMatchSession) -> bool:
-	return (
-		session != null and session.configured and session.runtime != null and session.runtime.configured
-		and session.runtime.local_session != null and session.runtime.coordinator != null
-	)
+	return session != null and session.configured and session.runtime != null and session.runtime.configured and session.runtime.local_session != null and session.runtime.coordinator != null
 
 
 static func _capture_coord_by_player(source: Dictionary) -> Array:
@@ -561,7 +542,8 @@ static func _capture_coord_by_player(source: Dictionary) -> Array:
 	for player_id in source.keys():
 		var value: Variant = source[player_id]
 		if value is Vector2i:
-			result.append({"player_id": String(player_id), "coord": [value.x, value.y]})
+			var coord: Vector2i = value
+			result.append({"player_id": String(player_id), "coord": [coord.x, coord.y]})
 	return result
 
 
@@ -580,8 +562,9 @@ static func _capture_coord_set_by_player(source: Dictionary) -> Array:
 		var coords_out: Array = []
 		var set_value: Variant = source[player_id]
 		if set_value is Dictionary:
-			for coord in (set_value as Dictionary).keys():
-				if coord is Vector2i:
+			for coord_value in (set_value as Dictionary).keys():
+				if coord_value is Vector2i:
+					var coord: Vector2i = coord_value
 					coords_out.append([coord.x, coord.y])
 		result.append({"player_id": String(player_id), "coords": coords_out})
 	return result
@@ -611,8 +594,9 @@ static func _restore_stringname_key_dictionary(value: Variant) -> Dictionary:
 	var result: Dictionary = {}
 	if not (value is Dictionary):
 		return result
-	for key in (value as Dictionary).keys():
-		result[StringName(String(key))] = (value as Dictionary)[key]
+	var source: Dictionary = value
+	for key in source.keys():
+		result[StringName(String(key))] = source[key]
 	return result
 
 
@@ -620,8 +604,9 @@ static func _restore_stringname_value_dictionary(value: Variant) -> Dictionary:
 	var result: Dictionary = {}
 	if not (value is Dictionary):
 		return result
-	for key in (value as Dictionary).keys():
-		result[StringName(String(key))] = StringName(String((value as Dictionary)[key]))
+	var source: Dictionary = value
+	for key in source.keys():
+		result[StringName(String(key))] = StringName(String(source[key]))
 	return result
 
 
@@ -657,17 +642,18 @@ static func _json_safe(value: Variant) -> Variant:
 	if value is StringName:
 		return String(value)
 	if value is Vector2i:
-		return [value.x, value.y]
+		var coord: Vector2i = value
+		return [coord.x, coord.y]
 	if value is PackedStringArray:
 		return Array(value)
 	if value is Array:
-		var out: Array = []
+		var out_array: Array = []
 		for item in value:
-			out.append(_json_safe(item))
-		return out
+			out_array.append(_json_safe(item))
+		return out_array
 	if value is Dictionary:
-		var out: Dictionary = {}
+		var out_dict: Dictionary = {}
 		for key in value.keys():
-			out[String(key)] = _json_safe(value[key])
-		return out
+			out_dict[String(key)] = _json_safe(value[key])
+		return out_dict
 	return value
