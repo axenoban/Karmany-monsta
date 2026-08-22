@@ -81,7 +81,9 @@ func is_resolved() -> bool:
 
 
 func get_option_ids() -> Array[StringName]:
-	return _option_ids.duplicate()
+	var result: Array[StringName] = []
+	result.assign(_option_ids)
+	return result
 
 
 func get_equipment_options() -> Array[Dictionary]:
@@ -97,7 +99,9 @@ func get_equipment_options() -> Array[Dictionary]:
 
 
 func get_current_equipment_ids() -> Array[StringName]:
-	return _current_equipment_ids.duplicate()
+	var result: Array[StringName] = []
+	result.assign(_current_equipment_ids)
+	return result
 
 
 func has_resonance_option() -> bool:
