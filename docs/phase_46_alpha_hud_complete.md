@@ -11,6 +11,7 @@ La fase se implementa como una capa de presentacion sobre el baseline F38/F45 ap
 - `KarmanyPhase46AlphaHudBridge`: read model de solo lectura. Reune informacion critica sin duplicar estado de juego.
 - `KarmanyPhase46ChoiceRouter`: adapta solicitudes humanas del FullMatchSession a un formato comun de HUD y devuelve las elecciones al resolver canonico correspondiente.
 - `KarmanyPhase46AlphaHudController`: HUD visible, inspectores, historial y panel de decisiones.
+- `KarmanyPhase46PresentationSafeController`: capa final de presentacion usada por la escena F46. Respeta la compuerta visual F35/F36, impide filtraciones entre revelacion logica y visual y aplica restricciones de layout Alpha sin tocar gameplay.
 - `KarmanyPhase46FeedbackPresenter`: banner explicito de accion resuelta/rechazada y sucesos de combate.
 - `KarmanyPhase46ContextPresenter`: Entrenador, reserva y contexto publico de la loseta seleccionada, incluidos Bestias/PvP/Aeterna.
 - `phase_46_alpha_hud_prototype.tscn`: escena jugable que conserva el tablero F38 y sustituye sus controles Alpha obsoletos.
@@ -43,6 +44,20 @@ Durante PLAYING se expone:
 
 La informacion secreta de otros jugadores y la identidad de losetas no reveladas no se expone.
 
+## Compuerta de revelacion visual
+
+F35/F36 mantienen una separacion intencional entre el estado logico de una loseta y el momento en que su identidad ya puede presentarse visualmente. F46 reutiliza esa misma compuerta.
+
+Si una loseta ya esta revelada en gameplay pero su animacion/presentacion aun no finalizo, F46:
+
+- muestra `Zona oculta` en lugar del nombre real;
+- no muestra textos de efecto;
+- oculta temporalmente el historial que podria adelantar informacion;
+- bloquea temporalmente nuevos ChoiceRequests dependientes de esa loseta;
+- impide que `Ver loseta` abra reglas o efectos reales.
+
+Cuando F35/F36 marcan la identidad como publica, el HUD vuelve a exponer automaticamente la informacion normal. No existe una segunda regla de revelacion propia de F46.
+
 ## Decisiones humanas
 
 `KarmanyPhase46ChoiceRouter` respeta esta prioridad de solicitudes pendientes:
@@ -74,11 +89,12 @@ El HUD incorpora inspectores/modal para:
 
 Los botones de cartas y decisiones exponen `tooltip_text` con reglas o contexto. Esta fase prioriza legibilidad y funcionalidad; arte final, animacion, audio y polish pertenecen a F50.
 
-## Compatibilidad e input
+## Compatibilidad, input y layout Alpha
 
 - El tablero 3D y la infraestructura F38 permanecen intactos.
 - Los controles Alpha anteriores de F36/F38 se ocultan en la escena F46 para evitar dos fuentes de input simultaneas.
-- El `Control` raiz transparente del HUD usa `MOUSE_FILTER_IGNORE`, de forma que el espacio vacio no intercepta clicks destinados al tablero; los paneles y botones hijos conservan su propia interaccion.
+- El `Control` raiz transparente del HUD usa `MOUSE_FILTER_IGNORE` desde la construccion del HUD, de forma que el espacio vacio no intercepta clicks destinados al tablero; los paneles y botones hijos conservan su propia interaccion.
+- A 1152x648, `PlayerPanel`, `ObjectivePanel`, `ChoicePanel`, `FeedbackBanner` y `ContextStrip` se mantienen en regiones que no se solapan. El panel derecho conserva `ScrollContainer` para no perder informacion.
 - `KarmanyFullMatchSession` sigue siendo la unica fuente de verdad.
 - IA/Auto-P1 no se reinterpreta.
 - F45.1-F45.5 conservan requests/resolvers; F46 solo los presenta.
@@ -102,7 +118,7 @@ Valida accion humana general y ciclos de Aeterna, incluida recompensa de Resonan
 
 `res://tests/phase_46_alpha_hud_scene_test.tscn`
 
-Valida montaje sobre F38, sustitucion de controles Alpha anteriores, feedback, contexto de Entrenador/reserva/seleccion, transparencia de input del tablero, paneles criticos y creacion de un ChoiceRequest jugable durante el turno humano.
+Valida montaje sobre F38, sustitucion de controles Alpha anteriores, feedback, contexto de Entrenador/reserva/seleccion, transparencia de input del tablero, ausencia de solapamientos criticos, paneles de decisiones y una simulacion de revelacion logica adelantada que debe permanecer visualmente oculta hasta que F35/F36 la publiquen.
 
 ## Regresiones requeridas
 
@@ -115,4 +131,4 @@ Ademas de las tres pruebas F46, mantener:
 
 ## Criterio de salida
 
-F46 puede aprobarse cuando la escena integrada permite consultar toda la informacion critica y resolver las decisiones humanas sin depender del Output de Godot, debugger ni Inspector del editor. La validacion visual debe comprobar legibilidad a la resolucion Alpha actual antes de avanzar a F47 (guardado/carga).
+F46 puede aprobarse cuando la escena integrada permite consultar toda la informacion critica y resolver las decisiones humanas sin depender del Output de Godot, debugger ni Inspector del editor, sin filtrar informacion antes de la compuerta visual y sin solapamientos criticos a la resolucion Alpha objetivo. Tras la simulacion interna de estos contratos, la siguiente fase del roadmap es F47 (guardado/carga/continuacion).
