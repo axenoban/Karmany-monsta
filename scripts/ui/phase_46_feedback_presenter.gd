@@ -15,6 +15,13 @@ func _attach() -> void:
 	if controller == null or controller.hud_root == null or controller.phase_38 == null:
 		push_error("FASE 46 ERROR: feedback presenter no encontro HUD/controller.")
 		return
+
+	# El Control raiz ocupa toda la pantalla solo para ordenar la capa F46.
+	# Debe ignorar el mouse para que las zonas transparentes nunca intercepten
+	# clicks destinados al tablero 3D. Los PanelContainer/Button hijos conservan
+	# su propio mouse_filter y siguen siendo interactivos.
+	controller.hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	var panel := PanelContainer.new()
 	panel.name = "FeedbackBanner"
 	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
