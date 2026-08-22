@@ -106,6 +106,54 @@ func _append_public_scoreboard(snapshot: Dictionary) -> void:
 	objective_label.text += "\n\n[b]Marcador publico[/b]\n%s" % " · ".join(score_parts)
 
 
+func _update_choice_controls() -> void:
+	super._update_choice_controls()
+	_apply_choice_selection_feedback()
+
+
+func _apply_choice_selection_feedback() -> void:
+	if choice_options == null or _choice_data.is_empty():
+		return
+	var buttons := choice_options.get_children()
+	var button_index: int = 0
+	var repeated: bool = bool(_choice_data.get("allow_repeated_options", false))
+	for row_value in _choice_data.get("options", []):
+		if not (row_value is Dictionary):
+			continue
+		var row: Dictionary = row_value
+		var option_id := StringName(row.get("option_id", ""))
+		if option_id == &"":
+			continue
+		if button_index >= buttons.size():
+			break
+		var button := buttons[button_index] as Button
+		button_index += 1
+		if button == null:
+			continue
+		var base_label := String(row.get("label", String(option_id)))
+		var selected_count: int = _selected_option_ids.count(option_id)
+		if repeated:
+			button.text = "[%d] %s" % [selected_count, base_label]
+		else:
+			button.text = "%s %s" % ["✓" if selected_count > 0 else "○", base_label]
+
+	if replacement_options == null:
+		return
+	var replacement_ids: Array = _choice_data.get("replacement_equipment_ids", [])
+	if replacement_ids.is_empty():
+		return
+	var replacement_buttons := replacement_options.get_children()
+	for index in range(replacement_ids.size()):
+		var child_index: int = index + 1
+		if child_index >= replacement_buttons.size():
+			break
+		var button := replacement_buttons[child_index] as Button
+		if button == null:
+			continue
+		var equipment_id := StringName(replacement_ids[index])
+		button.text = "%s %s" % ["✓" if equipment_id == _replacement_equipment_id else "○", String(equipment_id)]
+
+
 func _on_inspect_tile() -> void:
 	if phase_38 == null or phase_38.full_session == null:
 		return
