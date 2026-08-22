@@ -10,6 +10,7 @@ var _pending_human_aeterna_reward_request: KarmanyAeternaRewardChoiceRequest = n
 var _pending_human_aeterna_resource_request: KarmanyAeternaResourceDiscardRequest = null
 var _pending_human_aeterna_resonance_request: KarmanyResonanceDiscardChoiceRequest = null
 var _pending_human_aeterna_result: KarmanyAeternaResult = null
+var _pending_human_aeterna_reward_drawn_ids: Array[StringName] = []
 var _explicit_human_aeterna_in_progress: bool = false
 
 
@@ -93,6 +94,7 @@ func _resolve_aeterna_post_result(
 		return
 
 	_pending_human_aeterna_result = aeterna_result
+	_pending_human_aeterna_reward_drawn_ids.clear()
 	if aeterna_result.is_victory() and aeterna_result.reward_choice_required:
 		if not _open_human_aeterna_reward_request(player):
 			_log("AETERNA HUMAN PENDING | no existe recompensa legal disponible para resolver.")
@@ -151,7 +153,8 @@ func get_pending_human_aeterna_resonance_discard_request() -> KarmanyResonanceDi
 	if player == null:
 		_pending_human_aeterna_resonance_request = null
 		return null
-	if not _pending_human_aeterna_resonance_request.matches_cards(player.get_resonance_hand()):
+	var eligible_cards := _get_human_aeterna_resonance_discard_cards(player)
+	if not _pending_human_aeterna_resonance_request.matches_cards(eligible_cards):
 		_pending_human_aeterna_resonance_request = null
 		return null
 	return _pending_human_aeterna_resonance_request
@@ -172,6 +175,7 @@ func resolve_human_aeterna_reward_choice(
 	var player := manager.get_active_player()
 	if player == null:
 		return false
+	var hand_ids_before: Array[StringName] = _get_resonance_ids(player)
 	var selection := request.resolve_option(option_id, discard_equipment_id)
 	if selection.is_empty():
 		return false
@@ -196,7 +200,10 @@ func resolve_human_aeterna_reward_choice(
 
 	_pending_human_aeterna_reward_request = null
 	if kind == KarmanyAeternaRewardChoiceRequest.RewardKind.RESONANCES:
-		_log("AETERNA HUMAN REWARD | %s | Resonancias: roba 3 y descarta 1" % String(player.player_id))
+		if not _capture_human_aeterna_reward_drawn_ids(player, hand_ids_before):
+			_log("AETERNA HUMAN ERROR | no se pudieron aislar las 3 Resonancias robadas de la recompensa.")
+			return false
+		_log("AETERNA HUMAN REWARD | %s | Resonancias: roba 3 y descarta 1 de las robadas" % String(player.player_id))
 		if _open_human_aeterna_resonance_request(player):
 			return true
 	else:
@@ -322,6 +329,9 @@ func _open_human_aeterna_resonance_request(player: KarmanyPlayerState) -> bool:
 	if pending <= 0:
 		_pending_human_aeterna_result.resonance_discard_pending = 0
 		return false
+	var eligible_cards := _get_human_aeterna_resonance_discard_cards(player)
+	if eligible_cards.size() < pending:
+		return false
 	var manager := runtime.local_session.turn_manager
 	var request := KarmanyResonanceDiscardChoiceRequest.new()
 	if not request.configure(
@@ -329,12 +339,60 @@ func _open_human_aeterna_resonance_request(player: KarmanyPlayerState) -> bool:
 		player.player_id,
 		manager.current_round,
 		pending,
-		player.get_resonance_hand()
+		eligible_cards
 	):
 		return false
 	_next_human_aeterna_resonance_request_id += 1
 	_pending_human_aeterna_resonance_request = request
 	return true
+
+
+func _capture_human_aeterna_reward_drawn_ids(
+	player: KarmanyPlayerState,
+	hand_ids_before: Array[StringName]
+) -> bool:
+	_pending_human_aeterna_reward_drawn_ids.clear()
+	if player == null or _pending_human_aeterna_result == null:
+		return false
+	var expected: int = _pending_human_aeterna_result.resonance_cards_drawn
+	if expected != 3:
+		return false
+	var previous: Dictionary = {}
+	for resonance_id in hand_ids_before:
+		previous[resonance_id] = true
+	for card in player.get_resonance_hand():
+		if card == null or previous.has(card.resonance_id):
+			continue
+		_pending_human_aeterna_reward_drawn_ids.append(card.resonance_id)
+	return _pending_human_aeterna_reward_drawn_ids.size() == expected
+
+
+func _get_human_aeterna_resonance_discard_cards(
+	player: KarmanyPlayerState
+) -> Array[KarmanyResonanceData]:
+	var result: Array[KarmanyResonanceData] = []
+	if player == null:
+		return result
+	if _pending_human_aeterna_reward_drawn_ids.is_empty():
+		for card in player.get_resonance_hand():
+			if card != null:
+				result.append(card)
+		return result
+	for resonance_id in _pending_human_aeterna_reward_drawn_ids:
+		var card := player.resonance_hand.get_card_by_id(resonance_id)
+		if card != null:
+			result.append(card)
+	return result
+
+
+func _get_resonance_ids(player: KarmanyPlayerState) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if player == null:
+		return result
+	for card in player.get_resonance_hand():
+		if card != null:
+			result.append(card.resonance_id)
+	return result
 
 
 func _finish_human_aeterna_post_choices(player: KarmanyPlayerState) -> bool:
@@ -344,6 +402,7 @@ func _finish_human_aeterna_post_choices(player: KarmanyPlayerState) -> bool:
 	_pending_human_aeterna_resource_request = null
 	_pending_human_aeterna_resonance_request = null
 	_pending_human_aeterna_result = null
+	_pending_human_aeterna_reward_drawn_ids.clear()
 	var manager := runtime.local_session.turn_manager
 	if manager != null and manager.get_active_player() == player and manager.actions_remaining == 0:
 		return super._finish_explicit_human_turn_or_request_discard(player)
