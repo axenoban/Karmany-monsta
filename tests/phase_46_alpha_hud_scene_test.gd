@@ -41,7 +41,8 @@ func _test_scene_contract() -> void:
 		return
 	_expect(prototype.hud_root.find_child("TopBar", true, false) != null, "Falta TopBar.")
 	_expect(prototype.hud_root.find_child("PlayerPanel", true, false) != null, "Falta PlayerPanel.")
-	_expect(prototype.hud_root.find_child("ObjectivePanel", true, false) != null, "Falta ObjectivePanel.")
+	var objective_panel := prototype.hud_root.find_child("ObjectivePanel", true, false) as PanelContainer
+	_expect(objective_panel != null, "Falta ObjectivePanel.")
 	_expect(prototype.hud_root.find_child("ChoicePanel", true, false) != null, "Falta ChoicePanel.")
 	_expect(prototype.hud_root.find_child("Inspector", true, false) != null, "Falta Inspector modal.")
 	_expect(prototype.hud_root.find_child("FeedbackBanner", true, false) != null, "Falta FeedbackBanner de exito/error/combate.")
@@ -51,6 +52,7 @@ func _test_scene_contract() -> void:
 		prototype.hud_root.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"El Control transparente de pantalla completa interceptaria clicks destinados al tablero."
 	)
+	_expect(objective_panel != null and objective_panel.size.y <= 395.0, "ObjectivePanel invade verticalmente el area de decisiones.")
 	_expect(prototype.phase_38.controls_panel == null or not prototype.phase_38.controls_panel.visible, "Controles F38 obsoletos siguen visibles.")
 
 	if prototype.phase_38.full_session != null:
