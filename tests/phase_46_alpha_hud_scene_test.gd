@@ -79,6 +79,8 @@ func _test_scene_contract() -> void:
 		_expect(not prototype.top_label.text.is_empty(), "TopBar no muestra ronda/acciones/jugador activo.")
 		_expect(not prototype.player_label.text.is_empty(), "Panel P1 no muestra informacion critica.")
 		_expect(not prototype.objective_label.text.is_empty(), "Panel de objetivos/mision no muestra datos.")
+		_expect(prototype.objective_label.text.contains("Marcador publico"), "HUD no expone el marcador publico de los cuatro participantes.")
+		_expect(prototype.objective_label.text.contains("player_2"), "Marcador publico no incluye rivales.")
 		_expect(not prototype._choice_data.is_empty(), "HUD no construyo ChoiceRequest para el turno humano inicial.")
 		_expect(not prototype.choice_options.get_children().is_empty(), "ChoicePanel no tiene opciones interactivas.")
 		var context_summary := prototype.hud_root.find_child("ContextSummary", true, false) as Label
@@ -112,8 +114,8 @@ func _test_visual_reveal_gate(prototype: KarmanyPhase46PresentationSafeControlle
 		return
 
 	var original_coord: Vector2i = human.current_coord
-	var hidden_tile := runtime.get_public_tile_data(hidden_coord)
 	_expect(runtime.board_state.set_revealed(hidden_coord, true), "No pudo preparar revelacion logica adelantada de prueba.")
+	var hidden_tile := runtime.get_public_tile_data(hidden_coord)
 	human.current_coord = hidden_coord
 	prototype._refresh(true)
 	_expect(prototype.player_label.text.contains("Zona oculta"), "El HUD filtro identidad entre revelacion logica y visual.")
