@@ -3,6 +3,7 @@ extends KarmanyPhase46AlphaHudController
 
 
 var _secondary_layout_adjusted: bool = false
+var _last_public_reveal_state: int = -1
 
 
 func _build_hud() -> void:
@@ -29,19 +30,29 @@ func _process(delta: float) -> void:
 
 
 func _refresh(force: bool) -> void:
+	# Detectar la transicion visual antes del refresh base es importante: el
+	# snapshot logico puede no cambiar cuando F35 termina una animacion. Sin
+	# este force de transicion, el HUD podria quedarse mostrando "Zona oculta"
+	# hasta la siguiente mutacion de gameplay.
+	var reveal_state: int = -1
+	if phase_38 != null and phase_38.full_session != null:
+		var session := phase_38.full_session
+		if session.runtime != null:
+			var human := session.runtime.local_session.get_player_by_id(session.runtime.human_player_id)
+			if human != null:
+				reveal_state = 1 if _is_coord_publicly_revealed(human.current_coord) else 0
+	var effective_force: bool = force
+	if reveal_state >= 0 and reveal_state != _last_public_reveal_state:
+		effective_force = true
+		_last_public_reveal_state = reveal_state
+
 	# La implementacion base sigue siendo responsable de snapshot, ChoiceRouter
 	# y actualizacion. Esta capa solo aplica la compuerta visual ya existente en
 	# F35/F36 antes de que el frame pueda presentarse al jugador.
-	super._refresh(force)
+	super._refresh(effective_force)
 	if hud_root == null or not hud_root.visible:
 		return
-	if phase_38 == null or phase_38.full_session == null:
-		return
-	var session := phase_38.full_session
-	if session.runtime == null:
-		return
-	var human := session.runtime.local_session.get_player_by_id(session.runtime.human_player_id)
-	if human == null or _is_coord_publicly_revealed(human.current_coord):
+	if reveal_state != 0:
 		return
 
 	# Durante la ventana en que gameplay ya revelo logicamente una loseta pero
