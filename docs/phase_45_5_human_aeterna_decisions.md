@@ -18,7 +18,7 @@ El resolver existente mantiene el premio fijo de 8 PL y deja la recompensa final
 
 P1 recibe `KarmanyAeternaRewardChoiceRequest` con opciones legales en el estado actual:
 
-- `Resonancias`: roba 3 y debe elegir 1 carta para descartar, conservando 2.
+- `Resonancias`: roba 3 y debe elegir 1 de esas 3 cartas recien robadas para descartar, conservando exactamente las otras 2. Las Resonancias que ya estaban en la mano antes de cobrar la recompensa no son opciones de este descarte.
 - `Equipo ancestral`: solo se ofrecen Equipos de rareza Ancestral que esten dentro de las 4 cartas visibles del mercado.
 
 ### Equipo ancestral visible
@@ -74,7 +74,7 @@ Cobertura:
 - inventario lleno y descarte humano previo;
 - validacion del descarte de recursos tras derrota;
 - bloqueo de nuevas acciones mientras existe una consecuencia de Aeterna pendiente;
-- ciclo de victoria Resonancias: roba 3 -> P1 descarta 1 -> continua;
+- ciclo de victoria Resonancias: roba 3 -> P1 solo puede descartar 1 de esas 3 -> conserva exactamente las otras 2 -> continua;
 - ciclo de derrota: P1 elige recursos -> se aplican -> continua;
 - superficie de compatibilidad de `KarmanyFullMatchSession` con F45.3/F45.4 y automatizacion legacy.
 
