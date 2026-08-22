@@ -38,13 +38,19 @@ func _test_complete_snapshot_and_inspectors() -> void:
 	var resources: Dictionary = snapshot.get("resources", {})
 	for resource_key in ["MN", "MR", "EK", "FA"]:
 		_expect(resources.has(resource_key), "Falta recurso HUD: %s" % resource_key)
+	var active_karmany: Dictionary = snapshot.get("active_karmany", {})
+	var market_rows: Array = snapshot.get("market", [])
+	var objective_rows: Array = snapshot.get("public_objectives", [])
+	var secret_mission: Dictionary = snapshot.get("secret_mission", {})
+	var participant_rows: Array = snapshot.get("participants", [])
+	var recent_events: PackedStringArray = snapshot.get("recent_events", PackedStringArray())
 	_expect(int(snapshot.get("book_level", 0)) >= 1, "Libro no tiene nivel visible valido.")
-	_expect(not (snapshot.get("active_karmany", {}) as Dictionary).is_empty(), "Karmany activo no visible.")
-	_expect((snapshot.get("market", []) as Array).size() == KarmanyEquipmentMarket.MARKET_SIZE, "Mercado HUD no muestra exactamente las 4 cartas visibles.")
-	_expect(not (snapshot.get("public_objectives", []) as Array).is_empty(), "Objetivos publicos no visibles.")
-	_expect(not (snapshot.get("secret_mission", {}) as Dictionary).is_empty(), "Mision secreta propia no visible para P1.")
-	_expect((snapshot.get("participants", []) as Array).size() == 4, "HUD no muestra los cuatro participantes.")
-	_expect(not (snapshot.get("recent_events", PackedStringArray()) as PackedStringArray).is_empty(), "Historial no captura los eventos de inicio.")
+	_expect(not active_karmany.is_empty(), "Karmany activo no visible.")
+	_expect(market_rows.size() == KarmanyEquipmentMarket.MARKET_SIZE, "Mercado HUD no muestra exactamente las 4 cartas visibles.")
+	_expect(not objective_rows.is_empty(), "Objetivos publicos no visibles.")
+	_expect(not secret_mission.is_empty(), "Mision secreta propia no visible para P1.")
+	_expect(participant_rows.size() == 4, "HUD no muestra los cuatro participantes.")
+	_expect(not recent_events.is_empty(), "Historial no captura los eventos de inicio.")
 
 	var tile_inspector := bridge.inspect_current_tile()
 	_expect(not tile_inspector.is_empty(), "Inspector de loseta actual vacio.")
@@ -53,12 +59,13 @@ func _test_complete_snapshot_and_inspectors() -> void:
 
 	var resonance_rows: Array = snapshot.get("resonances", [])
 	if not resonance_rows.is_empty():
-		var resonance_id := StringName((resonance_rows[0] as Dictionary).get("resonance_id", ""))
+		var resonance_row: Dictionary = resonance_rows[0]
+		var resonance_id := StringName(resonance_row.get("resonance_id", ""))
 		_expect(not bridge.inspect_resonance(resonance_id).is_empty(), "Inspector de Resonancia no resuelve carta de la mano.")
 
-	var market_rows: Array = snapshot.get("market", [])
 	if not market_rows.is_empty():
-		var equipment_id := StringName((market_rows[0] as Dictionary).get("equipment_id", ""))
+		var market_row: Dictionary = market_rows[0]
+		var equipment_id := StringName(market_row.get("equipment_id", ""))
 		_expect(not bridge.inspect_equipment(equipment_id).is_empty(), "Inspector de Equipo no resuelve mercado visible.")
 
 
