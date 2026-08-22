@@ -78,7 +78,7 @@ func _refresh_strip() -> void:
 	var selected := _get_selected_coord()
 	var selected_text := "Sin seleccion"
 	if selected != INVALID_COORD and runtime.board_state.has_coord(selected):
-		if runtime.board_state.is_revealed(selected):
+		if _is_coord_publicly_revealed(selected):
 			var tile := runtime.get_public_tile_data(selected)
 			selected_text = tile.display_name if tile != null else "Revelada"
 		else:
@@ -137,7 +137,11 @@ func _build_details_text() -> String:
 		lines.append("No hay una loseta seleccionada.")
 		return "\n".join(lines)
 	lines.append("Coordenada: %s" % str(selected))
-	if not runtime.board_state.is_revealed(selected):
+
+	# F35/F36 mantienen una compuerta visual separada de la revelacion logica
+	# durante animaciones/replay. F46 respeta ambas para no adelantar identidad,
+	# efectos o encuentros antes de que el tablero los haga publicos.
+	if not runtime.board_state.is_revealed(selected) or not _is_coord_publicly_revealed(selected):
 		lines.append("OCULTA. Nivel estructural: %s. Su identidad y contenido no se revelan desde el HUD." % _level_label(runtime.get_public_level(selected)))
 		return "\n".join(lines)
 
@@ -191,13 +195,24 @@ func _build_details_text() -> String:
 	return "\n".join(lines)
 
 
-func _get_selected_coord() -> Vector2i:
+func _get_phase_36() -> KarmanyPhase36MatchUxBridge:
 	if controller == null or controller.phase_38 == null or controller.phase_38.phase_37 == null:
-		return INVALID_COORD
-	var phase_36 := controller.phase_38.phase_37.phase_36
+		return null
+	return controller.phase_38.phase_37.phase_36
+
+
+func _get_selected_coord() -> Vector2i:
+	var phase_36 := _get_phase_36()
 	if phase_36 == null:
 		return INVALID_COORD
 	return phase_36.get_selected_coord()
+
+
+func _is_coord_publicly_revealed(coord: Vector2i) -> bool:
+	var phase_36 := _get_phase_36()
+	if phase_36 == null:
+		return false
+	return not phase_36.get_location_summary(coord).contains("OCULTA")
 
 
 func _get_reserve_states(player: KarmanyPlayerState) -> Array[KarmanyRuntimeState]:
