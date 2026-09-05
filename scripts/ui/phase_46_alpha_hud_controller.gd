@@ -115,7 +115,13 @@ func _build_player_panel() -> void:
 
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 6)
-	panel.add_child(content)
+	# El contenido conserva sus minimos legibles; el panel puede encogerse
+	# con el viewport sin invadir las decisiones de la franja inferior.
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
 
 	var header := Label.new()
 	header.text = "P1 · ESTADO DEL ENTRENADOR"

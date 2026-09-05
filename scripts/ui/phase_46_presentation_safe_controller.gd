@@ -2,7 +2,6 @@ class_name KarmanyPhase46PresentationSafeController
 extends KarmanyPhase46AlphaHudController
 
 
-var _secondary_layout_adjusted: bool = false
 var _last_public_reveal_state: int = -1
 
 
@@ -16,17 +15,10 @@ func _build_hud() -> void:
 	# que un presenter diferido lo corrija despues.
 	hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# A 1152x648 el ChoicePanel comienza alrededor de y=464. El panel derecho
-	# debe terminar antes de esa franja; su ScrollContainer conserva todo el
-	# contenido sin solaparlo con las decisiones humanas.
-	var objective_panel := hud_root.find_child("ObjectivePanel", true, false) as PanelContainer
-	if objective_panel != null:
-		objective_panel.size.y = 390.0
-
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	_apply_secondary_layout_once()
+	_apply_hud_layout()
 
 
 func _refresh(force: bool) -> void:
@@ -195,22 +187,47 @@ func _is_coord_publicly_revealed(coord: Vector2i) -> bool:
 	return not phase_36.get_location_summary(coord).contains("OCULTA")
 
 
-func _apply_secondary_layout_once() -> void:
-	if _secondary_layout_adjusted or hud_root == null:
+func _apply_hud_layout() -> void:
+	if hud_root == null:
 		return
+	var player := hud_root.find_child("PlayerPanel", true, false) as Control
+	var objective := hud_root.find_child("ObjectivePanel", true, false) as Control
+	var choice := hud_root.find_child("ChoicePanel", true, false) as Control
 	var feedback := hud_root.find_child("FeedbackBanner", true, false) as PanelContainer
 	var context_strip := hud_root.find_child("ContextStrip", true, false) as PanelContainer
 	if feedback == null or context_strip == null:
 		return
 
-	# La columna central util a 1152px queda entre PlayerPanel (x<=312) y
-	# ObjectivePanel (x>=800). Mantener ambos avisos dentro de esa columna evita
-	# solapamientos sin reducir el area del tablero mas de lo necesario.
-	feedback.position = Vector2(-256.0, 56.0)
-	feedback.size = Vector2(470.0, 34.0)
-	context_strip.position = Vector2(-260.0, 94.0)
-	context_strip.size = Vector2(470.0, 58.0)
+	# Geometria en coordenadas del padre: position no es un offset del anchor.
+	# Reservar primero las decisiones; los laterales conservan scroll legible.
+	var extent := hud_root.size
+	var margin := 12.0
+	var gap := 8.0
+	var choice_height := maxf(172.0, choice.get_combined_minimum_size().y)
+	var choice_width := minf(860.0, extent.x - margin * 2.0)
+	_place_panel(choice, Rect2((extent.x - choice_width) / 2.0,
+		extent.y - margin - choice_height, choice_width, choice_height))
+	var side_top := 66.0
+	var side_height := maxf(0.0, minf(395.0, choice.position.y - gap - side_top))
+	_place_panel(player, Rect2(margin, side_top, 300.0, side_height))
+	_place_panel(objective, Rect2(extent.x - margin - 340.0, side_top, 340.0, side_height))
+	var center_left := player.position.x + player.size.x + gap
+	var center_width := objective.position.x - gap - center_left
 	var context_summary := hud_root.find_child("ContextSummary", true, false) as Label
 	if context_summary != null:
-		context_summary.custom_minimum_size = Vector2(350.0, 0.0)
-	_secondary_layout_adjusted = true
+		context_summary.custom_minimum_size = Vector2.ZERO
+		context_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var feedback_label := feedback.get_child(0) as Label
+	if feedback_label != null:
+		feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place_panel(feedback, Rect2(center_left, side_top, center_width,
+		maxf(34.0, feedback.get_combined_minimum_size().y)))
+	_place_panel(context_strip, Rect2(center_left,
+		feedback.position.y + feedback.size.y + gap, center_width,
+		maxf(58.0, context_strip.get_combined_minimum_size().y)))
+
+
+func _place_panel(panel: Control, rect: Rect2) -> void:
+	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	panel.position = rect.position
+	panel.size = rect.size

@@ -72,7 +72,9 @@ func _test_scene_contract() -> void:
 	_expect(prototype.phase_38.controls_panel == null or not prototype.phase_38.controls_panel.visible, "Controles F38 obsoletos siguen visibles.")
 
 	if prototype.phase_38.full_session != null:
-		_expect(prototype.phase_38.full_session.start_playing(), "No pudo iniciar PLAYING para validar HUD.")
+		prototype.phase_38.start_button.pressed.emit()
+		_expect(prototype.phase_38.full_session.match_state == KarmanyFullMatchSession.MatchState.PLAYING, "No pudo iniciar PLAYING para validar HUD.")
+		_expect(not prototype.phase_38.setup_overlay.visible, "Setup intercepta la partida iniciada.")
 		prototype._refresh(true)
 		await get_tree().process_frame
 		_expect(prototype.hud_root.visible, "HUD no se hizo visible durante PLAYING.")
@@ -88,6 +90,7 @@ func _test_scene_contract() -> void:
 		_expect(context_summary != null and context_summary.text.contains("Reserva:"), "ContextStrip no expone Karmany de reserva.")
 		_expect(context_summary != null and context_summary.text.contains("Seleccion:"), "ContextStrip no expone loseta seleccionada.")
 		_test_visual_reveal_gate(prototype)
+		await _test_layout_sizes(prototype)
 
 	prototype.queue_free()
 	await get_tree().process_frame
@@ -134,6 +137,36 @@ func _controls_overlap(a: Control, b: Control) -> bool:
 	if a == null or b == null:
 		return false
 	return a.get_global_rect().intersects(b.get_global_rect())
+
+
+func _test_layout_sizes(prototype: KarmanyPhase46PresentationSafeController) -> void:
+	# Override explicito: el display headless puede usar 64x64 fisicos y
+	# canvas_items/expand dar 1152x1152 aunque se pida --resolution 1152x648.
+	var window := get_window()
+	var original_size := window.content_scale_size
+	var original_mode := window.content_scale_mode
+	var original_aspect := window.content_scale_aspect
+	window.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_IGNORE
+	for extent in [Vector2i(1152, 648), Vector2i(1024, 600), Vector2i(1280, 720), Vector2i(1920, 1080)]:
+		window.content_scale_size = extent
+		# Esperar ordenacion real de containers, incluido texto de PLAYING.
+		await get_tree().process_frame
+		await get_tree().process_frame
+		await get_tree().process_frame
+		print("F46 LAYOUT viewport=", get_viewport().get_visible_rect().size)
+		_expect(get_viewport().get_visible_rect().size == Vector2(extent), "Viewport determinista no aplicado.")
+		var panels: Array[Control] = []
+		for panel_name in ["TopBar", "PlayerPanel", "ObjectivePanel", "ChoicePanel", "FeedbackBanner", "ContextStrip"]:
+			var panel := prototype.hud_root.find_child(panel_name, true, false) as Control
+			panels.append(panel)
+			_expect(Rect2(Vector2.ZERO, Vector2(extent)).encloses(panel.get_global_rect()), "%s sale del viewport %s." % [panel_name, extent])
+		for i in range(panels.size()):
+			for j in range(i + 1, panels.size()):
+				_expect(not _controls_overlap(panels[i], panels[j]), "%s se solapa con %s a %s durante PLAYING." % [panels[i].name, panels[j].name, extent])
+	window.content_scale_size = original_size
+	window.content_scale_mode = original_mode
+	window.content_scale_aspect = original_aspect
 
 
 func _expect(condition: bool, message: String) -> void:
