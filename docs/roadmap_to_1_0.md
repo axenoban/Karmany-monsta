@@ -1,6 +1,6 @@
 # Karmany Monsta — Roadmap de Alpha a versión pública 1.0
 
-> Estado: **ROADMAP OPERATIVO — pendiente de validación**  
+> Estado: **ROADMAP OPERATIVO — APROBADO E INTEGRADO en dev/karmany-core**\
 > Baseline auditado: `dev/karmany-core` @ `61012b1`  
 > Motor: Godot `4.7` · Forward Plus · Jolt Physics  
 > Entrada actual: `res://scenes/app/main.tscn`  
@@ -242,6 +242,8 @@ F26 ya demuestra round-trip técnico de tablero, jugadores, inventarios, mazos, 
 ## Bloques propuestos
 
 ### F47.1 — Auditoría de persistencia actual
+
+**Estado:** `READY_FOR_VALIDATION` — [auditoría F47.1](phase_47_1_save_persistence_audit.md), baseline `f8d0faa`. Auditoría y diagnóstico completados; F47.2 aún no implementada.
 
 - inventariar `scripts/save/*` y bridges de save existentes;
 - comparar el snapshot F26 contra el grafo de estado de F46;
@@ -1109,8 +1111,9 @@ Actualizar esta tabla al aprobar bloques/fases.
 | Hito | Estado | Evidencia/commit | Bloqueo |
 |---|---|---|---|
 | Baseline F46 | `INTEGRATED_BASELINE` | `61012b1` al crear roadmap | — |
-| Roadmap 1.0 | `READY_FOR_VALIDATION` | rama `feature/roadmap-to-1-0` | aprobación |
-| F47 | `PLANNED` | — | — |
+| Roadmap 1.0 | `INTEGRATED_BASELINE` (aprobado) | `f8d0faae94279e906857bbcdb7a2db2bcd025263` | — |
+| F47 | `IN_PROGRESS` | F47.1: [auditoría y diagnóstico](phase_47_1_save_persistence_audit.md) | decisiones de persistencia documentadas |
+| F47.1 | `READY_FOR_VALIDATION` | `feature/f47-1-save-persistence-audit` | “prueba correcta” |
 | F48 | `PLANNED` | — | decisiones canónicas que aparezcan |
 | F49 | `PLANNED` | — | alcance 1.0 |
 | F50 | `PLANNED` | — | dirección audiovisual |
