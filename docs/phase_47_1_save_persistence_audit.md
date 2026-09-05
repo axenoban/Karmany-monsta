@@ -5,7 +5,7 @@
 > Baseline auditado: `origin/dev/karmany-core` = `f8d0faae94279e906857bbcdb7a2db2bcd025263`.
 > Rama: `feature/f47-1-save-persistence-audit`.
 > Motor ejecutado: `4.7.1.stable.official.a13da4feb`.
-> Alcance: auditoría, diagnóstico automatizado, instrucciones operativas y metadatos. **No se implementa F47.2 ni se modifica gameplay.**
+> Alcance original: auditoría, diagnóstico automatizado, instrucciones operativas y metadatos. **No se implementa F47.2 ni se modifica gameplay.** La adenda §14 registra la corrección UI F46 solicitada después de la validación manual.
 
 ## 1. Conclusión y evidencia decisiva
 
@@ -337,3 +337,42 @@ Se mantiene la agrupación solicitada; la única precisión de dependencia es qu
 | **MISSION F47-C — Lifecycle / end-to-end / closure (F47.6 + F47.7)** | C1 teardown del grafo/timers/estáticos; C2 cargas/restarts repetidos y cierres; C3 E2E humano+IA hasta resultado y cierre documental | Sin callbacks/estado residual ni regresiones funcionales; investigar/resolver diagnósticos de retención aplicables; F26/F38/F42/F45/F46/F47 y pruebas de proceso nuevo | A/B validadas, políticas pendientes resueltas, revisión final del propietario |
 
 Cada misión crea o continúa una `feature/*` válida tras verificar remoto/baseline; produce commits semánticos por checkpoint estable, pruebas focales y regresiones afectadas, y push después de cada checkpoint completo. Ante decisión de producto/canon se detiene ese punto y continúa lo independiente. **Nunca integra automáticamente en `dev/karmany-core`.** La ejecución de F47.2 no forma parte de esta entrega.
+
+## 14. Adenda 2026-09-05 — discrepancia F46 y gate previo a F47-A
+
+### Procedencia y reproducción anterior al cambio
+
+El propietario informó `PlayerPanel se solapa con ChoicePanel` al ejecutar F6 con Godot 4.7.1. El resultado headless de §10 es evidencia histórica real, pero insuficiente para validar el layout interactivo: no registraba el viewport efectivo.
+
+Se verificaron rama `feature/f47-1-save-persistence-audit`, HEAD `53651805c940a036970f120d3330f6ee612830d4`, remoto `axenoban/Karmany-monsta` y worktree inicialmente limpio. `origin/dev/karmany-core` continúa en `f8d0faae94279e906857bbcdb7a2db2bcd025263`. Entre ambos commits no hay diferencias en código HUD, escena F46, test F46 ni `project.godot`; solo sidecars `.uid` entre los archivos UI.
+
+Se ejecutó el mismo probe de geometría sobre ambos HEAD, usando un worktree temporal detached para dev, sin modificar ni resetear la rama activa. Motor `4.7.1.stable.official.a13da4feb`; render real D3D12. Configuración intacta: `canvas_items`, aspecto `expand`, sin resolución explícita en `project.godot`. El monitor local informa 2560×1440; esto no identifica el viewport de F6 incrustado del propietario.
+
+| Modo, en ambos HEAD | Window.size | Viewport efectivo | PlayerPanel | ChoicePanel | Resultado |
+|---|---|---|---|---|---|
+| `--headless --resolution 1152x648` | 64×64 | 1152×1152 | (12,66), 300×421 | (146,968), 860×172 | Exit 0, sin solapamiento |
+| Render real `--resolution 1152x648` | 1152×648 | 1152×648 | (12,66), 300×421 | (146,464), 860×172 | Exit 1, mismo error del propietario |
+
+La altura mínima acumulada del VBox del jugador es 421, superior a los 395 asignados; el panel termina en y=487 e invade 23 px de la franja de decisiones. El viewport cuadrado headless oculta el defecto. Además, el ajuste secundario escribía `position` negativa como si fuese offset de un anchor central: FeedbackBanner quedaba en x=-256 y ContextStrip en x=-260. Los asserts anteriores no comprobaban contención ni todas las parejas y se ejecutaban durante SETUP.
+
+**Conclusión:** defecto preexistente en dev y dependiente del viewport, no introducido por F47.1. No es ruido del entorno: se reproduce con render real y las coordenadas demuestran el fallo.
+
+### Corrección y cobertura
+
+- PlayerPanel conserva sus controles y tamaños legibles dentro de un ScrollContainer; su altura externa puede ajustarse al espacio real.
+- Una geometría en coordenadas del padre reserva primero ChoicePanel y calcula los laterales y la columna central en cada cambio efectivo de tamaño/contenido. Se eliminan los offsets negativos del ajuste secundario; feedback admite texto envuelto y contexto ocupa el ancho disponible.
+- Se conserva el límite de 395 del panel derecho y todos los asserts previos, sin tolerancias. No se cambia gameplay, ChoiceRouter, privacidad ni compuerta visual; la raíz sigue ignorando mouse para dejar pasar clicks al tablero.
+- El test inicia mediante el botón real de F38 y comprueba que su setup desaparece. En PLAYING fuerza viewports deterministas 1152×648, 1024×600, 1280×720 y 1920×1080, verifica su tamaño efectivo, contención de los seis paneles y ausencia de intersecciones entre todas las parejas, también tras redimensionar la misma sesión. Es una matriz técnica, no una resolución mínima comercial aprobada.
+- Los cuatro tamaños pasan headless y con render D3D12. Se inspeccionó una captura real a 1152×648 después del inicio: paneles separados, avisos visibles, tablero y opciones accesibles. Esto no sustituye validación humana de cada interacción.
+
+Se repitieron las **14 escenas de §10.2**: contratos funcionales OK, exit 0, mismos conteos de WARNING ObjectDB y ERROR resources retenidos que la tabla histórica. F26 preservó el archivo preexistente mediante copia de seguridad/restauración. No hay nuevos errores de parser ni asserts. F47.1 sigue siendo **KNOWN GAP**, no conservación/atomicidad aprobadas: mazo 19→4, dos misiones sin ruta, 36 niveles perdidos y MN 2→9 ante rechazo todavía corresponden a A1/A2.
+
+Evidencia local no versionada: `%TEMP%\karmany-f46-layout\baseline-{headless,render}.{out,err}`, `fixed-{headless,render}.{out,err}`, `visual.{out,err}` y `<testName>.{out,err}`. El worktree detached y los probes se retiran después de extraer la evidencia.
+
+### Gate exacto y autorización de continuación
+
+Los gates automáticos de Stage 0/1 pasan; **falta conocer y probar el viewport exacto usado por el propietario**, requisito explícito de §0.4 del adjunto. Se solicitó tamaño de ventana y modalidad incrustada/separada, o resolución/escalado si no conoce ese tamaño. No se equipara la resolución del monitor al viewport del juego ni se declara satisfecha esta comprobación sin el dato. F47-A todavía no se inicia; no se integra en dev/main.
+
+El nuevo adjunto autoriza D47-01/02/03 para la futura misión, reemplazando las recomendaciones pendientes de §9: estados estables PLAYING, incluidas choices completas; nunca mitad de llamada/pago/consecuencia; presentación no es fuente del snapshot; setup sin confirmar y FINISHED no son requisito inicial; saves históricos incompletos se rechazan sin migración silenciosa ni mutación de destino. D47-04/05/06 siguen pendientes para F47-B o posteriores.
+
+Tras cerrar el dato de viewport, continuar desde el HEAD final de esta feature y crear `feature/f47-a-persistence-core` apilada, como autoriza expresamente el adjunto. A1/A2/A3 conservan el alcance de §13; no implementar F47-B ni integrar dev sin validación del propietario.

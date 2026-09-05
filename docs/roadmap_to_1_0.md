@@ -243,7 +243,7 @@ F26 ya demuestra round-trip técnico de tablero, jugadores, inventarios, mazos, 
 
 ### F47.1 — Auditoría de persistencia actual
 
-**Estado:** `READY_FOR_VALIDATION` — [auditoría F47.1](phase_47_1_save_persistence_audit.md), baseline `f8d0faa`. Auditoría y diagnóstico completados; F47.2 aún no implementada.
+**Estado:** `READY_FOR_VALIDATION` — [auditoría F47.1](phase_47_1_save_persistence_audit.md), baseline `f8d0faa`. Auditoría y diagnóstico completados; adenda §14: defecto F46 preexistente corregido, matriz headless/render y regresiones OK, pendiente identificar viewport exacto del propietario. D47-01/02/03 autorizadas para F47-A; F47.2 aún no implementada.
 
 - inventariar `scripts/save/*` y bridges de save existentes;
 - comparar el snapshot F26 contra el grafo de estado de F46;
